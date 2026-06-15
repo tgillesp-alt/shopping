@@ -63,6 +63,16 @@ header span { font-size: 0.75rem; opacity: 0.5; }
 .vare-del:active { color: #c0392b; }
 
 .empty { text-align: center; color: #bbb; font-size: 0.9rem; padding: 3rem 0; }
+
+.modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.45); z-index: 200; display: flex; align-items: flex-end; justify-content: center; padding-bottom: env(safe-area-inset-bottom); }
+.modal { background: #fff; border-radius: 16px 16px 0 0; padding: 1.5rem 1.25rem; width: 100%; max-width: 500px; display: flex; flex-direction: column; gap: 0.65rem; }
+.modal h3 { font-size: 0.95rem; font-weight: 500; margin-bottom: 0.25rem; }
+.modal input, .modal select { padding: 0.65rem 0.75rem; border: 0.5px solid #ccc; border-radius: 10px; font-size: 1rem; width: 100%; background: #fff; }
+.modal .row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; }
+.modal-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; margin-top: 0.25rem; }
+.modal-btns button { padding: 0.75rem; border-radius: 10px; font-size: 1rem; cursor: pointer; border: none; }
+.btn-lagre { background: #1a1a18; color: #fff; }
+.btn-avbryt { background: #f0efe9; color: #1a1a18; }
 </style>
 </head>
 <body>
@@ -222,7 +232,7 @@ function render() {
             <label class="check-label"><input type="checkbox" ${v.mottatt?'checked':''} onchange="toggleMottatt('${v.id}',this.checked)"> Mottatt</label>
           </div>
           <div class="vare-info">
-            <div class="vare-navn">${(() => { const ageH = (Date.now() - new Date(v.created_at)) / 36e5; return !v.bestilt && !v.mottatt && ageH > 12 ? '<span style="color:#c0392b;margin-right:4px">⚠️</span>' : ''; })()}${v.navn}</div>
+            <div class="vare-navn" onclick="redigerVare('${v.id}')" style="cursor:pointer">${(() => { const ageH = (Date.now() - new Date(v.created_at)) / 36e5; return !v.bestilt && !v.mottatt && ageH > 12 ? '<span style="color:#c0392b;margin-right:4px">⚠️</span>' : ''; })()}${v.navn}</div>
             <div class="vare-meta">${meta.map(m=>`<span>${m}</span>`).join('')}</div>
           </div>
           <button class="vare-del" onclick="slett('${v.id}')">✕</button>
@@ -294,6 +304,69 @@ async function registrerPush() {
 }
 
 document.getElementById('login-passord').addEventListener('keydown', e => { if (e.key === 'Enter') loggInn(); });
+
+let redigerId = null;
+
+function redigerVare(id) {
+  const v = varer.find(v => v.id === id);
+  if (!v) return;
+  redigerId = id;
+  document.getElementById('edit-navn').value = v.navn || '';
+  document.getElementById('edit-kat').value = v.kategori || '';
+  document.getElementById('edit-lev').value = v.leverandor || '';
+  document.getElementById('edit-mengde').value = v.mengde || '';
+  document.getElementById('edit-enhet').value = v.enhet || '';
+  document.getElementById('edit-modal').style.display = 'flex';
+}
+
+function lukkModal(e) {
+  if (e && e.target !== document.getElementById('edit-modal')) return;
+  document.getElementById('edit-modal').style.display = 'none';
+  redigerId = null;
+}
+
+async function lagreRedigert() {
+  const navn = document.getElementById('edit-navn').value.trim();
+  const kat = document.getElementById('edit-kat').value;
+  if (!navn || !kat) { alert('Fyll inn varenavn og kategori'); return; }
+  await api('PATCH', `varer?id=eq.${redigerId}`, {
+    navn,
+    kategori: kat,
+    leverandor: document.getElementById('edit-lev').value || null,
+    mengde: document.getElementById('edit-mengde').value || null,
+    enhet: document.getElementById('edit-enhet').value || null,
+  });
+  document.getElementById('edit-modal').style.display = 'none';
+  redigerId = null;
+  hent();
+}
 </script>
+<div class="modal-overlay" id="edit-modal" style="display:none" onclick="lukkModal(event)">
+  <div class="modal">
+    <h3>Rediger vare</h3>
+    <input type="text" id="edit-navn" placeholder="Varenavn *">
+    <select id="edit-kat">
+      <option value="">Kategori *</option>
+      <option>Kjøtt</option><option>Fugl</option><option>Fisk & Fond</option>
+      <option>Frukt & Grønt</option><option>Ost</option>
+      <option>Hygiene & Forbruksmateriell</option><option>Annet</option>
+      <option>Vin</option><option>Sprit</option><option>Øl</option><option>Mineralvann</option>
+    </select>
+    <select id="edit-lev">
+      <option value="">Leverandør (valgfritt)</option>
+      <option>Langdalen</option><option>Frukt Engros</option><option>Laks & Vilt</option>
+      <option>Annis Pølsemakeri</option><option>Strøm Larsen</option><option>Fromageriet</option>
+      <option>Arnestad</option><option>Drikke & Vin</option><option>Annet</option>
+    </select>
+    <div class="row">
+      <input type="text" id="edit-mengde" placeholder="Mengde" inputmode="decimal">
+      <input type="text" id="edit-enhet" placeholder="Enhet (kg, stk...)">
+    </div>
+    <div class="modal-btns">
+      <button class="btn-avbryt" onclick="lukkModal()">Avbryt</button>
+      <button class="btn-lagre" onclick="lagreRedigert()">Lagre</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>
