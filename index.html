@@ -222,7 +222,7 @@ function render() {
             <label class="check-label"><input type="checkbox" ${v.mottatt?'checked':''} onchange="toggleMottatt('${v.id}',this.checked)"> Mottatt</label>
           </div>
           <div class="vare-info">
-            <div class="vare-navn">${v.navn}</div>
+            <div class="vare-navn">${(() => { const ageH = (Date.now() - new Date(v.created_at)) / 36e5; return !v.bestilt && !v.mottatt && ageH > 12 ? '<span style="color:#c0392b;margin-right:4px">⚠️</span>' : ''; })()}${v.navn}</div>
             <div class="vare-meta">${meta.map(m=>`<span>${m}</span>`).join('')}</div>
           </div>
           <button class="vare-del" onclick="slett('${v.id}')">✕</button>
