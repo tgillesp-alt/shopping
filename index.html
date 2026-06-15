@@ -354,7 +354,7 @@ async function leggTil() {
   document.getElementById('ny-mengde').value = '';
   document.getElementById('ny-enhet').value = '';
   hent();
-  fetch(`${WORKER_URL}/notify`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({fra:bruker,vare:navn}) }).catch(()=>{});
+  fetch(`${WORKER_URL}/notify`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({fra:bruker,vare:navn,kategori:kat}) }).catch(()=>{});
 }
 
 async function toggleBestilt(id, checked) {
