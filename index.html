@@ -93,6 +93,12 @@ header { background: var(--dark); color: #fff; padding: 0.9rem 1.25rem; padding-
 .vare-del:active { color: var(--warn); background: #fef2ee; }
 
 .empty { text-align: center; color: #bbb; font-size: 0.9rem; padding: 3rem 0; }
+.hist-toolbar { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
+.hist-toolbar input { flex: 1; padding: 0.7rem 0.85rem; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 0.95rem; background: var(--bg); outline: none; }
+.hist-toolbar select { padding: 0.7rem 0.75rem; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 0.9rem; background: var(--bg); outline: none; }
+.hist-item { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 0.85rem 1rem; margin-bottom: 0.45rem; }
+.hist-navn { font-size: 0.95rem; font-weight: 500; margin-bottom: 0.35rem; }
+.hist-tags { display: flex; gap: 0.3rem; flex-wrap: wrap; }
 
 /* MODAL */
 .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 200; display: flex; align-items: flex-end; justify-content: center; backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); }
@@ -136,6 +142,7 @@ header { background: var(--dark); color: #fff; padding: 0.9rem 1.25rem; padding-
     <div class="tab active" onclick="byttTab('aktive',this)">Aktive <span class="badge" id="c-aktive">0</span></div>
     <div class="tab" onclick="byttTab('bestilt',this)">Bestilt <span class="badge" id="c-bestilt">0</span></div>
     <div class="tab" onclick="byttTab('mottatt',this)">Mottatt <span class="badge" id="c-mottatt">0</span></div>
+    <div class="tab" onclick="byttTab('historikk',this)">Historikk</div>
   </div>
 
   <div class="toolbar">
@@ -178,6 +185,16 @@ header { background: var(--dark); color: #fff; padding: 0.9rem 1.25rem; padding-
       <button class="add-btn" onclick="leggTil()">+ Legg til</button>
     </div>
     <div id="liste"></div>
+    <div id="historikk-view" style="display:none">
+      <div class="hist-toolbar">
+        <input type="text" id="hist-sok" placeholder="Søk i historikk..." oninput="renderHistorikk()" autocomplete="off">
+        <select id="hist-gruppe" onchange="renderHistorikk()">
+          <option value="kategori">Kategori</option>
+          <option value="leverandor">Leverandør</option>
+        </select>
+      </div>
+      <div id="hist-liste"></div>
+    </div>
   </div>
 </div>
 
@@ -259,7 +276,9 @@ function byttTab(tab, el) {
   aktivTab = tab;
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   el.classList.add('active');
-  render();
+  document.getElementById('liste').style.display = tab === 'historikk' ? 'none' : 'block';
+  document.getElementById('historikk-view').style.display = tab === 'historikk' ? 'block' : 'none';
+  if (tab === 'historikk') renderHistorikk(); else render();
 }
 
 function render() {
@@ -398,6 +417,42 @@ async function registrerPush() {
 }
 
 document.getElementById('login-passord').addEventListener('keydown', e => { if (e.key === 'Enter') loggInn(); });
+
+function renderHistorikk() {
+  const sok = (document.getElementById('hist-sok').value || '').toLowerCase();
+  const gruppe = document.getElementById('hist-gruppe').value;
+  let data = varer.filter(v => v.mottatt);
+  if (sok) data = data.filter(v =>
+    v.navn.toLowerCase().includes(sok) ||
+    (v.kategori||'').toLowerCase().includes(sok) ||
+    (v.leverandor||'').toLowerCase().includes(sok)
+  );
+  data.sort((a,b) => new Date(b.mottatt_dato||b.created_at) - new Date(a.mottatt_dato||a.created_at));
+  const grouped = {};
+  data.forEach(v => {
+    const key = (gruppe === 'leverandor' ? v.leverandor : v.kategori) || 'Ukjent';
+    if (!grouped[key]) grouped[key] = [];
+    grouped[key].push(v);
+  });
+  const container = document.getElementById('hist-liste');
+  if (!data.length) { container.innerHTML = '<div class="empty">Ingen historikk</div>'; return; }
+  container.innerHTML = Object.entries(grouped).sort((a,b)=>a[0].localeCompare(b[0])).map(([group, items]) => `
+    <div class="section-label">${group}</div>
+    ${items.map(v => `
+      <div class="hist-item">
+        <div class="hist-navn">${v.navn}</div>
+        <div class="hist-tags">
+          ${v.leverandor ? `<span class="tag lev">${v.leverandor}</span>` : ''}
+          ${v.kategori ? `<span class="tag">${v.kategori}</span>` : ''}
+          ${v.mengde ? `<span class="tag">${v.mengde}${v.enhet?' '+v.enhet:''}</span>` : ''}
+          ${v.lagt_inn_av ? `<span class="tag">av ${v.lagt_inn_av}</span>` : ''}
+          ${v.created_at ? `<span class="tag">lagt inn ${fmt(v.created_at)}</span>` : ''}
+          ${v.bestilt_dato ? `<span class="tag">bestilt ${fmt(v.bestilt_dato)}</span>` : ''}
+          ${v.mottatt_dato ? `<span class="tag">mottatt ${fmt(v.mottatt_dato)}</span>` : ''}
+        </div>
+      </div>`).join('')}
+  `).join('');
+}
 </script>
 </body>
 </html>
