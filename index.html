@@ -287,7 +287,9 @@ function render() {
       ${items.map(v => {
         const cls = v.mottatt ? 'mottatt' : v.bestilt ? 'bestilt' : '';
         const ageH = (Date.now() - new Date(v.created_at)) / 36e5;
+        const bestiltAgeH = v.bestilt_dato ? (Date.now() - new Date(v.bestilt_dato)) / 36e5 : 0;
         const warn = !v.bestilt && !v.mottatt && ageH > 12;
+        const warnMottatt = v.bestilt && !v.mottatt && bestiltAgeH > 24;
         const tags = [
           v.leverandor ? `<span class="tag lev">${v.leverandor}</span>` : '',
           v.mengde ? `<span class="tag">${v.mengde}${v.enhet ? ' '+v.enhet : ''}</span>` : '',
@@ -303,7 +305,7 @@ function render() {
           </div>
           <div class="vare-body">
             <div class="vare-navn" onclick="redigerVare('${v.id}')">
-              ${warn ? '<span class="warn-icon">⚠️</span>' : ''}${v.navn}
+              ${warn ? '<span class="warn-icon">⚠️</span>' : ''}${warnMottatt ? '<span class="warn-icon">🕐</span>' : ''}${v.navn}
             </div>
             <div class="vare-tags">${tags}</div>
           </div>
