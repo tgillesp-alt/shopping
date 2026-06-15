@@ -38,7 +38,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI'
 /* APP */
 #app { display: none; }
 
-header { background: var(--dark); color: #fff; padding: 0.9rem 1.25rem; padding-top: calc(0.9rem + env(safe-area-inset-top)); display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
+header { background: var(--dark); color: #fff; padding: 0.9rem 1.25rem; padding-top: calc(0.9rem + env(safe-area-inset-top)); display: flex; align-items: center; gap: 0.5rem; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
 .header-title { font-size: 0.78rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; }
 .header-user { font-size: 0.75rem; color: rgba(255,255,255,0.4); }
 
@@ -135,11 +135,11 @@ header { background: var(--dark); color: #fff; padding: 0.9rem 1.25rem; padding-
 
 <div id="app">
   <header>
-    <a href="https://tgillesp-alt.github.io/shopping/portal.html" style="color:rgba(255,255,255,0.5); text-decoration:none; font-size:0.8rem; display:flex; align-items:center; gap:4px;">
-      <span style="font-size:1rem;">‹</span> Portal
+    <a href="https://tgillesp-alt.github.io/shopping/portal.html" style="color:rgba(255,255,255,0.5); text-decoration:none; font-size:0.8rem; display:flex; align-items:center; gap:4px; flex-shrink:0;">
+      <span style="font-size:1.1rem; line-height:1;">‹</span> Portal
     </a>
-    <div class="header-title">Shopping</div>
-    <div class="header-user" id="header-bruker"></div>
+    <div class="header-title" style="flex:1; text-align:center;">Shopping</div>
+    <div class="header-user" id="header-bruker" style="flex-shrink:0;"></div>
   </header>
 
   <div class="tabs">
