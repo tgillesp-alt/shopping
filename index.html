@@ -2,67 +2,67 @@
 <html lang="no">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>Fager Bistro – Handleliste</title>
 <style>
-* { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f4f0; color: #1a1a18; min-height: 100vh; }
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f4f0; color: #1a1a18; min-height: 100vh; font-size: 16px; }
 
-header { background: #1a1a18; color: #f5f4f0; padding: 1rem 1.5rem; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
-header h1 { font-size: 1rem; font-weight: 500; letter-spacing: 0.05em; text-transform: uppercase; }
-header span { font-size: 0.8rem; opacity: 0.5; }
+header { background: #1a1a18; color: #f5f4f0; padding: 0.75rem 1rem; padding-top: calc(0.75rem + env(safe-area-inset-top)); display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
+header h1 { font-size: 0.85rem; font-weight: 500; letter-spacing: 0.05em; text-transform: uppercase; }
+header span { font-size: 0.75rem; opacity: 0.5; }
 
-#login-screen { display: flex; align-items: center; justify-content: center; min-height: 100vh; }
-#login-box { background: #fff; border: 0.5px solid #ddd; border-radius: 12px; padding: 2rem; width: 300px; }
-#login-box h2 { font-size: 1rem; font-weight: 500; margin-bottom: 1.5rem; }
+#login-screen { display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 1.5rem; }
+#login-box { background: #fff; border: 0.5px solid #ddd; border-radius: 16px; padding: 1.75rem 1.5rem; width: 100%; max-width: 340px; }
+#login-box h2 { font-size: 1rem; font-weight: 500; margin-bottom: 1.25rem; }
 .bruker-valg { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-bottom: 1rem; }
-.bruker-btn { padding: 0.65rem; border: 0.5px solid #ccc; border-radius: 8px; background: #fff; font-size: 0.95rem; cursor: pointer; text-align: center; }
+.bruker-btn { padding: 0.75rem 0.5rem; border: 0.5px solid #ccc; border-radius: 10px; background: #fff; font-size: 1rem; cursor: pointer; text-align: center; }
 .bruker-btn.valgt { background: #1a1a18; color: #fff; border-color: #1a1a18; }
-#login-passord { width: 100%; padding: 0.6rem 0.8rem; border: 0.5px solid #ccc; border-radius: 8px; font-size: 0.95rem; margin-bottom: 1rem; }
-#login-btn { width: 100%; padding: 0.65rem; background: #1a1a18; color: #fff; border: none; border-radius: 8px; font-size: 0.95rem; cursor: pointer; }
+#login-passord { width: 100%; padding: 0.75rem; border: 0.5px solid #ccc; border-radius: 10px; font-size: 1rem; margin-bottom: 1rem; }
+#login-btn { width: 100%; padding: 0.8rem; background: #1a1a18; color: #fff; border: none; border-radius: 10px; font-size: 1rem; cursor: pointer; }
 #login-error { color: #c0392b; font-size: 0.85rem; margin-top: 0.5rem; display: none; }
 
 #app { display: none; }
 
-.tabs { display: flex; background: #fff; border-bottom: 0.5px solid #e0ddd6; padding: 0 1.5rem; }
-.tab { padding: 0.7rem 1rem; font-size: 0.85rem; cursor: pointer; border-bottom: 2px solid transparent; color: #888; white-space: nowrap; }
+.tabs { display: flex; background: #fff; border-bottom: 0.5px solid #e0ddd6; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.tabs::-webkit-scrollbar { display: none; }
+.tab { padding: 0.75rem 1rem; font-size: 0.85rem; cursor: pointer; border-bottom: 2px solid transparent; color: #888; white-space: nowrap; flex-shrink: 0; }
 .tab.active { color: #1a1a18; border-bottom-color: #1a1a18; font-weight: 500; }
-.badge { background: #1a1a18; color: #fff; border-radius: 10px; font-size: 0.7rem; padding: 0.1rem 0.4rem; margin-left: 0.4rem; }
+.badge { background: #1a1a18; color: #fff; border-radius: 10px; font-size: 0.7rem; padding: 0.1rem 0.4rem; margin-left: 0.3rem; }
 
-.toolbar { padding: 0.75rem 1.5rem; background: #fff; border-bottom: 0.5px solid #e0ddd6; display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; }
-.toolbar select, .toolbar input[type=text] { padding: 0.4rem 0.6rem; border: 0.5px solid #ccc; border-radius: 8px; font-size: 0.85rem; background: #fff; }
+.toolbar { padding: 0.6rem 1rem; background: #fff; border-bottom: 0.5px solid #e0ddd6; display: flex; gap: 0.5rem; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.toolbar::-webkit-scrollbar { display: none; }
+.toolbar select { padding: 0.4rem 0.5rem; border: 0.5px solid #ccc; border-radius: 8px; font-size: 0.85rem; background: #fff; flex-shrink: 0; max-width: 150px; }
+.toolbar input[type=text] { padding: 0.4rem 0.6rem; border: 0.5px solid #ccc; border-radius: 8px; font-size: 0.85rem; background: #fff; width: 100px; flex-shrink: 0; }
 
-.main { padding: 1.25rem; max-width: 860px; margin: 0 auto; }
+.main { padding: 1rem; padding-bottom: calc(1rem + env(safe-area-inset-bottom)); }
 
-.add-form { background: #fff; border: 0.5px solid #e0ddd6; border-radius: 12px; padding: 1.25rem; margin-bottom: 1.25rem; display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; }
-.add-form input, .add-form select { padding: 0.5rem 0.7rem; border: 0.5px solid #ccc; border-radius: 8px; font-size: 0.9rem; width: 100%; }
-.add-form .full { grid-column: 1 / -1; }
-.add-form button { grid-column: 1 / -1; padding: 0.65rem; background: #1a1a18; color: #fff; border: none; border-radius: 8px; font-size: 0.95rem; cursor: pointer; }
+.add-form { background: #fff; border: 0.5px solid #e0ddd6; border-radius: 12px; padding: 1rem; margin-bottom: 1rem; display: flex; flex-direction: column; gap: 0.6rem; }
+.add-form input, .add-form select { padding: 0.65rem 0.75rem; border: 0.5px solid #ccc; border-radius: 10px; font-size: 1rem; width: 100%; background: #fff; }
+.add-form .row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; }
+.add-form button { padding: 0.75rem; background: #1a1a18; color: #fff; border: none; border-radius: 10px; font-size: 1rem; cursor: pointer; }
 
-.section-header { font-size: 0.72rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.08em; color: #aaa; margin: 1rem 0 0.4rem 0.25rem; }
+.section-header { font-size: 0.7rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.08em; color: #aaa; margin: 1rem 0 0.4rem 0.1rem; }
 
-.vare { background: #fff; border: 0.5px solid #e0ddd6; border-radius: 10px; padding: 0.8rem 1rem; margin-bottom: 0.4rem; display: flex; align-items: center; gap: 0.75rem; }
+.vare { background: #fff; border: 0.5px solid #e0ddd6; border-radius: 12px; padding: 0.85rem 0.9rem; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.65rem; }
 .vare.bestilt { opacity: 0.55; }
 .vare.mottatt { opacity: 0.3; }
 
-.vare-checks { display: flex; gap: 0.75rem; }
-.check-label { display: flex; flex-direction: column; align-items: center; gap: 0.2rem; font-size: 0.68rem; color: #aaa; cursor: pointer; }
-.check-label input { width: 16px; height: 16px; accent-color: #1a1a18; cursor: pointer; }
+.vare-checks { display: flex; flex-direction: column; gap: 0.5rem; flex-shrink: 0; }
+.check-label { display: flex; align-items: center; gap: 0.35rem; font-size: 0.75rem; color: #aaa; cursor: pointer; }
+.check-label input { width: 18px; height: 18px; accent-color: #1a1a18; cursor: pointer; flex-shrink: 0; }
 
 .vare-info { flex: 1; min-width: 0; }
-.vare-navn { font-size: 0.95rem; font-weight: 500; }
-.vare-meta { display: flex; gap: 0.4rem; flex-wrap: wrap; margin-top: 0.2rem; }
-.vare-meta span { font-size: 0.75rem; background: #f0efe9; border-radius: 4px; padding: 0.1rem 0.35rem; color: #666; }
+.vare-navn { font-size: 0.95rem; font-weight: 500; word-break: break-word; }
+.vare-meta { display: flex; gap: 0.35rem; flex-wrap: wrap; margin-top: 0.3rem; }
+.vare-meta span { font-size: 0.72rem; background: #f0efe9; border-radius: 4px; padding: 0.15rem 0.35rem; color: #666; }
 
-.vare-del { background: none; border: none; color: #ccc; cursor: pointer; font-size: 1.1rem; padding: 0.2rem 0.4rem; }
-.vare-del:hover { color: #c0392b; }
+.vare-del { background: none; border: none; color: #ddd; cursor: pointer; font-size: 1.2rem; padding: 0.3rem; flex-shrink: 0; }
+.vare-del:active { color: #c0392b; }
 
 .empty { text-align: center; color: #bbb; font-size: 0.9rem; padding: 3rem 0; }
-
-@media (max-width: 600px) {
-  .add-form { grid-template-columns: 1fr; }
-  .add-form .full, .add-form button { grid-column: 1; }
-}
 </style>
 </head>
 <body>
@@ -77,7 +77,7 @@ header span { font-size: 0.8rem; opacity: 0.5; }
       <button class="bruker-btn" onclick="velgBruker('Norah', this)">Norah</button>
       <button class="bruker-btn" onclick="velgBruker('Joakim', this)">Joakim</button>
     </div>
-    <input type="password" id="login-passord" placeholder="Passord">
+    <input type="password" id="login-passord" placeholder="Passord" autocomplete="current-password">
     <button id="login-btn" onclick="loggInn()">Logg inn</button>
     <div id="login-error">Feil passord</div>
   </div>
@@ -85,7 +85,7 @@ header span { font-size: 0.8rem; opacity: 0.5; }
 
 <div id="app">
   <header>
-    <h1>Fager Bistro — Handleliste</h1>
+    <h1>Handleliste</h1>
     <span id="header-bruker"></span>
   </header>
 
@@ -104,17 +104,17 @@ header span { font-size: 0.8rem; opacity: 0.5; }
       <option>Vin</option><option>Sprit</option><option>Øl</option><option>Mineralvann</option>
     </select>
     <select id="f-lev" onchange="render()">
-      <option value="">Alle leverandører</option>
+      <option value="">Alle lev.</option>
       <option>Langdalen</option><option>Frukt Engros</option><option>Laks & Vilt</option>
       <option>Annis Pølsemakeri</option><option>Strøm Larsen</option><option>Fromageriet</option>
       <option>Arnestad</option><option>Drikke & Vin</option><option>Annet</option>
     </select>
-    <input type="text" id="f-sok" placeholder="Søk..." oninput="render()" style="width:120px;">
+    <input type="text" id="f-sok" placeholder="Søk..." oninput="render()">
   </div>
 
   <div class="main">
     <div class="add-form">
-      <input type="text" id="ny-navn" placeholder="Varenavn *" class="full">
+      <input type="text" id="ny-navn" placeholder="Varenavn *" autocomplete="off" autocorrect="off" autocapitalize="on">
       <select id="ny-kat">
         <option value="">Kategori *</option>
         <option>Kjøtt</option><option>Fugl</option><option>Fisk & Fond</option>
@@ -128,8 +128,10 @@ header span { font-size: 0.8rem; opacity: 0.5; }
         <option>Annis Pølsemakeri</option><option>Strøm Larsen</option><option>Fromageriet</option>
         <option>Arnestad</option><option>Drikke & Vin</option><option>Annet</option>
       </select>
-      <input type="text" id="ny-mengde" placeholder="Mengde">
-      <input type="text" id="ny-enhet" placeholder="Enhet (kg, stk...)">
+      <div class="row">
+        <input type="text" id="ny-mengde" placeholder="Mengde" inputmode="decimal">
+        <input type="text" id="ny-enhet" placeholder="Enhet (kg, stk...)">
+      </div>
       <button onclick="leggTil()">+ Legg til</button>
     </div>
     <div id="liste"></div>
@@ -142,8 +144,8 @@ const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 const WORKER_URL = 'https://fager-push.thomas-0e8.workers.dev';
 const VAPID_PUBLIC = 'BBugd5BD_AJbVUv9lfD-2tfp3apULExDnMQ8xVQZ9oUMmG8nUXwG-ADhCojwp4DDMI3XybLCIBe_951RA5_PHUs';
 const PASSORD = 'fager2026';
-
 const KAT_ORDER = ['Kjøtt','Fugl','Fisk & Fond','Frukt & Grønt','Ost','Hygiene & Forbruksmateriell','Annet','Vin','Sprit','Øl','Mineralvann'];
+const VARSLE = ['Thomas', 'Marcus'];
 
 let bruker = '';
 let varer = [];
@@ -165,7 +167,7 @@ function loggInn() {
   document.getElementById('header-bruker').textContent = bruker;
   hent();
   setInterval(hent, 15000);
-  registrerPush();
+  if (VARSLE.includes(bruker)) registrerPush();
 }
 
 async function api(method, path, body) {
@@ -192,49 +194,35 @@ function render() {
   const fKat = document.getElementById('f-kat').value;
   const fLev = document.getElementById('f-lev').value;
   const sok = document.getElementById('f-sok').value.toLowerCase();
-
   const aktive = varer.filter(v => !v.bestilt && !v.mottatt);
   const bestilt = varer.filter(v => v.bestilt && !v.mottatt);
   const mottatt = varer.filter(v => v.mottatt);
-
   document.getElementById('c-aktive').textContent = aktive.length;
   document.getElementById('c-bestilt').textContent = bestilt.length;
   document.getElementById('c-mottatt').textContent = mottatt.length;
-
   let vis = aktivTab === 'aktive' ? aktive : aktivTab === 'bestilt' ? bestilt : mottatt;
   if (fKat) vis = vis.filter(v => v.kategori === fKat);
   if (fLev) vis = vis.filter(v => v.leverandor === fLev);
   if (sok) vis = vis.filter(v => v.navn.toLowerCase().includes(sok));
-
   const grouped = {};
-  vis.forEach(v => {
-    const key = v.kategori || 'Annet';
-    if (!grouped[key]) grouped[key] = [];
-    grouped[key].push(v);
-  });
-
+  vis.forEach(v => { const k = v.kategori || 'Annet'; if (!grouped[k]) grouped[k] = []; grouped[k].push(v); });
   const container = document.getElementById('liste');
   if (!vis.length) { container.innerHTML = '<div class="empty">Ingen varer</div>'; return; }
-
   container.innerHTML = Object.entries(grouped)
-    .sort((a, b) => {
-      const ai = KAT_ORDER.indexOf(a[0]);
-      const bi = KAT_ORDER.indexOf(b[0]);
-      return (ai === -1 ? 99 : ai) - (bi === -1 ? 99 : bi);
-    })
+    .sort((a,b) => { const ai = KAT_ORDER.indexOf(a[0]); const bi = KAT_ORDER.indexOf(b[0]); return (ai===-1?99:ai)-(bi===-1?99:bi); })
     .map(([group, items]) => `
       <div class="section-header">${group}</div>
       ${items.map(v => {
         const cls = v.mottatt ? 'mottatt' : v.bestilt ? 'bestilt' : '';
-        const meta = [v.leverandor, v.mengde ? v.mengde + (v.enhet ? ' ' + v.enhet : '') : '', v.lagt_inn_av ? 'av ' + v.lagt_inn_av : ''].filter(Boolean);
+        const meta = [v.leverandor, v.mengde ? v.mengde+(v.enhet?' '+v.enhet:'') : '', v.lagt_inn_av ? 'av '+v.lagt_inn_av : ''].filter(Boolean);
         return `<div class="vare ${cls}">
           <div class="vare-checks">
-            <label class="check-label"><input type="checkbox" ${v.bestilt || v.mottatt ? 'checked' : ''} onchange="toggleBestilt('${v.id}',this.checked)">Bestilt</label>
-            <label class="check-label"><input type="checkbox" ${v.mottatt ? 'checked' : ''} onchange="toggleMottatt('${v.id}',this.checked)">Mottatt</label>
+            <label class="check-label"><input type="checkbox" ${v.bestilt||v.mottatt?'checked':''} onchange="toggleBestilt('${v.id}',this.checked)"> Bestilt</label>
+            <label class="check-label"><input type="checkbox" ${v.mottatt?'checked':''} onchange="toggleMottatt('${v.id}',this.checked)"> Mottatt</label>
           </div>
           <div class="vare-info">
             <div class="vare-navn">${v.navn}</div>
-            <div class="vare-meta">${meta.map(m => `<span>${m}</span>`).join('')}</div>
+            <div class="vare-meta">${meta.map(m=>`<span>${m}</span>`).join('')}</div>
           </div>
           <button class="vare-del" onclick="slett('${v.id}')">✕</button>
         </div>`;
@@ -280,11 +268,11 @@ async function slett(id) {
   hent();
 }
 
-function urlBase64ToUint8Array(base64String) {
-  const padding = '='.repeat((4 - base64String.length % 4) % 4);
-  const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+function urlBase64ToUint8Array(b) {
+  const p = '='.repeat((4-b.length%4)%4);
+  const base64 = (b+p).replace(/-/g,'+').replace(/_/g,'/');
   const raw = atob(base64);
-  return Uint8Array.from([...raw].map(c => c.charCodeAt(0)));
+  return Uint8Array.from([...raw].map(c=>c.charCodeAt(0)));
 }
 
 async function registrerPush() {
@@ -293,15 +281,12 @@ async function registrerPush() {
     const reg = await navigator.serviceWorker.register('/shopping/sw.js');
     const perm = await Notification.requestPermission();
     if (perm !== 'granted') return;
-    const sub = await reg.pushManager.subscribe({
-      userVisibleOnly: true,
-      applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC)
-    });
-    const subJson = sub.toJSON();
+    const sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC) });
+    const s = sub.toJSON();
     await fetch(`${WORKER_URL}/subscribe`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ endpoint: subJson.endpoint, keys: subJson.keys, bruker })
+      body: JSON.stringify({ endpoint: s.endpoint, keys: s.keys, bruker })
     });
   } catch(e) { console.log('Push ikke tilgjengelig:', e); }
 }
