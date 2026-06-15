@@ -243,13 +243,18 @@ function render() {
     grouped[key].push(v);
   });
 
+  const KATEGORI_ORDER = ['Kjøtt','Fugl','Fisk & Fond','Frukt & Grønt','Ost','Hygiene & Forbruksmateriell','Annet','Vin','Sprit','Øl','Mineralvann'];
   const container = document.getElementById('liste');
   if (vis.length === 0) {
     container.innerHTML = '<div class="empty">Ingen varer</div>';
     return;
   }
 
-  container.innerHTML = Object.entries(grouped).sort((a,b) => a[0].localeCompare(b[0])).map(([group, items]) => `
+  container.innerHTML = Object.entries(grouped).sort((a,b) => {
+    const ai = KATEGORI_ORDER.indexOf(a[0]);
+    const bi = KATEGORI_ORDER.indexOf(b[0]);
+    return (ai === -1 ? 99 : ai) - (bi === -1 ? 99 : bi);
+  }).map(([group, items]) => `
     <div class="section">
       <div class="section-header">${group}</div>
       ${items.map(v => vareHTML(v)).join('')}
