@@ -238,7 +238,7 @@ function render() {
 
   const grouped = {};
   vis.forEach(v => {
-    const key = v.leverandor || v.kategori || 'Ukategorisert';
+    const key = v.kategori || 'Ukategorisert';
     if (!grouped[key]) grouped[key] = [];
     grouped[key].push(v);
   });
