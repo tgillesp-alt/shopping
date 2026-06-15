@@ -6,165 +6,228 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
 <title>Fager Bistro – Portal</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-body { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', sans-serif; background: #111110; color: #fff; min-height: 100vh; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif; background: #111110; color: #fff; min-height: 100vh; }
 
-header { padding: 1.25rem 1.25rem 0; padding-top: calc(1.25rem + env(safe-area-inset-top)); }
-.logo { font-size: 0.75rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: rgba(255,255,255,0.4); margin-bottom: 0.2rem; }
-h1 { font-size: 1.6rem; font-weight: 600; color: #fff; letter-spacing: -0.02em; margin-bottom: 1.5rem; }
+.page { display: none; min-height: 100vh; }
+.page.active { display: block; }
 
-.main { padding: 0 1.25rem; padding-bottom: calc(2rem + env(safe-area-inset-bottom)); max-width: 500px; }
+/* HOME */
+#home { padding: 0; }
+.home-header { padding: 2rem 1.5rem 1.5rem; padding-top: calc(2rem + env(safe-area-inset-top)); }
+.home-logo { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: rgba(255,255,255,0.35); margin-bottom: 0.3rem; }
+.home-title { font-size: 2rem; font-weight: 600; letter-spacing: -0.03em; }
 
-.section-label { font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: rgba(255,255,255,0.3); margin: 1.5rem 0 0.6rem; }
+.menu { padding: 0.5rem 1.25rem; padding-bottom: calc(2rem + env(safe-area-inset-bottom)); display: flex; flex-direction: column; gap: 10px; }
 
-/* TOOLS GRID */
-.tools-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-.tool-card { background: rgba(255,255,255,0.06); border: 0.5px solid rgba(255,255,255,0.1); border-radius: 14px; padding: 1rem; display: flex; align-items: center; gap: 10px; cursor: pointer; text-decoration: none; transition: background 0.15s; }
-.tool-card:active { background: rgba(255,255,255,0.12); }
-.tool-card.active { background: #fff; }
-.tool-card .icon { font-size: 20px; color: rgba(255,255,255,0.6); flex-shrink: 0; }
-.tool-card.active .icon { color: #111110; }
-.tool-card .label { font-size: 13px; font-weight: 500; color: #fff; }
-.tool-card.active .label { color: #111110; }
-.tool-card .sub { font-size: 11px; color: rgba(255,255,255,0.4); margin-top: 1px; }
-.tool-card.active .sub { color: rgba(0,0,0,0.45); }
+.menu-btn { display: flex; align-items: center; justify-content: space-between; padding: 1.1rem 1.25rem; border-radius: 16px; text-decoration: none; cursor: pointer; border: none; width: 100%; text-align: left; transition: opacity 0.15s; }
+.menu-btn:active { opacity: 0.75; }
+.menu-btn.dark { background: rgba(255,255,255,0.08); color: #fff; }
+.menu-btn.light { background: #fff; color: #111110; }
 
-/* LIST ROWS */
-.row { background: rgba(255,255,255,0.06); border: 0.5px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 0.85rem 1rem; margin-bottom: 6px; display: flex; align-items: center; justify-content: space-between; text-decoration: none; transition: background 0.15s; }
+.menu-btn-left { display: flex; align-items: center; gap: 14px; }
+.menu-icon { width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.menu-icon i { font-size: 26px; color: #fff; }
+.menu-btn.light .menu-icon i { color: #111110; }
+
+.menu-label { font-size: 1rem; font-weight: 600; }
+.menu-sub { font-size: 0.75rem; opacity: 0.5; margin-top: 1px; }
+.menu-arrow { font-size: 18px; opacity: 0.3; }
+
+/* SUBPAGES */
+.sub-header { background: #111110; padding: 1rem 1.25rem; padding-top: calc(1rem + env(safe-area-inset-top)); display: flex; align-items: center; gap: 0.75rem; position: sticky; top: 0; z-index: 10; border-bottom: 0.5px solid rgba(255,255,255,0.08); }
+.back-btn { background: none; border: none; color: rgba(255,255,255,0.5); font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; gap: 4px; padding: 0; flex-shrink: 0; }
+.back-btn i { font-size: 16px; }
+.sub-title { font-size: 0.95rem; font-weight: 600; color: #fff; }
+
+.sub-content { padding: 1.25rem; padding-bottom: calc(2rem + env(safe-area-inset-bottom)); max-width: 500px; }
+
+.section-label { font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: rgba(255,255,255,0.3); margin: 1.25rem 0 0.6rem; }
+.section-label:first-child { margin-top: 0; }
+
+.row { background: rgba(255,255,255,0.06); border: 0.5px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 0.9rem 1rem; margin-bottom: 6px; display: flex; align-items: center; justify-content: space-between; text-decoration: none; transition: background 0.15s; }
 .row:active { background: rgba(255,255,255,0.12); }
 .row-left { display: flex; align-items: center; gap: 10px; }
-.row-icon { font-size: 16px; color: rgba(255,255,255,0.45); flex-shrink: 0; }
+.row-icon { font-size: 17px; color: rgba(255,255,255,0.4); flex-shrink: 0; }
 .row-name { font-size: 13px; font-weight: 500; color: #fff; }
-.row-ext { font-size: 14px; color: rgba(255,255,255,0.25); }
+.row-ext { font-size: 14px; color: rgba(255,255,255,0.2); }
 
-/* CONTACT CARDS */
-.contact-card { background: rgba(255,255,255,0.06); border: 0.5px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 0.85rem 1rem; margin-bottom: 6px; }
-.contact-name { font-size: 13px; font-weight: 500; color: #fff; margin-bottom: 0.4rem; display: flex; align-items: center; gap: 8px; }
-.contact-name i { font-size: 16px; color: rgba(255,255,255,0.4); }
-.contact-links { padding-left: 24px; display: flex; flex-direction: column; gap: 3px; }
-.contact-links a { font-size: 11px; color: rgba(255,255,255,0.45); text-decoration: none; }
+.contact-card { background: rgba(255,255,255,0.06); border: 0.5px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 0.9rem 1rem; margin-bottom: 6px; }
+.contact-name { font-size: 13px; font-weight: 500; color: #fff; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 8px; }
+.contact-name i { font-size: 16px; color: rgba(255,255,255,0.35); }
+.contact-links { padding-left: 24px; display: flex; flex-direction: column; gap: 4px; }
+.contact-links a { font-size: 12px; color: rgba(255,255,255,0.45); text-decoration: none; display: flex; align-items: center; gap: 6px; }
+.contact-links a i { font-size: 13px; }
 .contact-links a:active { color: #fff; }
-.contact-pending { font-size: 11px; color: rgba(255,255,255,0.25); font-style: italic; padding-left: 24px; }
+.contact-pending { font-size: 12px; color: rgba(255,255,255,0.2); font-style: italic; padding-left: 24px; }
 </style>
 </head>
 <body>
-<header>
-  <div class="logo">Fager Bistro</div>
-  <h1>PORTAL</h1>
-</header>
-<div class="main">
 
-  <div class="section-label">Verktøy</div>
-  <div class="tools-grid">
-    <a target="_blank" rel="noopener" href="https://tgillesp-alt.github.io/shopping/" class="tool-card active">
-      <i class="ti ti-shopping-cart icon"></i>
-      <div>
-        <div class="label">Shopping</div>
-        <div class="sub">Bestillinger</div>
+<!-- HOME -->
+<div id="home" class="page active">
+  <div class="home-header">
+    <div class="home-logo">Fager Bistro</div>
+    <div class="home-title">PORTAL</div>
+  </div>
+  <div class="menu">
+    <a href="https://tgillesp-alt.github.io/shopping/" class="menu-btn light" target="_blank" rel="noopener">
+      <div class="menu-btn-left">
+        <div class="menu-icon shopping"><i class="ti ti-shopping-cart"></i></div>
+        <div>
+          <div class="menu-label" style="color:#111110">Shopping</div>
+          <div class="menu-sub" style="color:#111110">Varebestillinger</div>
+        </div>
       </div>
+      <i class="ti ti-external-link menu-arrow" style="color:#111110; opacity:0.3"></i>
     </a>
-    <a target="_blank" rel="noopener" href="https://id.planday.com/Login?ReturnUrl=%2Fconnect%2Fauthorize%2Fcallback%3Fclient_id%3Db116846e-8ff0-42dc-83b6-5392543ca73c%26redirect_uri%3Dhttps%253A%252F%252Ffagerbistro.planday.com%252Fauth-callback%26response_type%3Dcode%26scope%3Dopenid%2520impersonate%2520plandayid%26state%3Db0650c75f0f749e38230f87531b30383%26code_challenge%3DBek-f71iRFNv_f2c6EpRfUwtpz5rTZwBYM-98lSgbxk%26code_challenge_method%3DS256%26acr_values%3Dtenant%253Afagerbistro.planday.com" class="tool-card">
-      <i class="ti ti-calendar icon"></i>
-      <div>
-        <div class="label">Planday</div>
-        <div class="sub">Bemanning</div>
+
+    <a href="https://id.planday.com/Login?ReturnUrl=%2Fconnect%2Fauthorize%2Fcallback%3Fclient_id%3Db116846e-8ff0-42dc-83b6-5392543ca73c%26redirect_uri%3Dhttps%253A%252F%252Ffagerbistro.planday.com%252Fauth-callback%26response_type%3Dcode%26scope%3Dopenid%2520impersonate%2520plandayid%26state%3Db0650c75f0f749e38230f87531b30383%26code_challenge%3DBek-f71iRFNv_f2c6EpRfUwtpz5rTZwBYM-98lSgbxk%26code_challenge_method%3DS256%26acr_values%3Dtenant%253Afagerbistro.planday.com" class="menu-btn dark" target="_blank" rel="noopener">
+      <div class="menu-btn-left">
+        <div class="menu-icon planday"><i class="ti ti-calendar"></i></div>
+        <div>
+          <div class="menu-label">Planday</div>
+          <div class="menu-sub">Bemanning & vakter</div>
+        </div>
       </div>
+      <i class="ti ti-external-link menu-arrow"></i>
     </a>
-  </div>
 
-  <div class="section-label">Leverandører — nett</div>
-  <a target="_blank" rel="noopener" href="https://langdalen.procurement.no/login.aspx" class="row">
-    <div class="row-left">
-      <i class="ti ti-salad row-icon"></i>
-      <span class="row-name">Langdalen</span>
-    </div>
-    <i class="ti ti-external-link row-ext"></i>
-  </a>
-  <a target="_blank" rel="noopener" href="https://www.leroyengros.no" class="row">
-    <div class="row-left">
-      <i class="ti ti-fish row-icon"></i>
-      <span class="row-name">Laks & Vilt</span>
-    </div>
-    <i class="ti ti-external-link row-ext"></i>
-  </a>
-  <a target="_blank" rel="noopener" href="https://engrosfrukt.no" class="row">
-    <div class="row-left">
-      <i class="ti ti-apple row-icon"></i>
-      <span class="row-name">Engrosfrukt</span>
-    </div>
-    <i class="ti ti-external-link row-ext"></i>
-  </a>
-  <a target="_blank" rel="noopener" href="https://www.carlevensen.no" class="row">
-    <div class="row-left">
-      <i class="ti ti-bottle row-icon"></i>
-      <span class="row-name">Carl Evensen</span>
-    </div>
-    <i class="ti ti-external-link row-ext"></i>
-  </a>
-  <a target="_blank" rel="noopener" href="https://engros.strom-larsen.no/login.aspx" class="row">
-    <div class="row-left">
-      <i class="ti ti-meat row-icon"></i>
-      <span class="row-name">Strøm Larsen</span>
-    </div>
-    <i class="ti ti-external-link row-ext"></i>
-  </a>
-  <a target="_blank" rel="noopener" href="https://asas.no" class="row">
-    <div class="row-left">
-      <i class="ti ti-package row-icon"></i>
-      <span class="row-name">Arnestad</span>
-    </div>
-    <i class="ti ti-external-link row-ext"></i>
-  </a>
-  <a target="_blank" rel="noopener" href="https://link.anticimex.no/login" class="row">
-    <div class="row-left">
-      <i class="ti ti-bug row-icon"></i>
-      <span class="row-name">Anticimex</span>
-    </div>
-    <i class="ti ti-external-link row-ext"></i>
-  </a>
+    <button class="menu-btn dark" onclick="visPage('leverandorer')">
+      <div class="menu-btn-left">
+        <div class="menu-icon lev"><i class="ti ti-truck"></i></div>
+        <div>
+          <div class="menu-label">Leverandører</div>
+          <div class="menu-sub">Bestilling & kontakt</div>
+        </div>
+      </div>
+      <i class="ti ti-chevron-right menu-arrow"></i>
+    </button>
 
-  <div class="section-label">Leverandører — e-post</div>
-  <div class="contact-card">
-    <div class="contact-name"><i class="ti ti-meat"></i>Annis Pølsemakeri</div>
-    <div class="contact-links">
-      <a target="_blank" rel="noopener" href="mailto:Oslobukta@polsemakeri.no">Oslobukta@polsemakeri.no</a>
-    </div>
-  </div>
-  <div class="contact-card">
-    <div class="contact-name"><i class="ti ti-bread"></i>Kolonihagen Bakeri</div>
-    <div class="contact-links">
-      <a target="_blank" rel="noopener" href="mailto:bakeri@kolonihagen.no">bakeri@kolonihagen.no</a>
-    </div>
-  </div>
-  <div class="contact-card">
-    <div class="contact-name"><i class="ti ti-cheese"></i>Fromageriet</div>
-    <div class="contact-links">
-      <a target="_blank" rel="noopener" href="mailto:kontakt@fromagerie.no">kontakt@fromagerie.no</a>
-      <a href="tel:22601995">22 60 19 95</a>
-    </div>
-  </div>
+    <button class="menu-btn dark" onclick="visPage('kontakter')">
+      <div class="menu-btn-left">
+        <div class="menu-icon kontakt"><i class="ti ti-address-book"></i></div>
+        <div>
+          <div class="menu-label">Kontakter</div>
+          <div class="menu-sub">Gårdeier, vaktmester m.fl.</div>
+        </div>
+      </div>
+      <i class="ti ti-chevron-right menu-arrow"></i>
+    </button>
 
-  <div class="section-label">Kontakter</div>
-  <div class="contact-card">
-    <div class="contact-name"><i class="ti ti-building"></i>Aspelin Reitan — gårdeier</div>
-    <div class="contact-pending">Info kommer</div>
+    <button class="menu-btn dark" onclick="visPage('dokumenter')">
+      <div class="menu-btn-left">
+        <div class="menu-icon dok"><i class="ti ti-file-text"></i></div>
+        <div>
+          <div class="menu-label">Dokumenter</div>
+          <div class="menu-sub">Internkontroll m.fl.</div>
+        </div>
+      </div>
+      <i class="ti ti-chevron-right menu-arrow"></i>
+    </button>
   </div>
-  <div class="contact-card">
-    <div class="contact-name"><i class="ti ti-tool"></i>Vaktmester</div>
-    <div class="contact-pending">Info kommer</div>
-  </div>
-
-  <div class="section-label">Dokumenter</div>
-  <div class="row" style="cursor:default; opacity:0.5;">
-    <div class="row-left">
-      <i class="ti ti-file-text row-icon"></i>
-      <span class="row-name">Internkontroll</span>
-    </div>
-    <span style="font-size:11px; color:rgba(255,255,255,0.3); font-style:italic;">Kommer</span>
-  </div>
-
 </div>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+
+<!-- LEVERANDØRER -->
+<div id="leverandorer" class="page">
+  <div class="sub-header">
+    <button class="back-btn" onclick="visPage('home')"><i class="ti ti-chevron-left"></i> Portal</button>
+    <div class="sub-title">Leverandører</div>
+  </div>
+  <div class="sub-content">
+    <div class="section-label">Bestilling på nett</div>
+    <a href="https://langdalen.procurement.no/login.aspx" class="row" target="_blank" rel="noopener">
+      <div class="row-left"><i class="ti ti-salad row-icon"></i><span class="row-name">Langdalen</span></div>
+      <i class="ti ti-external-link row-ext"></i>
+    </a>
+    <a href="https://www.leroyengros.no" class="row" target="_blank" rel="noopener">
+      <div class="row-left"><i class="ti ti-fish row-icon"></i><span class="row-name">Laks & Vilt</span></div>
+      <i class="ti ti-external-link row-ext"></i>
+    </a>
+    <a href="https://engrosfrukt.no" class="row" target="_blank" rel="noopener">
+      <div class="row-left"><i class="ti ti-apple row-icon"></i><span class="row-name">Engrosfrukt</span></div>
+      <i class="ti ti-external-link row-ext"></i>
+    </a>
+    <a href="https://www.carlevensen.no" class="row" target="_blank" rel="noopener">
+      <div class="row-left"><i class="ti ti-bottle row-icon"></i><span class="row-name">Carl Evensen</span></div>
+      <i class="ti ti-external-link row-ext"></i>
+    </a>
+    <a href="https://engros.strom-larsen.no/login.aspx" class="row" target="_blank" rel="noopener">
+      <div class="row-left"><i class="ti ti-meat row-icon"></i><span class="row-name">Strøm Larsen</span></div>
+      <i class="ti ti-external-link row-ext"></i>
+    </a>
+    <a href="https://asas.no" class="row" target="_blank" rel="noopener">
+      <div class="row-left"><i class="ti ti-package row-icon"></i><span class="row-name">Arnestad</span></div>
+      <i class="ti ti-external-link row-ext"></i>
+    </a>
+    <a href="https://link.anticimex.no/login" class="row" target="_blank" rel="noopener">
+      <div class="row-left"><i class="ti ti-bug row-icon"></i><span class="row-name">Anticimex</span></div>
+      <i class="ti ti-external-link row-ext"></i>
+    </a>
+
+    <div class="section-label">Bestilling på e-post</div>
+    <div class="contact-card">
+      <div class="contact-name"><i class="ti ti-meat"></i>Annis Pølsemakeri</div>
+      <div class="contact-links">
+        <a href="mailto:Oslobukta@polsemakeri.no" target="_blank"><i class="ti ti-mail"></i>Oslobukta@polsemakeri.no</a>
+      </div>
+    </div>
+    <div class="contact-card">
+      <div class="contact-name"><i class="ti ti-bread"></i>Kolonihagen Bakeri</div>
+      <div class="contact-links">
+        <a href="mailto:bakeri@kolonihagen.no" target="_blank"><i class="ti ti-mail"></i>bakeri@kolonihagen.no</a>
+      </div>
+    </div>
+    <div class="contact-card">
+      <div class="contact-name"><i class="ti ti-cheese"></i>Fromageriet</div>
+      <div class="contact-links">
+        <a href="mailto:kontakt@fromagerie.no" target="_blank"><i class="ti ti-mail"></i>kontakt@fromagerie.no</a>
+        <a href="tel:22601995"><i class="ti ti-phone"></i>22 60 19 95</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- KONTAKTER -->
+<div id="kontakter" class="page">
+  <div class="sub-header">
+    <button class="back-btn" onclick="visPage('home')"><i class="ti ti-chevron-left"></i> Portal</button>
+    <div class="sub-title">Kontakter</div>
+  </div>
+  <div class="sub-content">
+    <div class="contact-card">
+      <div class="contact-name"><i class="ti ti-building"></i>Aspelin Reitan — gårdeier</div>
+      <div class="contact-pending">Info kommer</div>
+    </div>
+    <div class="contact-card">
+      <div class="contact-name"><i class="ti ti-tool"></i>Vaktmester</div>
+      <div class="contact-pending">Info kommer</div>
+    </div>
+  </div>
+</div>
+
+<!-- DOKUMENTER -->
+<div id="dokumenter" class="page">
+  <div class="sub-header">
+    <button class="back-btn" onclick="visPage('home')"><i class="ti ti-chevron-left"></i> Portal</button>
+    <div class="sub-title">Dokumenter</div>
+  </div>
+  <div class="sub-content">
+    <div class="row" style="opacity:0.4; cursor:default;">
+      <div class="row-left"><i class="ti ti-file-text row-icon"></i><span class="row-name">Internkontroll</span></div>
+      <span style="font-size:11px; color:rgba(255,255,255,0.3); font-style:italic;">Kommer</span>
+    </div>
+  </div>
+</div>
+
+<script>
+function visPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0, 0);
+}
+</script>
 </body>
 </html>
