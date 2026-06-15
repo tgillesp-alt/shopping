@@ -1,186 +1,170 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
-<html>
+<!DOCTYPE html>
+<html lang="no">
 <head>
-  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-  <meta http-equiv="Content-Style-Type" content="text/css">
-  <title></title>
-  <meta name="Generator" content="Cocoa HTML Writer">
-  <meta name="CocoaVersion" content="2685.6">
-  <style type="text/css">
-    p.p1 {margin: 0.0px 0.0px 0.0px 0.0px; font: 13.0px 'Helvetica Neue'}
-    p.p2 {margin: 0.0px 0.0px 0.0px 0.0px; font: 13.0px 'Helvetica Neue'; min-height: 15.0px}
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<title>Fager Bistro – Portal</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', sans-serif; background: #111110; color: #fff; min-height: 100vh; }
+
+header { padding: 1.25rem 1.25rem 0; padding-top: calc(1.25rem + env(safe-area-inset-top)); }
+.logo { font-size: 0.75rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: rgba(255,255,255,0.4); margin-bottom: 0.2rem; }
+h1 { font-size: 1.6rem; font-weight: 600; color: #fff; letter-spacing: -0.02em; margin-bottom: 1.5rem; }
+
+.main { padding: 0 1.25rem; padding-bottom: calc(2rem + env(safe-area-inset-bottom)); max-width: 500px; }
+
+.section-label { font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: rgba(255,255,255,0.3); margin: 1.5rem 0 0.6rem; }
+
+/* TOOLS GRID */
+.tools-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.tool-card { background: rgba(255,255,255,0.06); border: 0.5px solid rgba(255,255,255,0.1); border-radius: 14px; padding: 1rem; display: flex; align-items: center; gap: 10px; cursor: pointer; text-decoration: none; transition: background 0.15s; }
+.tool-card:active { background: rgba(255,255,255,0.12); }
+.tool-card.active { background: #fff; }
+.tool-card .icon { font-size: 20px; color: rgba(255,255,255,0.6); flex-shrink: 0; }
+.tool-card.active .icon { color: #111110; }
+.tool-card .label { font-size: 13px; font-weight: 500; color: #fff; }
+.tool-card.active .label { color: #111110; }
+.tool-card .sub { font-size: 11px; color: rgba(255,255,255,0.4); margin-top: 1px; }
+.tool-card.active .sub { color: rgba(0,0,0,0.45); }
+
+/* LIST ROWS */
+.row { background: rgba(255,255,255,0.06); border: 0.5px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 0.85rem 1rem; margin-bottom: 6px; display: flex; align-items: center; justify-content: space-between; text-decoration: none; transition: background 0.15s; }
+.row:active { background: rgba(255,255,255,0.12); }
+.row-left { display: flex; align-items: center; gap: 10px; }
+.row-icon { font-size: 16px; color: rgba(255,255,255,0.45); flex-shrink: 0; }
+.row-name { font-size: 13px; font-weight: 500; color: #fff; }
+.row-ext { font-size: 14px; color: rgba(255,255,255,0.25); }
+
+/* CONTACT CARDS */
+.contact-card { background: rgba(255,255,255,0.06); border: 0.5px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 0.85rem 1rem; margin-bottom: 6px; }
+.contact-name { font-size: 13px; font-weight: 500; color: #fff; margin-bottom: 0.4rem; display: flex; align-items: center; gap: 8px; }
+.contact-name i { font-size: 16px; color: rgba(255,255,255,0.4); }
+.contact-links { padding-left: 24px; display: flex; flex-direction: column; gap: 3px; }
+.contact-links a { font-size: 11px; color: rgba(255,255,255,0.45); text-decoration: none; }
+.contact-links a:active { color: #fff; }
+.contact-pending { font-size: 11px; color: rgba(255,255,255,0.25); font-style: italic; padding-left: 24px; }
+</style>
 </head>
 <body>
-<p class="p1">&lt;!DOCTYPE html&gt;</p>
-<p class="p1">&lt;html lang="no"&gt;</p>
-<p class="p1">&lt;head&gt;</p>
-<p class="p1">&lt;meta charset="UTF-8"&gt;</p>
-<p class="p1">&lt;meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"&gt;</p>
-<p class="p1">&lt;meta name="apple-mobile-web-app-capable" content="yes"&gt;</p>
-<p class="p1">&lt;meta name="apple-mobile-web-app-status-bar-style" content="black"&gt;</p>
-<p class="p1">&lt;title&gt;Fager Bistro – Portal&lt;/title&gt;</p>
-<p class="p1">&lt;style&gt;</p>
-<p class="p1">* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }</p>
-<p class="p1">body { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', sans-serif; background: #111110; color: #fff; min-height: 100vh; }</p>
-<p class="p2"><br></p>
-<p class="p1">header { padding: 1.25rem 1.25rem 0; padding-top: calc(1.25rem + env(safe-area-inset-top)); }</p>
-<p class="p1">.logo { font-size: 0.75rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: rgba(255,255,255,0.4); margin-bottom: 0.2rem; }</p>
-<p class="p1">h1 { font-size: 1.6rem; font-weight: 600; color: #fff; letter-spacing: -0.02em; margin-bottom: 1.5rem; }</p>
-<p class="p2"><br></p>
-<p class="p1">.main { padding: 0 1.25rem; padding-bottom: calc(2rem + env(safe-area-inset-bottom)); max-width: 500px; }</p>
-<p class="p2"><br></p>
-<p class="p1">.section-label { font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: rgba(255,255,255,0.3); margin: 1.5rem 0 0.6rem; }</p>
-<p class="p2"><br></p>
-<p class="p1">/* TOOLS GRID */</p>
-<p class="p1">.tools-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }</p>
-<p class="p1">.tool-card { background: rgba(255,255,255,0.06); border: 0.5px solid rgba(255,255,255,0.1); border-radius: 14px; padding: 1rem; display: flex; align-items: center; gap: 10px; cursor: pointer; text-decoration: none; transition: background 0.15s; }</p>
-<p class="p1">.tool-card:active { background: rgba(255,255,255,0.12); }</p>
-<p class="p1">.tool-card.active { background: #fff; }</p>
-<p class="p1">.tool-card .icon { font-size: 20px; color: rgba(255,255,255,0.6); flex-shrink: 0; }</p>
-<p class="p1">.tool-card.active .icon { color: #111110; }</p>
-<p class="p1">.tool-card .label { font-size: 13px; font-weight: 500; color: #fff; }</p>
-<p class="p1">.tool-card.active .label { color: #111110; }</p>
-<p class="p1">.tool-card .sub { font-size: 11px; color: rgba(255,255,255,0.4); margin-top: 1px; }</p>
-<p class="p1">.tool-card.active .sub { color: rgba(0,0,0,0.45); }</p>
-<p class="p2"><br></p>
-<p class="p1">/* LIST ROWS */</p>
-<p class="p1">.row { background: rgba(255,255,255,0.06); border: 0.5px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 0.85rem 1rem; margin-bottom: 6px; display: flex; align-items: center; justify-content: space-between; text-decoration: none; transition: background 0.15s; }</p>
-<p class="p1">.row:active { background: rgba(255,255,255,0.12); }</p>
-<p class="p1">.row-left { display: flex; align-items: center; gap: 10px; }</p>
-<p class="p1">.row-icon { font-size: 16px; color: rgba(255,255,255,0.45); flex-shrink: 0; }</p>
-<p class="p1">.row-name { font-size: 13px; font-weight: 500; color: #fff; }</p>
-<p class="p1">.row-ext { font-size: 14px; color: rgba(255,255,255,0.25); }</p>
-<p class="p2"><br></p>
-<p class="p1">/* CONTACT CARDS */</p>
-<p class="p1">.contact-card { background: rgba(255,255,255,0.06); border: 0.5px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 0.85rem 1rem; margin-bottom: 6px; }</p>
-<p class="p1">.contact-name { font-size: 13px; font-weight: 500; color: #fff; margin-bottom: 0.4rem; display: flex; align-items: center; gap: 8px; }</p>
-<p class="p1">.contact-name i { font-size: 16px; color: rgba(255,255,255,0.4); }</p>
-<p class="p1">.contact-links { padding-left: 24px; display: flex; flex-direction: column; gap: 3px; }</p>
-<p class="p1">.contact-links a { font-size: 11px; color: rgba(255,255,255,0.45); text-decoration: none; }</p>
-<p class="p1">.contact-links a:active { color: #fff; }</p>
-<p class="p1">.contact-pending { font-size: 11px; color: rgba(255,255,255,0.25); font-style: italic; padding-left: 24px; }</p>
-<p class="p1">&lt;/style&gt;</p>
-<p class="p1">&lt;/head&gt;</p>
-<p class="p1">&lt;body&gt;</p>
-<p class="p1">&lt;header&gt;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>&lt;div class="logo"&gt;Fager Bistro&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>&lt;h1&gt;Portal&lt;/h1&gt;</p>
-<p class="p1">&lt;/header&gt;</p>
-<p class="p1">&lt;div class="main"&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">  </span>&lt;div class="section-label"&gt;Verktøy&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>&lt;div class="tools-grid"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;a href="https://tgillesp-alt.github.io/shopping/" class="tool-card active"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;i class="ti ti-shopping-cart icon"&gt;&lt;/i&gt;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;div class="label"&gt;Shopping&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;div class="sub"&gt;Bestillinger&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;/a&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;a href="https://app.planday.com" class="tool-card"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;i class="ti ti-calendar icon"&gt;&lt;/i&gt;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;div class="label"&gt;Planday&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;div class="sub"&gt;Bemanning&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;/a&gt;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>&lt;/div&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">  </span>&lt;div class="section-label"&gt;Leverandører — nett&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>&lt;a href="https://langdalen.procurement.no/login.aspx" class="row"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;div class="row-left"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;i class="ti ti-salad row-icon"&gt;&lt;/i&gt;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;span class="row-name"&gt;Langdalen&lt;/span&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;i class="ti ti-external-link row-ext"&gt;&lt;/i&gt;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>&lt;/a&gt;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>&lt;a href="https://www.leroyengros.no" class="row"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;div class="row-left"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;i class="ti ti-fish row-icon"&gt;&lt;/i&gt;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;span class="row-name"&gt;Laks &amp; Vilt&lt;/span&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;i class="ti ti-external-link row-ext"&gt;&lt;/i&gt;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>&lt;/a&gt;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>&lt;a href="https://engrosfrukt.no" class="row"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;div class="row-left"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;i class="ti ti-apple row-icon"&gt;&lt;/i&gt;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;span class="row-name"&gt;Engrosfrukt&lt;/span&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;i class="ti ti-external-link row-ext"&gt;&lt;/i&gt;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>&lt;/a&gt;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>&lt;a href="https://www.carlevensen.no" class="row"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;div class="row-left"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;i class="ti ti-bottle row-icon"&gt;&lt;/i&gt;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;span class="row-name"&gt;Carl Evensen&lt;/span&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;i class="ti ti-external-link row-ext"&gt;&lt;/i&gt;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>&lt;/a&gt;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>&lt;a href="https://engros.strom-larsen.no/login.aspx" class="row"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;div class="row-left"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;i class="ti ti-meat row-icon"&gt;&lt;/i&gt;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;span class="row-name"&gt;Strøm Larsen&lt;/span&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;i class="ti ti-external-link row-ext"&gt;&lt;/i&gt;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>&lt;/a&gt;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>&lt;a href="https://asas.no" class="row"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;div class="row-left"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;i class="ti ti-package row-icon"&gt;&lt;/i&gt;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;span class="row-name"&gt;Arnestad&lt;/span&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;i class="ti ti-external-link row-ext"&gt;&lt;/i&gt;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>&lt;/a&gt;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>&lt;a href="https://link.anticimex.no/login" class="row"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;div class="row-left"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;i class="ti ti-bug row-icon"&gt;&lt;/i&gt;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;span class="row-name"&gt;Anticimex&lt;/span&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;i class="ti ti-external-link row-ext"&gt;&lt;/i&gt;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>&lt;/a&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">  </span>&lt;div class="section-label"&gt;Leverandører — e-post&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>&lt;div class="contact-card"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;div class="contact-name"&gt;&lt;i class="ti ti-meat"&gt;&lt;/i&gt;Annis Pølsemakeri&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;div class="contact-links"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;a href="mailto:Oslobukta@polsemakeri.no"&gt;Oslobukta@polsemakeri.no&lt;/a&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>&lt;div class="contact-card"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;div class="contact-name"&gt;&lt;i class="ti ti-bread"&gt;&lt;/i&gt;Kolonihagen Bakeri&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;div class="contact-links"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;a href="mailto:bakeri@kolonihagen.no"&gt;bakeri@kolonihagen.no&lt;/a&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>&lt;div class="contact-card"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;div class="contact-name"&gt;&lt;i class="ti ti-cheese"&gt;&lt;/i&gt;Fromageriet&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;div class="contact-links"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;a href="mailto:kontakt@fromagerie.no"&gt;kontakt@fromagerie.no&lt;/a&gt;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;a href="tel:22601995"&gt;22 60 19 95&lt;/a&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>&lt;/div&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">  </span>&lt;div class="section-label"&gt;Kontakter&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>&lt;div class="contact-card"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;div class="contact-name"&gt;&lt;i class="ti ti-building"&gt;&lt;/i&gt;Aspelin Reitan — gårdeier&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;div class="contact-pending"&gt;Info kommer&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>&lt;div class="contact-card"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;div class="contact-name"&gt;&lt;i class="ti ti-tool"&gt;&lt;/i&gt;Vaktmester&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;div class="contact-pending"&gt;Info kommer&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>&lt;/div&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">  </span>&lt;div class="section-label"&gt;Dokumenter&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>&lt;div class="row" style="cursor:default; opacity:0.5;"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;div class="row-left"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;i class="ti ti-file-text row-icon"&gt;&lt;/i&gt;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;span class="row-name"&gt;Internkontroll&lt;/span&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;span style="font-size:11px; color:rgba(255,255,255,0.3); font-style:italic;"&gt;Kommer&lt;/span&gt;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>&lt;/div&gt;</p>
-<p class="p2"><br></p>
-<p class="p1">&lt;/div&gt;</p>
-<p class="p1">&lt;link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css"&gt;</p>
-<p class="p1">&lt;/body&gt;</p>
-<p class="p1">&lt;/html&gt;</p>
+<header>
+  <div class="logo">Fager Bistro</div>
+  <h1>Portal</h1>
+</header>
+<div class="main">
+
+  <div class="section-label">Verktøy</div>
+  <div class="tools-grid">
+    <a href="https://tgillesp-alt.github.io/shopping/" class="tool-card active">
+      <i class="ti ti-shopping-cart icon"></i>
+      <div>
+        <div class="label">Shopping</div>
+        <div class="sub">Bestillinger</div>
+      </div>
+    </a>
+    <a href="https://app.planday.com" class="tool-card">
+      <i class="ti ti-calendar icon"></i>
+      <div>
+        <div class="label">Planday</div>
+        <div class="sub">Bemanning</div>
+      </div>
+    </a>
+  </div>
+
+  <div class="section-label">Leverandører — nett</div>
+  <a href="https://langdalen.procurement.no/login.aspx" class="row">
+    <div class="row-left">
+      <i class="ti ti-salad row-icon"></i>
+      <span class="row-name">Langdalen</span>
+    </div>
+    <i class="ti ti-external-link row-ext"></i>
+  </a>
+  <a href="https://www.leroyengros.no" class="row">
+    <div class="row-left">
+      <i class="ti ti-fish row-icon"></i>
+      <span class="row-name">Laks & Vilt</span>
+    </div>
+    <i class="ti ti-external-link row-ext"></i>
+  </a>
+  <a href="https://engrosfrukt.no" class="row">
+    <div class="row-left">
+      <i class="ti ti-apple row-icon"></i>
+      <span class="row-name">Engrosfrukt</span>
+    </div>
+    <i class="ti ti-external-link row-ext"></i>
+  </a>
+  <a href="https://www.carlevensen.no" class="row">
+    <div class="row-left">
+      <i class="ti ti-bottle row-icon"></i>
+      <span class="row-name">Carl Evensen</span>
+    </div>
+    <i class="ti ti-external-link row-ext"></i>
+  </a>
+  <a href="https://engros.strom-larsen.no/login.aspx" class="row">
+    <div class="row-left">
+      <i class="ti ti-meat row-icon"></i>
+      <span class="row-name">Strøm Larsen</span>
+    </div>
+    <i class="ti ti-external-link row-ext"></i>
+  </a>
+  <a href="https://asas.no" class="row">
+    <div class="row-left">
+      <i class="ti ti-package row-icon"></i>
+      <span class="row-name">Arnestad</span>
+    </div>
+    <i class="ti ti-external-link row-ext"></i>
+  </a>
+  <a href="https://link.anticimex.no/login" class="row">
+    <div class="row-left">
+      <i class="ti ti-bug row-icon"></i>
+      <span class="row-name">Anticimex</span>
+    </div>
+    <i class="ti ti-external-link row-ext"></i>
+  </a>
+
+  <div class="section-label">Leverandører — e-post</div>
+  <div class="contact-card">
+    <div class="contact-name"><i class="ti ti-meat"></i>Annis Pølsemakeri</div>
+    <div class="contact-links">
+      <a href="mailto:Oslobukta@polsemakeri.no">Oslobukta@polsemakeri.no</a>
+    </div>
+  </div>
+  <div class="contact-card">
+    <div class="contact-name"><i class="ti ti-bread"></i>Kolonihagen Bakeri</div>
+    <div class="contact-links">
+      <a href="mailto:bakeri@kolonihagen.no">bakeri@kolonihagen.no</a>
+    </div>
+  </div>
+  <div class="contact-card">
+    <div class="contact-name"><i class="ti ti-cheese"></i>Fromageriet</div>
+    <div class="contact-links">
+      <a href="mailto:kontakt@fromagerie.no">kontakt@fromagerie.no</a>
+      <a href="tel:22601995">22 60 19 95</a>
+    </div>
+  </div>
+
+  <div class="section-label">Kontakter</div>
+  <div class="contact-card">
+    <div class="contact-name"><i class="ti ti-building"></i>Aspelin Reitan — gårdeier</div>
+    <div class="contact-pending">Info kommer</div>
+  </div>
+  <div class="contact-card">
+    <div class="contact-name"><i class="ti ti-tool"></i>Vaktmester</div>
+    <div class="contact-pending">Info kommer</div>
+  </div>
+
+  <div class="section-label">Dokumenter</div>
+  <div class="row" style="cursor:default; opacity:0.5;">
+    <div class="row-left">
+      <i class="ti ti-file-text row-icon"></i>
+      <span class="row-name">Internkontroll</span>
+    </div>
+    <span style="font-size:11px; color:rgba(255,255,255,0.3); font-style:italic;">Kommer</span>
+  </div>
+
+</div>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
 </body>
 </html>
