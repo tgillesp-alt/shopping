@@ -4,88 +4,121 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>Fager Bistro – Handleliste</title>
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<title>Fager Bistro</title>
 <style>
+:root {
+  --bg: #f7f6f3;
+  --card: #ffffff;
+  --dark: #111110;
+  --muted: #8a8a85;
+  --border: #e8e6e0;
+  --accent: #111110;
+  --warn: #e05c3a;
+  --success: #2d8a4e;
+  --radius: 14px;
+  --radius-sm: 10px;
+}
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f4f0; color: #1a1a18; min-height: 100vh; font-size: 16px; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', sans-serif; background: var(--bg); color: var(--dark); min-height: 100vh; }
 
-header { background: #1a1a18; color: #f5f4f0; padding: 0.75rem 1rem; padding-top: calc(0.75rem + env(safe-area-inset-top)); display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
-header h1 { font-size: 0.85rem; font-weight: 500; letter-spacing: 0.05em; text-transform: uppercase; }
-header span { font-size: 0.75rem; opacity: 0.5; }
-
-#login-screen { display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 1.5rem; }
-#login-box { background: #fff; border: 0.5px solid #ddd; border-radius: 16px; padding: 1.75rem 1.5rem; width: 100%; max-width: 340px; }
-#login-box h2 { font-size: 1rem; font-weight: 500; margin-bottom: 1.25rem; }
+/* LOGIN */
+#login-screen { display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 2rem 1.5rem; background: var(--dark); }
+#login-box { width: 100%; max-width: 360px; }
+.login-logo { font-size: 1.1rem; font-weight: 600; color: #fff; letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 0.4rem; }
+.login-sub { font-size: 0.8rem; color: rgba(255,255,255,0.4); letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 2.5rem; }
 .bruker-valg { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-bottom: 1rem; }
-.bruker-btn { padding: 0.75rem 0.5rem; border: 0.5px solid #ccc; border-radius: 10px; background: #fff; font-size: 1rem; cursor: pointer; text-align: center; }
-.bruker-btn.valgt { background: #1a1a18; color: #fff; border-color: #1a1a18; }
-#login-passord { width: 100%; padding: 0.75rem; border: 0.5px solid #ccc; border-radius: 10px; font-size: 1rem; margin-bottom: 1rem; }
-#login-btn { width: 100%; padding: 0.8rem; background: #1a1a18; color: #fff; border: none; border-radius: 10px; font-size: 1rem; cursor: pointer; }
-#login-error { color: #c0392b; font-size: 0.85rem; margin-top: 0.5rem; display: none; }
+.bruker-btn { padding: 0.8rem; border: 1px solid rgba(255,255,255,0.12); border-radius: var(--radius-sm); background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.7); font-size: 0.95rem; cursor: pointer; transition: all 0.15s; }
+.bruker-btn.valgt { background: #fff; color: var(--dark); border-color: #fff; font-weight: 500; }
+#login-passord { width: 100%; padding: 0.85rem 1rem; border: 1px solid rgba(255,255,255,0.12); border-radius: var(--radius-sm); background: rgba(255,255,255,0.05); color: #fff; font-size: 1rem; margin-bottom: 0.75rem; outline: none; }
+#login-passord::placeholder { color: rgba(255,255,255,0.3); }
+#login-btn { width: 100%; padding: 0.9rem; background: #fff; color: var(--dark); border: none; border-radius: var(--radius-sm); font-size: 1rem; font-weight: 600; cursor: pointer; letter-spacing: 0.02em; }
+#login-error { color: #ff6b6b; font-size: 0.82rem; margin-top: 0.5rem; display: none; text-align: center; }
 
+/* APP */
 #app { display: none; }
 
-.tabs { display: flex; background: #fff; border-bottom: 0.5px solid #e0ddd6; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+header { background: var(--dark); color: #fff; padding: 0.9rem 1.25rem; padding-top: calc(0.9rem + env(safe-area-inset-top)); display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
+.header-title { font-size: 0.78rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; }
+.header-user { font-size: 0.75rem; color: rgba(255,255,255,0.4); }
+
+/* TABS */
+.tabs { display: flex; background: var(--card); border-bottom: 1px solid var(--border); padding: 0 1rem; gap: 0; overflow-x: auto; }
 .tabs::-webkit-scrollbar { display: none; }
-.tab { padding: 0.75rem 1rem; font-size: 0.85rem; cursor: pointer; border-bottom: 2px solid transparent; color: #888; white-space: nowrap; flex-shrink: 0; }
-.tab.active { color: #1a1a18; border-bottom-color: #1a1a18; font-weight: 500; }
-.badge { background: #1a1a18; color: #fff; border-radius: 10px; font-size: 0.7rem; padding: 0.1rem 0.4rem; margin-left: 0.3rem; }
+.tab { padding: 0.85rem 1rem; font-size: 0.82rem; font-weight: 500; cursor: pointer; border-bottom: 2px solid transparent; color: var(--muted); white-space: nowrap; flex-shrink: 0; letter-spacing: 0.02em; transition: color 0.15s; display: flex; align-items: center; gap: 0.4rem; }
+.tab.active { color: var(--dark); border-bottom-color: var(--dark); }
+.badge { background: var(--dark); color: #fff; border-radius: 20px; font-size: 0.68rem; font-weight: 600; padding: 0.15rem 0.45rem; min-width: 20px; text-align: center; }
+.tab.active .badge { background: var(--dark); }
+.tab:not(.active) .badge { background: #d5d3cc; color: #666; }
 
-.toolbar { padding: 0.6rem 1rem; background: #fff; border-bottom: 0.5px solid #e0ddd6; display: flex; gap: 0.5rem; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+/* TOOLBAR */
+.toolbar { padding: 0.65rem 1rem; background: var(--card); border-bottom: 1px solid var(--border); display: flex; gap: 0.5rem; overflow-x: auto; }
 .toolbar::-webkit-scrollbar { display: none; }
-.toolbar select { padding: 0.4rem 0.5rem; border: 0.5px solid #ccc; border-radius: 8px; font-size: 0.85rem; background: #fff; flex-shrink: 0; max-width: 150px; }
-.toolbar input[type=text] { padding: 0.4rem 0.6rem; border: 0.5px solid #ccc; border-radius: 8px; font-size: 0.85rem; background: #fff; width: 100px; flex-shrink: 0; }
+.toolbar select, .toolbar input[type=text] { padding: 0.45rem 0.65rem; border: 1px solid var(--border); border-radius: 8px; font-size: 0.82rem; background: var(--bg); color: var(--dark); flex-shrink: 0; outline: none; }
+.toolbar select { max-width: 145px; }
+.toolbar input { width: 100px; }
 
-.main { padding: 1rem; padding-bottom: calc(1rem + env(safe-area-inset-bottom)); }
+/* MAIN */
+.main { padding: 1rem 1rem; padding-bottom: calc(1rem + env(safe-area-inset-bottom)); max-width: 680px; margin: 0 auto; }
 
-.add-form { background: #fff; border: 0.5px solid #e0ddd6; border-radius: 12px; padding: 1rem; margin-bottom: 1rem; display: flex; flex-direction: column; gap: 0.6rem; }
-.add-form input, .add-form select { padding: 0.65rem 0.75rem; border: 0.5px solid #ccc; border-radius: 10px; font-size: 1rem; width: 100%; background: #fff; }
-.add-form .row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; }
-.add-form button { padding: 0.75rem; background: #1a1a18; color: #fff; border: none; border-radius: 10px; font-size: 1rem; cursor: pointer; }
+/* ADD FORM */
+.add-form { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.1rem; margin-bottom: 1.25rem; display: flex; flex-direction: column; gap: 0.55rem; }
+.add-form input, .add-form select { padding: 0.7rem 0.85rem; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 0.95rem; background: var(--bg); color: var(--dark); width: 100%; outline: none; transition: border-color 0.15s; }
+.add-form input:focus, .add-form select:focus { border-color: #999; }
+.add-form .row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.55rem; }
+.add-btn { padding: 0.8rem; background: var(--dark); color: #fff; border: none; border-radius: var(--radius-sm); font-size: 0.95rem; font-weight: 600; cursor: pointer; letter-spacing: 0.02em; transition: opacity 0.15s; }
+.add-btn:active { opacity: 0.8; }
 
-.section-header { font-size: 0.7rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.08em; color: #aaa; margin: 1rem 0 0.4rem 0.1rem; }
+/* SECTION */
+.section-label { font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin: 1.1rem 0 0.5rem 0.1rem; }
 
-.vare { background: #fff; border: 0.5px solid #e0ddd6; border-radius: 12px; padding: 0.85rem 0.9rem; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.65rem; }
-.vare.bestilt { opacity: 0.55; }
-.vare.mottatt { opacity: 0.3; }
+/* VARE */
+.vare { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 0.9rem 1rem; margin-bottom: 0.45rem; display: flex; align-items: center; gap: 0.75rem; transition: opacity 0.2s; }
+.vare.bestilt { opacity: 0.5; }
+.vare.mottatt { opacity: 0.28; }
 
-.vare-checks { display: flex; flex-direction: column; gap: 0.5rem; flex-shrink: 0; }
-.check-label { display: flex; align-items: center; gap: 0.35rem; font-size: 0.75rem; color: #aaa; cursor: pointer; }
-.check-label input { width: 18px; height: 18px; accent-color: #1a1a18; cursor: pointer; flex-shrink: 0; }
+.vare-checks { display: flex; flex-direction: column; gap: 0.55rem; flex-shrink: 0; }
+.check-wrap { display: flex; align-items: center; gap: 0.35rem; cursor: pointer; }
+.check-wrap input[type=checkbox] { width: 18px; height: 18px; accent-color: var(--dark); cursor: pointer; flex-shrink: 0; border-radius: 4px; }
+.check-wrap span { font-size: 0.72rem; color: var(--muted); font-weight: 500; }
 
-.vare-info { flex: 1; min-width: 0; }
-.vare-navn { font-size: 0.95rem; font-weight: 500; word-break: break-word; }
-.vare-meta { display: flex; gap: 0.35rem; flex-wrap: wrap; margin-top: 0.3rem; }
-.vare-meta span { font-size: 0.72rem; background: #f0efe9; border-radius: 4px; padding: 0.15rem 0.35rem; color: #666; }
+.vare-body { flex: 1; min-width: 0; }
+.vare-navn { font-size: 0.95rem; font-weight: 500; word-break: break-word; cursor: pointer; display: flex; align-items: center; gap: 0.3rem; }
+.warn-icon { color: var(--warn); font-size: 0.85rem; flex-shrink: 0; }
+.vare-tags { display: flex; gap: 0.3rem; flex-wrap: wrap; margin-top: 0.35rem; }
+.tag { font-size: 0.68rem; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 0.15rem 0.4rem; color: var(--muted); font-weight: 500; }
+.tag.lev { background: #f0f0ec; border-color: #ddddd8; color: #555; }
 
-.vare-del { background: none; border: none; color: #ddd; cursor: pointer; font-size: 1.2rem; padding: 0.3rem; flex-shrink: 0; }
-.vare-del:active { color: #c0392b; }
+.vare-del { background: none; border: none; color: #ccc; cursor: pointer; font-size: 1rem; padding: 0.35rem; flex-shrink: 0; line-height: 1; border-radius: 6px; transition: all 0.15s; }
+.vare-del:active { color: var(--warn); background: #fef2ee; }
 
 .empty { text-align: center; color: #bbb; font-size: 0.9rem; padding: 3rem 0; }
 
-.modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.45); z-index: 200; display: flex; align-items: flex-end; justify-content: center; padding-bottom: env(safe-area-inset-bottom); }
-.modal { background: #fff; border-radius: 16px 16px 0 0; padding: 1.5rem 1.25rem; width: 100%; max-width: 500px; display: flex; flex-direction: column; gap: 0.65rem; }
-.modal h3 { font-size: 0.95rem; font-weight: 500; margin-bottom: 0.25rem; }
-.modal input, .modal select { padding: 0.65rem 0.75rem; border: 0.5px solid #ccc; border-radius: 10px; font-size: 1rem; width: 100%; background: #fff; }
+/* MODAL */
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 200; display: flex; align-items: flex-end; justify-content: center; backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); }
+.modal { background: var(--card); border-radius: 20px 20px 0 0; padding: 1.5rem 1.25rem; padding-bottom: calc(1.5rem + env(safe-area-inset-bottom)); width: 100%; max-width: 500px; display: flex; flex-direction: column; gap: 0.6rem; }
+.modal-handle { width: 36px; height: 4px; background: #ddd; border-radius: 2px; margin: 0 auto 1rem; }
+.modal h3 { font-size: 1rem; font-weight: 600; margin-bottom: 0.25rem; }
+.modal input, .modal select { padding: 0.7rem 0.85rem; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 0.95rem; background: var(--bg); color: var(--dark); width: 100%; outline: none; }
 .modal .row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; }
-.modal-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; margin-top: 0.25rem; }
-.modal-btns button { padding: 0.75rem; border-radius: 10px; font-size: 1rem; cursor: pointer; border: none; }
-.btn-lagre { background: #1a1a18; color: #fff; }
-.btn-avbryt { background: #f0efe9; color: #1a1a18; }
+.modal-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; margin-top: 0.35rem; }
+.modal-btns button { padding: 0.8rem; border-radius: var(--radius-sm); font-size: 0.95rem; font-weight: 600; cursor: pointer; border: none; }
+.btn-lagre { background: var(--dark); color: #fff; }
+.btn-avbryt { background: var(--bg); color: var(--dark); border: 1px solid var(--border) !important; }
 </style>
 </head>
 <body>
 
 <div id="login-screen">
   <div id="login-box">
-    <h2>Fager Bistro — Handleliste</h2>
+    <div class="login-logo">Fager Bistro</div>
+    <div class="login-sub">Handleliste</div>
     <div class="bruker-valg">
-      <button class="bruker-btn" onclick="velgBruker('Thomas', this)">Thomas</button>
-      <button class="bruker-btn" onclick="velgBruker('Marcus', this)">Marcus</button>
-      <button class="bruker-btn" onclick="velgBruker('Christine', this)">Christine</button>
-      <button class="bruker-btn" onclick="velgBruker('Norah', this)">Norah</button>
-      <button class="bruker-btn" onclick="velgBruker('Joakim', this)">Joakim</button>
+      <button class="bruker-btn" onclick="velgBruker('Thomas',this)">Thomas</button>
+      <button class="bruker-btn" onclick="velgBruker('Marcus',this)">Marcus</button>
+      <button class="bruker-btn" onclick="velgBruker('Christine',this)">Christine</button>
+      <button class="bruker-btn" onclick="velgBruker('Norah',this)">Norah</button>
+      <button class="bruker-btn" onclick="velgBruker('Joakim',this)">Joakim</button>
     </div>
     <input type="password" id="login-passord" placeholder="Passord" autocomplete="current-password">
     <button id="login-btn" onclick="loggInn()">Logg inn</button>
@@ -95,8 +128,8 @@ header span { font-size: 0.75rem; opacity: 0.5; }
 
 <div id="app">
   <header>
-    <h1>Handleliste</h1>
-    <span id="header-bruker"></span>
+    <div class="header-title">Handleliste</div>
+    <div class="header-user" id="header-bruker"></div>
   </header>
 
   <div class="tabs">
@@ -142,9 +175,38 @@ header span { font-size: 0.75rem; opacity: 0.5; }
         <input type="text" id="ny-mengde" placeholder="Mengde" inputmode="decimal">
         <input type="text" id="ny-enhet" placeholder="Enhet (kg, stk...)">
       </div>
-      <button onclick="leggTil()">+ Legg til</button>
+      <button class="add-btn" onclick="leggTil()">+ Legg til</button>
     </div>
     <div id="liste"></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="edit-modal" style="display:none" onclick="lukkModalOverlay(event)">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <h3>Rediger vare</h3>
+    <input type="text" id="edit-navn" placeholder="Varenavn *">
+    <select id="edit-kat">
+      <option value="">Kategori *</option>
+      <option>Kjøtt</option><option>Fugl</option><option>Fisk & Fond</option>
+      <option>Frukt & Grønt</option><option>Ost</option>
+      <option>Hygiene & Forbruksmateriell</option><option>Annet</option>
+      <option>Vin</option><option>Sprit</option><option>Øl</option><option>Mineralvann</option>
+    </select>
+    <select id="edit-lev">
+      <option value="">Leverandør (valgfritt)</option>
+      <option>Langdalen</option><option>Frukt Engros</option><option>Laks & Vilt</option>
+      <option>Annis Pølsemakeri</option><option>Strøm Larsen</option><option>Fromageriet</option>
+      <option>Arnestad</option><option>Drikke & Vin</option><option>Annet</option>
+    </select>
+    <div class="row">
+      <input type="text" id="edit-mengde" placeholder="Mengde" inputmode="decimal">
+      <input type="text" id="edit-enhet" placeholder="Enhet (kg, stk...)">
+    </div>
+    <div class="modal-btns">
+      <button class="btn-avbryt" onclick="lukkModal()">Avbryt</button>
+      <button class="btn-lagre" onclick="lagreRedigert()">Lagre</button>
+    </div>
   </div>
 </div>
 
@@ -155,11 +217,11 @@ const WORKER_URL = 'https://fager-push.thomas-0e8.workers.dev';
 const VAPID_PUBLIC = 'BBugd5BD_AJbVUv9lfD-2tfp3apULExDnMQ8xVQZ9oUMmG8nUXwG-ADhCojwp4DDMI3XybLCIBe_951RA5_PHUs';
 const PASSORD = 'fager2026';
 const KAT_ORDER = ['Kjøtt','Fugl','Fisk & Fond','Frukt & Grønt','Ost','Hygiene & Forbruksmateriell','Annet','Vin','Sprit','Øl','Mineralvann'];
-const VARSLE = ['Thomas', 'Marcus'];
+const VARSLE = ['Thomas','Marcus'];
 
-let bruker = '';
-let varer = [];
-let aktivTab = 'aktive';
+let bruker = '', varer = [], aktivTab = 'aktive', redigerId = null;
+
+const fmt = d => d ? new Date(d).toLocaleString('no-NO',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}) : null;
 
 function velgBruker(navn, el) {
   bruker = navn;
@@ -219,21 +281,31 @@ function render() {
   const container = document.getElementById('liste');
   if (!vis.length) { container.innerHTML = '<div class="empty">Ingen varer</div>'; return; }
   container.innerHTML = Object.entries(grouped)
-    .sort((a,b) => { const ai = KAT_ORDER.indexOf(a[0]); const bi = KAT_ORDER.indexOf(b[0]); return (ai===-1?99:ai)-(bi===-1?99:bi); })
+    .sort((a,b) => { const ai=KAT_ORDER.indexOf(a[0]),bi=KAT_ORDER.indexOf(b[0]); return (ai===-1?99:ai)-(bi===-1?99:bi); })
     .map(([group, items]) => `
-      <div class="section-header">${group}</div>
+      <div class="section-label">${group}</div>
       ${items.map(v => {
         const cls = v.mottatt ? 'mottatt' : v.bestilt ? 'bestilt' : '';
-        const fmt = d => d ? new Date(d).toLocaleString('no-NO',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}) : null;
-        const meta = [v.leverandor, v.mengde ? v.mengde+(v.enhet?' '+v.enhet:'') : '', v.lagt_inn_av ? 'av '+v.lagt_inn_av : '', v.created_at ? 'lagt inn '+fmt(v.created_at) : '', v.bestilt_dato ? 'bestilt '+fmt(v.bestilt_dato) : '', v.mottatt_dato ? 'mottatt '+fmt(v.mottatt_dato) : ''].filter(Boolean);
+        const ageH = (Date.now() - new Date(v.created_at)) / 36e5;
+        const warn = !v.bestilt && !v.mottatt && ageH > 12;
+        const tags = [
+          v.leverandor ? `<span class="tag lev">${v.leverandor}</span>` : '',
+          v.mengde ? `<span class="tag">${v.mengde}${v.enhet ? ' '+v.enhet : ''}</span>` : '',
+          v.lagt_inn_av ? `<span class="tag">av ${v.lagt_inn_av}</span>` : '',
+          v.created_at ? `<span class="tag">${fmt(v.created_at)}</span>` : '',
+          v.bestilt_dato ? `<span class="tag">bestilt ${fmt(v.bestilt_dato)}</span>` : '',
+          v.mottatt_dato ? `<span class="tag">mottatt ${fmt(v.mottatt_dato)}</span>` : '',
+        ].filter(Boolean).join('');
         return `<div class="vare ${cls}">
           <div class="vare-checks">
-            <label class="check-label"><input type="checkbox" ${v.bestilt||v.mottatt?'checked':''} onchange="toggleBestilt('${v.id}',this.checked)"> Bestilt</label>
-            <label class="check-label"><input type="checkbox" ${v.mottatt?'checked':''} onchange="toggleMottatt('${v.id}',this.checked)"> Mottatt</label>
+            <label class="check-wrap"><input type="checkbox" ${v.bestilt||v.mottatt?'checked':''} onchange="toggleBestilt('${v.id}',this.checked)"><span>Bestilt</span></label>
+            <label class="check-wrap"><input type="checkbox" ${v.mottatt?'checked':''} onchange="toggleMottatt('${v.id}',this.checked)"><span>Mottatt</span></label>
           </div>
-          <div class="vare-info">
-            <div class="vare-navn" onclick="redigerVare('${v.id}')" style="cursor:pointer">${(() => { const ageH = (Date.now() - new Date(v.created_at)) / 36e5; return !v.bestilt && !v.mottatt && ageH > 12 ? '<span style="color:#c0392b;margin-right:4px">⚠️</span>' : ''; })()}${v.navn}</div>
-            <div class="vare-meta">${meta.map(m=>`<span>${m}</span>`).join('')}</div>
+          <div class="vare-body">
+            <div class="vare-navn" onclick="redigerVare('${v.id}')">
+              ${warn ? '<span class="warn-icon">⚠️</span>' : ''}${v.navn}
+            </div>
+            <div class="vare-tags">${tags}</div>
           </div>
           <button class="vare-del" onclick="slett('${v.id}')">✕</button>
         </div>`;
@@ -256,11 +328,7 @@ async function leggTil() {
   document.getElementById('ny-mengde').value = '';
   document.getElementById('ny-enhet').value = '';
   hent();
-  fetch(`${WORKER_URL}/notify`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ fra: bruker, vare: navn })
-  }).catch(() => {});
+  fetch(`${WORKER_URL}/notify`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({fra:bruker,vare:navn}) }).catch(()=>{});
 }
 
 async function toggleBestilt(id, checked) {
@@ -280,33 +348,6 @@ async function slett(id) {
   hent();
 }
 
-function urlBase64ToUint8Array(b) {
-  const p = '='.repeat((4-b.length%4)%4);
-  const base64 = (b+p).replace(/-/g,'+').replace(/_/g,'/');
-  const raw = atob(base64);
-  return Uint8Array.from([...raw].map(c=>c.charCodeAt(0)));
-}
-
-async function registrerPush() {
-  if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
-  try {
-    const reg = await navigator.serviceWorker.register('/shopping/sw.js');
-    const perm = await Notification.requestPermission();
-    if (perm !== 'granted') return;
-    const sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC) });
-    const s = sub.toJSON();
-    await fetch(`${WORKER_URL}/subscribe`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ endpoint: s.endpoint, keys: s.keys, bruker })
-    });
-  } catch(e) { console.log('Push ikke tilgjengelig:', e); }
-}
-
-document.getElementById('login-passord').addEventListener('keydown', e => { if (e.key === 'Enter') loggInn(); });
-
-let redigerId = null;
-
 function redigerVare(id) {
   const v = varer.find(v => v.id === id);
   if (!v) return;
@@ -319,54 +360,42 @@ function redigerVare(id) {
   document.getElementById('edit-modal').style.display = 'flex';
 }
 
-function lukkModal(e) {
-  if (e && e.target !== document.getElementById('edit-modal')) return;
-  document.getElementById('edit-modal').style.display = 'none';
-  redigerId = null;
-}
+function lukkModal() { document.getElementById('edit-modal').style.display = 'none'; redigerId = null; }
+function lukkModalOverlay(e) { if (e.target === document.getElementById('edit-modal')) lukkModal(); }
 
 async function lagreRedigert() {
   const navn = document.getElementById('edit-navn').value.trim();
   const kat = document.getElementById('edit-kat').value;
   if (!navn || !kat) { alert('Fyll inn varenavn og kategori'); return; }
   await api('PATCH', `varer?id=eq.${redigerId}`, {
-    navn,
-    kategori: kat,
+    navn, kategori: kat,
     leverandor: document.getElementById('edit-lev').value || null,
     mengde: document.getElementById('edit-mengde').value || null,
     enhet: document.getElementById('edit-enhet').value || null,
   });
-  document.getElementById('edit-modal').style.display = 'none';
-  redigerId = null;
+  lukkModal();
   hent();
 }
+
+function urlBase64ToUint8Array(b) {
+  const p = '='.repeat((4-b.length%4)%4);
+  const base64 = (b+p).replace(/-/g,'+').replace(/_/g,'/');
+  return Uint8Array.from([...atob(base64)].map(c=>c.charCodeAt(0)));
+}
+
+async function registrerPush() {
+  if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
+  try {
+    const reg = await navigator.serviceWorker.register('/shopping/sw.js');
+    const perm = await Notification.requestPermission();
+    if (perm !== 'granted') return;
+    const sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC) });
+    const s = sub.toJSON();
+    await fetch(`${WORKER_URL}/subscribe`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({endpoint:s.endpoint,keys:s.keys,bruker}) });
+  } catch(e) { console.log('Push ikke tilgjengelig:', e); }
+}
+
+document.getElementById('login-passord').addEventListener('keydown', e => { if (e.key === 'Enter') loggInn(); });
 </script>
-<div class="modal-overlay" id="edit-modal" style="display:none" onclick="lukkModal(event)">
-  <div class="modal">
-    <h3>Rediger vare</h3>
-    <input type="text" id="edit-navn" placeholder="Varenavn *">
-    <select id="edit-kat">
-      <option value="">Kategori *</option>
-      <option>Kjøtt</option><option>Fugl</option><option>Fisk & Fond</option>
-      <option>Frukt & Grønt</option><option>Ost</option>
-      <option>Hygiene & Forbruksmateriell</option><option>Annet</option>
-      <option>Vin</option><option>Sprit</option><option>Øl</option><option>Mineralvann</option>
-    </select>
-    <select id="edit-lev">
-      <option value="">Leverandør (valgfritt)</option>
-      <option>Langdalen</option><option>Frukt Engros</option><option>Laks & Vilt</option>
-      <option>Annis Pølsemakeri</option><option>Strøm Larsen</option><option>Fromageriet</option>
-      <option>Arnestad</option><option>Drikke & Vin</option><option>Annet</option>
-    </select>
-    <div class="row">
-      <input type="text" id="edit-mengde" placeholder="Mengde" inputmode="decimal">
-      <input type="text" id="edit-enhet" placeholder="Enhet (kg, stk...)">
-    </div>
-    <div class="modal-btns">
-      <button class="btn-avbryt" onclick="lukkModal()">Avbryt</button>
-      <button class="btn-lagre" onclick="lagreRedigert()">Lagre</button>
-    </div>
-  </div>
-</div>
 </body>
 </html>
