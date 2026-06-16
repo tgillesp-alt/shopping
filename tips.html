@@ -177,27 +177,36 @@ function calculate() {
   const kjokkenRes = poolResults(kjokken);
   const salRes = poolResults(sal);
 
+  const thomasRes = kjokkenRes.find(r => r.navn === 'Thomas');
+  const christineRes = salRes.find(r => r.navn === 'Christine');
+  const ekstraTilChristine = gardeier + fuckups + (thomasRes ? thomasRes.belop : 0);
+  if (christineRes) {
+    christineRes.belop += ekstraTilChristine;
+    christineRes.ekstra = ekstraTilChristine;
+  }
+  const kjokkenResUtenThomas = kjokkenRes.filter(r => r.navn !== 'Thomas');
+
   function rowsFor(res) {
     return res.map(r => `
       <tr>
         <td class="td-navn">${r.navn}</td>
         <td class="td-meta">${r.timer}t${r.timer > CAP ? ' (' + CAP + 't tak)' : ''}</td>
         <td class="td-meta">${round(r.andel * 100)}%</td>
-        <td class="td-belop">${fmt(r.belop)}</td>
+        <td class="td-belop">${fmt(r.belop)}${r.ekstra ? '<br><span style="font-size:0.65rem;color:rgba(255,255,255,0.4);font-weight:400;">+ ' + fmt(r.ekstra) + ' (gårdeier/fuck-ups/Thomas)</span>' : ''}</td>
       </tr>
     `).join('');
   }
 
-  const kjokkenTotal = kjokkenRes.reduce((a, r) => a + r.belop, 0);
+  const kjokkenTotal = kjokkenResUtenThomas.reduce((a, r) => a + r.belop, 0);
   const salTotal = salRes.reduce((a, r) => a + r.belop, 0);
 
   document.getElementById('result-table').innerHTML = `
     <tr class="section-label"><td colspan="4">Kjøkken</td></tr>
-    ${rowsFor(kjokkenRes)}
-    <tr class="sum-row"><td colspan="3">Sum kjøkken</td><td class="td-belop">${fmt(kjokkenTotal)}</td></tr>
+    ${rowsFor(kjokkenResUtenThomas)}
+    <tr class="sum-row"><td colspan="3">Sum kjøkken (uten Thomas, se sal)</td><td class="td-belop">${fmt(kjokkenTotal)}</td></tr>
     <tr class="section-label"><td colspan="4">Sal</td></tr>
     ${rowsFor(salRes)}
-    <tr class="sum-row"><td colspan="3">Sum sal</td><td class="td-belop">${fmt(salTotal)}</td></tr>
+    <tr class="sum-row"><td colspan="3">Sum sal (inkl. gårdeier/fuck-ups/Thomas til Christine)</td><td class="td-belop">${fmt(salTotal)}</td></tr>
   `;
 }
 
