@@ -20,6 +20,8 @@ header { background: #111110; padding: 1rem 1.25rem; padding-top: calc(1rem + en
 
 .main { padding: 1rem 1.25rem; padding-bottom: calc(2rem + env(safe-area-inset-bottom)); max-width: 600px; }
 
+.kategori-block { margin-bottom: 2rem; }
+.kategori-header { font-size: 1rem; font-weight: 700; color: #fff; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.75rem; padding-bottom: 0.5rem; border-bottom: 1px solid rgba(255,255,255,0.15); }
 .seksjon { margin-bottom: 1.5rem; }
 .seksjon-header { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: rgba(255,255,255,0.3); margin-bottom: 0.5rem; }
 
@@ -68,19 +70,23 @@ header { background: #111110; padding: 1rem 1.25rem; padding-top: calc(1rem + en
   <div class="modal">
     <div class="modal-handle"></div>
     <h3 id="modal-tittel">Legg til punkt</h3>
-    <select id="modal-seksjon">
-      <option value="">Seksjon (valgfritt)</option>
+    <select id="modal-kategori">
+      <option value="">Kategori</option>
       <option>FORRETTER</option>
+      <option>HOVEDRETTER</option>
+      <option>DESSERTER</option>
+      <option>ANNET</option>
+    </select>
+    <select id="modal-seksjon">
+      <option value="">Rett (valgfritt)</option>
       <option>ASPERGES BLANCHE</option>
       <option>FOIE GRAS</option>
       <option>POULPE & MERGUEZ</option>
       <option>ST. JACQUES</option>
-      <option>HOVEDRETTER</option>
       <option>MOULES MARINIÈRE</option>
       <option>MÉDAILLON DE LOTTE</option>
       <option>CUISSE DE CANARD CONFIT</option>
       <option>ENTRECÔTE</option>
-      <option>DESSERTER</option>
       <option>TARTE TATIN</option>
       <option>CRÊPE SUZETTE</option>
       <option>CREMEUSE AU CHOCOLAT</option>
@@ -111,9 +117,11 @@ async function api(method, path, body) {
 }
 
 async function hent() {
-  items = await api('GET', `prepp?side=eq.${SIDE}&order=seksjon.asc,sort_order.asc,created_at.asc&select=*`);
+  items = await api('GET', `prepp?side=eq.${SIDE}&order=sort_order.asc,created_at.asc&select=*`);
   render();
 }
+
+const KATEGORI_ORDER = ['FORRETTER', 'HOVEDRETTER', 'DESSERTER'];
 
 function render() {
   const totalt = items.length;
@@ -122,24 +130,38 @@ function render() {
   document.getElementById('progress-label').textContent = `${ferdig} / ${totalt} gjort`;
   document.getElementById('progress-fill').style.width = pct + '%';
 
-  const grouped = {};
+  // Group by kategori, then by seksjon within kategori
+  const byKategori = {};
   items.forEach(i => {
-    const k = i.seksjon || 'ANNET';
-    if (!grouped[k]) grouped[k] = [];
-    grouped[k].push(i);
+    const kat = i.kategori || 'ANNET';
+    if (!byKategori[kat]) byKategori[kat] = {};
+    const sek = i.seksjon || 'ANNET';
+    if (!byKategori[kat][sek]) byKategori[kat][sek] = [];
+    byKategori[kat][sek].push(i);
   });
 
-  document.getElementById('liste').innerHTML = Object.entries(grouped).map(([seksjon, its]) => `
-    <div class="seksjon">
-      <div class="seksjon-header">${seksjon}</div>
-      ${its.map(i => `
-        <div class="prepp-item ${i.ferdig ? 'ferdig' : ''}" id="item-${i.id}">
-          <input type="checkbox" ${i.ferdig ? 'checked' : ''} onchange="toggleFerdig('${i.id}', this.checked)">
-          <span class="prepp-tekst">${i.tekst}</span>
-          <div class="item-actions">
-            <button class="btn-edit" onclick="apneRediger('${i.id}')">✎</button>
-            <button class="btn-del" onclick="slett('${i.id}')">✕</button>
-          </div>
+  const allKategorier = Object.keys(byKategori);
+  const orderedKategorier = [
+    ...KATEGORI_ORDER.filter(k => allKategorier.includes(k)),
+    ...allKategorier.filter(k => !KATEGORI_ORDER.includes(k))
+  ];
+
+  document.getElementById('liste').innerHTML = orderedKategorier.map(kat => `
+    <div class="kategori-block">
+      <div class="kategori-header">${kat}</div>
+      ${Object.entries(byKategori[kat]).map(([seksjon, its]) => `
+        <div class="seksjon">
+          <div class="seksjon-header">${seksjon}</div>
+          ${its.map(i => `
+            <div class="prepp-item ${i.ferdig ? 'ferdig' : ''}" id="item-${i.id}">
+              <input type="checkbox" ${i.ferdig ? 'checked' : ''} onchange="toggleFerdig('${i.id}', this.checked)">
+              <span class="prepp-tekst">${i.tekst}</span>
+              <div class="item-actions">
+                <button class="btn-edit" onclick="apneRediger('${i.id}')">✎</button>
+                <button class="btn-del" onclick="slett('${i.id}')">✕</button>
+              </div>
+            </div>
+          `).join('')}
         </div>
       `).join('')}
     </div>
@@ -167,6 +189,7 @@ function apneNy() {
   editId = null;
   document.getElementById('modal-tittel').textContent = 'Legg til punkt';
   document.getElementById('modal-seksjon').value = '';
+  document.getElementById('modal-kategori').value = '';
   document.getElementById('modal-tekst').value = '';
   document.getElementById('modal').style.display = 'flex';
   setTimeout(() => document.getElementById('modal-tekst').focus(), 100);
@@ -177,6 +200,7 @@ function apneRediger(id) {
   if (!item) return;
   editId = id;
   document.getElementById('modal-tittel').textContent = 'Rediger punkt';
+  document.getElementById('modal-kategori').value = item.kategori || '';
   document.getElementById('modal-seksjon').value = item.seksjon || '';
   document.getElementById('modal-tekst').value = item.tekst;
   document.getElementById('modal').style.display = 'flex';
@@ -185,12 +209,13 @@ function apneRediger(id) {
 
 async function lagreItem() {
   const tekst = document.getElementById('modal-tekst').value.trim();
+  const kategori = document.getElementById('modal-kategori').value || null;
   const seksjon = document.getElementById('modal-seksjon').value || null;
   if (!tekst) { alert('Skriv inn beskrivelse'); return; }
   if (editId) {
-    await api('PATCH', `prepp?id=eq.${editId}`, { tekst, seksjon });
+    await api('PATCH', `prepp?id=eq.${editId}`, { tekst, kategori, seksjon });
   } else {
-    await api('POST', 'prepp', { side: SIDE, seksjon, tekst, ferdig: false });
+    await api('POST', 'prepp', { side: SIDE, kategori, seksjon, tekst, ferdig: false });
   }
   lukkModal();
   hent();
