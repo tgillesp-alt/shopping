@@ -9,59 +9,65 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-body { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif; background: #111110; color: #fff; min-height: 100vh; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif; background: #f7f6f3; color: #1a1a1a; min-height: 100vh; }
 
 .page { display: none; min-height: 100vh; }
 .page.active { display: block; }
 
 /* HOME */
 #home { padding: 0; }
-.home-header { padding: 2rem 1.5rem 1.5rem; padding-top: calc(2rem + env(safe-area-inset-top)); }
-.home-logo { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: rgba(255,255,255,0.35); margin-bottom: 0.3rem; }
-.home-title { font-size: 2rem; font-weight: 600; letter-spacing: -0.03em; }
+.home-header { background: #1a1a1a; padding: 2rem 1.5rem 1.75rem; padding-top: calc(2rem + env(safe-area-inset-top)); display: flex; align-items: center; gap: 14px; }
+.home-header img { width: 48px; height: 48px; border-radius: 12px; display: block; flex-shrink: 0; }
+.home-title { font-size: 1.25rem; font-weight: 600; color: #fff; letter-spacing: 0.01em; }
+.home-sub { font-size: 0.7rem; font-weight: 600; letter-spacing: 0.12em; color: rgba(255,255,255,0.45); text-transform: uppercase; margin-top: 2px; }
 
-.menu { padding: 0.5rem 1.25rem; padding-bottom: calc(2rem + env(safe-area-inset-bottom)); display: flex; flex-direction: column; gap: 10px; }
+.menu { padding: 1.25rem; padding-bottom: calc(2rem + env(safe-area-inset-bottom)); display: flex; flex-direction: column; gap: 10px; max-width: 480px; margin: 0 auto; }
 
-.menu-btn { display: flex; align-items: center; justify-content: space-between; padding: 1.3rem 1.25rem; border-radius: 16px; text-decoration: none; cursor: pointer; border: none; width: 100%; text-align: left; transition: opacity 0.15s; }
-.menu-btn:active { opacity: 0.75; }
-.menu-btn.dark { background: rgba(255,255,255,0.08); color: #fff; }
-.menu-btn.light { background: #fff; color: #111110; }
+.menu-btn { display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.1rem; border-radius: 12px; text-decoration: none; cursor: pointer; border: 0.5px solid #e5e2da; background: #fff; width: 100%; text-align: left; transition: background 0.15s; border-left-width: 3px; }
+.menu-btn:active { background: #f2f0ea; }
 
-.menu-btn-left { display: flex; align-items: center; gap: 14px; }
-.menu-icon { width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-.menu-icon i { font-size: 26px; color: #fff; }
-.menu-btn.light .menu-icon i { color: #111110; }
+.menu-btn-left { display: flex; align-items: center; gap: 13px; }
+.menu-icon { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; border-radius: 9px; }
+.menu-icon i { font-size: 19px; }
 
-.menu-label { font-size: 1rem; font-weight: 600; letter-spacing: 0.02em; }
-.menu-sub { font-size: 0.7rem; opacity: 0.4; margin-top: 1px; }
-.menu-arrow { font-size: 18px; opacity: 0.3; }
+.menu-label { font-size: 0.95rem; font-weight: 600; color: #1a1a1a; letter-spacing: 0.01em; }
+.menu-sub { font-size: 0.74rem; color: #8a8782; margin-top: 1px; }
+.menu-arrow { font-size: 16px; color: #c4c0b6; }
+
+.c-green { border-left-color: #1D9E75; } .c-green .menu-icon { background: #E1F5EE; } .c-green .menu-icon i { color: #0F6E56; }
+.c-purple { border-left-color: #7F77DD; } .c-purple .menu-icon { background: #EEEDFE; } .c-purple .menu-icon i { color: #534AB7; }
+.c-coral { border-left-color: #D85A30; } .c-coral .menu-icon { background: #FAECE7; } .c-coral .menu-icon i { color: #993C1D; }
+.c-pink { border-left-color: #D4537E; } .c-pink .menu-icon { background: #FBEAF0; } .c-pink .menu-icon i { color: #993556; }
+.c-gray { border-left-color: #888780; } .c-gray .menu-icon { background: #F1EFE8; } .c-gray .menu-icon i { color: #5F5E5A; }
+.c-blue { border-left-color: #378ADD; } .c-blue .menu-icon { background: #E6F1FB; } .c-blue .menu-icon i { color: #185FA5; }
+.c-amber { border-left-color: #EF9F27; } .c-amber .menu-icon { background: #FAEEDA; } .c-amber .menu-icon i { color: #854F0B; }
 
 /* SUBPAGES */
-.sub-header { background: #111110; padding: 1rem 1.25rem; padding-top: calc(1rem + env(safe-area-inset-top)); display: flex; align-items: center; gap: 0.75rem; position: sticky; top: 0; z-index: 10; border-bottom: 0.5px solid rgba(255,255,255,0.08); }
-.back-btn { background: none; border: none; color: rgba(255,255,255,0.5); font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; gap: 4px; padding: 0; flex-shrink: 0; }
+.sub-header { background: #1a1a1a; padding: 1rem 1.25rem; padding-top: calc(1rem + env(safe-area-inset-top)); display: flex; align-items: center; gap: 0.75rem; position: sticky; top: 0; z-index: 10; }
+.back-btn { background: none; border: none; color: rgba(255,255,255,0.6); font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; gap: 4px; padding: 0; flex-shrink: 0; }
 .back-btn i { font-size: 16px; }
 .sub-title { font-size: 0.95rem; font-weight: 600; color: #fff; }
 
-.sub-content { padding: 1.25rem; padding-bottom: calc(2rem + env(safe-area-inset-bottom)); max-width: 500px; }
+.sub-content { padding: 1.25rem; padding-bottom: calc(2rem + env(safe-area-inset-bottom)); max-width: 500px; margin: 0 auto; }
 
-.section-label { font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: rgba(255,255,255,0.3); margin: 1.25rem 0 0.6rem; }
+.section-label { font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: #a8a59d; margin: 1.25rem 0 0.6rem; }
 .section-label:first-child { margin-top: 0; }
 
-.row { background: rgba(255,255,255,0.06); border: 0.5px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 0.9rem 1rem; margin-bottom: 6px; display: flex; align-items: center; justify-content: space-between; text-decoration: none; transition: background 0.15s; }
-.row:active { background: rgba(255,255,255,0.12); }
+.row { background: #fff; border: 0.5px solid #e5e2da; border-radius: 10px; padding: 0.85rem 1rem; margin-bottom: 6px; display: flex; align-items: center; justify-content: space-between; text-decoration: none; transition: background 0.15s; }
+.row:active { background: #f2f0ea; }
 .row-left { display: flex; align-items: center; gap: 10px; }
-.row-icon { font-size: 17px; color: rgba(255,255,255,0.4); flex-shrink: 0; }
-.row-name { font-size: 13px; font-weight: 500; color: #fff; }
-.row-ext { font-size: 14px; color: rgba(255,255,255,0.2); }
+.row-icon { font-size: 17px; color: #8a8782; flex-shrink: 0; }
+.row-name { font-size: 13px; font-weight: 500; color: #1a1a1a; }
+.row-ext { font-size: 14px; color: #c4c0b6; }
 
-.contact-card { background: rgba(255,255,255,0.06); border: 0.5px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 0.9rem 1rem; margin-bottom: 6px; }
-.contact-name { font-size: 13px; font-weight: 500; color: #fff; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 8px; }
-.contact-name i { font-size: 16px; color: rgba(255,255,255,0.35); }
+.contact-card { background: #fff; border: 0.5px solid #e5e2da; border-radius: 10px; padding: 0.85rem 1rem; margin-bottom: 6px; }
+.contact-name { font-size: 13px; font-weight: 500; color: #1a1a1a; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 8px; }
+.contact-name i { font-size: 16px; color: #a8a59d; }
 .contact-links { padding-left: 24px; display: flex; flex-direction: column; gap: 4px; }
-.contact-links a { font-size: 12px; color: rgba(255,255,255,0.45); text-decoration: none; display: flex; align-items: center; gap: 6px; }
+.contact-links a { font-size: 12px; color: #6b6862; text-decoration: none; display: flex; align-items: center; gap: 6px; }
 .contact-links a i { font-size: 13px; }
-.contact-links a:active { color: #fff; }
-.contact-pending { font-size: 12px; color: rgba(255,255,255,0.2); font-style: italic; padding-left: 24px; }
+.contact-links a:active { color: #1a1a1a; }
+.contact-pending { font-size: 12px; color: #b8b4ab; font-style: italic; padding-left: 24px; }
 </style>
 </head>
 <body>
@@ -69,25 +75,27 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif
 <!-- HOME -->
 <div id="home" class="page active">
   <div class="home-header">
-    <img src="logo.png" alt="Fager Bistro" style="width:64px; height:64px; border-radius:14px; margin-bottom:1rem; display:block;">
-    <div style="font-size:1.8rem; font-weight:700; letter-spacing:0.04em; color:#fff; text-transform:uppercase; margin-bottom:0.15rem;">FAGER BISTRO</div>
-    <div style="font-size:0.75rem; font-weight:600; letter-spacing:0.12em; color:rgba(255,255,255,0.35); text-transform:uppercase;">PORTAL</div>
+    <img src="logo.png" alt="Fager Bistro">
+    <div>
+      <div class="home-title">Fager Bistro</div>
+      <div class="home-sub">Portal</div>
+    </div>
   </div>
   <div class="menu">
-    <a href="https://tgillesp-alt.github.io/shopping/" class="menu-btn light" target="_blank" rel="noopener">
+    <a href="https://tgillesp-alt.github.io/shopping/" class="menu-btn c-green" target="_blank" rel="noopener">
       <div class="menu-btn-left">
-        <div class="menu-icon shopping"><i class="ti ti-shopping-cart"></i></div>
+        <div class="menu-icon"><i class="ti ti-shopping-cart"></i></div>
         <div>
-          <div class="menu-label" style="color:#111110">Shopping</div>
-          <div class="menu-sub" style="color:#111110">Varebestillinger</div>
+          <div class="menu-label">Shopping</div>
+          <div class="menu-sub">Varebestillinger</div>
         </div>
       </div>
-      <i class="ti ti-external-link menu-arrow" style="color:#111110; opacity:0.3"></i>
+      <i class="ti ti-external-link menu-arrow"></i>
     </a>
 
-    <div class="menu-btn dark" style="cursor:default;">
+    <div class="menu-btn c-gray" style="cursor:default;">
       <div class="menu-btn-left">
-        <div class="menu-icon planday"><i class="ti ti-calendar"></i></div>
+        <div class="menu-icon"><i class="ti ti-calendar"></i></div>
         <div>
           <div class="menu-label">Planday</div>
           <div class="menu-sub">Åpne appen direkte fra hjemskjermen</div>
@@ -95,9 +103,9 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif
       </div>
     </div>
 
-    <button class="menu-btn dark" onclick="visPage('leverandorer')">
+    <button class="menu-btn c-amber" onclick="visPage('leverandorer')">
       <div class="menu-btn-left">
-        <div class="menu-icon lev"><i class="ti ti-truck"></i></div>
+        <div class="menu-icon"><i class="ti ti-truck"></i></div>
         <div>
           <div class="menu-label">Leverandører</div>
           <div class="menu-sub">Bestilling & kontakt</div>
@@ -106,9 +114,9 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif
       <i class="ti ti-chevron-right menu-arrow"></i>
     </button>
 
-    <button class="menu-btn dark" onclick="visPage('kontakter')">
+    <button class="menu-btn c-blue" onclick="visPage('kontakter')">
       <div class="menu-btn-left">
-        <div class="menu-icon kontakt"><i class="ti ti-address-book"></i></div>
+        <div class="menu-icon"><i class="ti ti-address-book"></i></div>
         <div>
           <div class="menu-label">Kontakter</div>
           <div class="menu-sub">Gårdeier, vaktmester m.fl.</div>
@@ -117,9 +125,9 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif
       <i class="ti ti-chevron-right menu-arrow"></i>
     </button>
 
-    <button class="menu-btn dark" onclick="visPage('dokumenter')">
+    <button class="menu-btn c-blue" onclick="visPage('dokumenter')">
       <div class="menu-btn-left">
-        <div class="menu-icon dok"><i class="ti ti-file-text"></i></div>
+        <div class="menu-icon"><i class="ti ti-file-text"></i></div>
         <div>
           <div class="menu-label">Dokumenter</div>
           <div class="menu-sub">Internkontroll m.fl.</div>
@@ -128,9 +136,9 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif
       <i class="ti ti-chevron-right menu-arrow"></i>
     </button>
 
-    <a href="https://tgillesp-alt.github.io/shopping/prepp-kjokken.html" class="menu-btn dark">
+    <a href="https://tgillesp-alt.github.io/shopping/prepp-kjokken.html" class="menu-btn c-purple">
       <div class="menu-btn-left">
-        <div class="menu-icon" style="width:40px;height:40px;display:flex;align-items:center;justify-content:center;"><i class="ti ti-tools" style="font-size:26px;color:#fff;"></i></div>
+        <div class="menu-icon"><i class="ti ti-tools"></i></div>
         <div>
           <div class="menu-label">Kjøkken MEP</div>
           <div class="menu-sub">Prepp og mise en place</div>
@@ -139,9 +147,9 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif
       <i class="ti ti-external-link menu-arrow"></i>
     </a>
 
-    <a href="https://tgillesp-alt.github.io/shopping/prepp-foh.html" class="menu-btn dark">
+    <a href="https://tgillesp-alt.github.io/shopping/prepp-foh.html" class="menu-btn c-coral">
       <div class="menu-btn-left">
-        <div class="menu-icon" style="width:40px;height:40px;display:flex;align-items:center;justify-content:center;"><i class="ti ti-armchair" style="font-size:26px;color:#fff;"></i></div>
+        <div class="menu-icon"><i class="ti ti-armchair"></i></div>
         <div>
           <div class="menu-label">FOH Åpning/Stenging</div>
           <div class="menu-sub">Rengjøring og oppsett</div>
@@ -150,9 +158,9 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif
       <i class="ti ti-external-link menu-arrow"></i>
     </a>
 
-    <a href="https://tgillesp-alt.github.io/shopping/meny.html" class="menu-btn dark">
+    <a href="https://tgillesp-alt.github.io/shopping/meny.html" class="menu-btn c-pink">
       <div class="menu-btn-left">
-        <div class="menu-icon" style="width:40px;height:40px;display:flex;align-items:center;justify-content:center;"><i class="ti ti-book-2" style="font-size:26px;color:#fff;"></i></div>
+        <div class="menu-icon"><i class="ti ti-book-2"></i></div>
         <div>
           <div class="menu-label">Meny</div>
           <div class="menu-sub">Middag, lunsj og vin</div>
@@ -161,9 +169,9 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif
       <i class="ti ti-external-link menu-arrow"></i>
     </a>
 
-    <a href="https://tgillesp-alt.github.io/shopping/tips.html" class="menu-btn dark">
+    <a href="https://tgillesp-alt.github.io/shopping/tips.html" class="menu-btn c-gray">
       <div class="menu-btn-left">
-        <div class="menu-icon" style="width:40px;height:40px;display:flex;align-items:center;justify-content:center;"><i class="ti ti-coin" style="font-size:26px;color:#fff;"></i></div>
+        <div class="menu-icon"><i class="ti ti-coin"></i></div>
         <div>
           <div class="menu-label">Tips</div>
           <div class="menu-sub">Fordelingskalkulator</div>
@@ -259,9 +267,9 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif
     <div class="sub-title">Dokumenter</div>
   </div>
   <div class="sub-content">
-    <div class="row" style="opacity:0.4; cursor:default;">
+    <div class="row" style="opacity:0.5; cursor:default;">
       <div class="row-left"><i class="ti ti-file-text row-icon"></i><span class="row-name">Internkontroll</span></div>
-      <span style="font-size:11px; color:rgba(255,255,255,0.3); font-style:italic;">Kommer</span>
+      <span style="font-size:11px; color:#b8b4ab; font-style:italic;">Kommer</span>
     </div>
   </div>
 </div>
