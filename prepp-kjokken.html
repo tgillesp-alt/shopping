@@ -52,8 +52,8 @@ header { background: #1a1a1a; padding: 1rem 1.25rem; padding-top: calc(1rem + en
 </head>
 <body>
 <header>
-  <a href="https://tgillesp-alt.github.io/shopping/portal.html" class="back-btn">‹ Portal</a>
-  <div class="header-title">Kjøkken MEP</div>
+  <a href="https://tgillesp-alt.github.io/shopping/prepp-kjokken-hub.html" class="back-btn">‹ Kjøkken MEP</a>
+  <div class="header-title" id="header-title">Kjøkken MEP</div>
   <div class="header-actions">
     <button class="btn-sm btn-reset" onclick="nullstill()">Nullstill</button>
     <button class="btn-sm btn-add" onclick="apneNy()">+ Legg til</button>
@@ -105,6 +105,9 @@ header { background: #1a1a1a; padding: 1rem 1.25rem; padding-top: calc(1rem + en
 const SUPABASE_URL = 'https://izdclsyuplghwznsjnom.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml6ZGNsc3l1cGxnaHd6bnNqbm9tIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE1MjY5MjksImV4cCI6MjA5NzEwMjkyOX0.GkjxcToCHZrLAm1pVGsBkcLapIOj7uSYd6IcDC0Lyzk';
 const SIDE = 'kjokken';
+const urlParams = new URLSearchParams(window.location.search);
+const TIDSPUNKT = urlParams.get('tidspunkt') || 'kveld';
+document.getElementById('header-title').textContent = 'Kjøkken MEP – ' + (TIDSPUNKT === 'lunch' ? 'Lunch' : 'Kveld');
 
 let items = [], editId = null;
 
@@ -117,7 +120,7 @@ async function api(method, path, body) {
 }
 
 async function hent() {
-  items = await api('GET', `prepp?side=eq.${SIDE}&order=sort_order.asc,created_at.asc&select=*`);
+  items = await api('GET', `prepp?side=eq.${SIDE}&tidspunkt=eq.${TIDSPUNKT}&order=sort_order.asc,created_at.asc&select=*`);
   render();
 }
 
@@ -181,7 +184,7 @@ async function slett(id) {
 
 async function nullstill() {
   if (!confirm('Nullstill alle kryss?')) return;
-  await api('PATCH', `prepp?side=eq.${SIDE}`, { ferdig: false });
+  await api('PATCH', `prepp?side=eq.${SIDE}&tidspunkt=eq.${TIDSPUNKT}`, { ferdig: false });
   hent();
 }
 
@@ -215,7 +218,7 @@ async function lagreItem() {
   if (editId) {
     await api('PATCH', `prepp?id=eq.${editId}`, { tekst, kategori, seksjon });
   } else {
-    await api('POST', 'prepp', { side: SIDE, kategori, seksjon, tekst, ferdig: false });
+    await api('POST', 'prepp', { side: SIDE, tidspunkt: TIDSPUNKT, kategori, seksjon, tekst, ferdig: false });
   }
   lukkModal();
   hent();
