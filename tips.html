@@ -75,7 +75,7 @@ td { padding: 5px 0; }
 
   <div class="main">
     <label>Total driks denne måneden (kr)</label>
-    <input type="number" id="total-tips" value="50000">
+    <input type="number" id="total-tips" value="" placeholder="0">
 
     <div class="stat-grid">
       <div class="stat-card">
@@ -128,14 +128,14 @@ if (sessionStorage.getItem('tips_auth') === '1') {
 
 const CAP = 160;
 const kjokken = [
-  { navn: 'Marcus', timer: 160 },
-  { navn: 'Thomas', timer: 160 },
-  { navn: 'Joakim', timer: 100 }
+  { navn: 'Marcus', timer: 0 },
+  { navn: 'Thomas', timer: 0 },
+  { navn: 'Joakim', timer: 0 }
 ];
 const sal = [
-  { navn: 'Christine', timer: 160 },
-  { navn: 'Norah', timer: 80 },
-  { navn: 'Benjamin', timer: 120 }
+  { navn: 'Christine', timer: 0 },
+  { navn: 'Norah', timer: 0 },
+  { navn: 'Benjamin', timer: 0 }
 ];
 
 function renderRows(containerId, people) {
