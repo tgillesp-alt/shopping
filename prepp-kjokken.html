@@ -8,46 +8,46 @@
 <title>Fager Bistro – Kjøkken MEP</title>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-body { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif; background: #111110; color: #fff; min-height: 100vh; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif; background: #f7f6f3; color: #1a1a1a; min-height: 100vh; }
 
-header { background: #111110; padding: 1rem 1.25rem; padding-top: calc(1rem + env(safe-area-inset-top)); display: flex; align-items: center; gap: 0.75rem; position: sticky; top: 0; z-index: 100; border-bottom: 0.5px solid rgba(255,255,255,0.08); }
-.back-btn { background: none; border: none; color: rgba(255,255,255,0.5); font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; gap: 4px; padding: 0; flex-shrink: 0; text-decoration: none; }
+header { background: #1a1a1a; padding: 1rem 1.25rem; padding-top: calc(1rem + env(safe-area-inset-top)); display: flex; align-items: center; gap: 0.75rem; position: sticky; top: 0; z-index: 100; }
+.back-btn { background: none; border: none; color: rgba(255,255,255,0.6); font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; gap: 4px; padding: 0; flex-shrink: 0; text-decoration: none; }
 .header-title { font-size: 0.95rem; font-weight: 600; color: #fff; flex: 1; }
 .header-actions { display: flex; gap: 0.5rem; }
 .btn-sm { padding: 0.4rem 0.75rem; border-radius: 8px; font-size: 0.78rem; font-weight: 600; cursor: pointer; border: none; letter-spacing: 0.03em; }
-.btn-reset { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.7); }
-.btn-add { background: #fff; color: #111110; }
+.btn-reset { background: rgba(255,255,255,0.12); color: rgba(255,255,255,0.85); }
+.btn-add { background: #fff; color: #1a1a1a; }
 
-.main { padding: 1rem 1.25rem; padding-bottom: calc(2rem + env(safe-area-inset-bottom)); max-width: 600px; }
+.main { padding: 1rem 1.25rem; padding-bottom: calc(2rem + env(safe-area-inset-bottom)); max-width: 600px; margin: 0 auto; }
 
 .kategori-block { margin-bottom: 2rem; }
-.kategori-header { font-size: 1rem; font-weight: 700; color: #fff; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.75rem; padding-bottom: 0.5rem; border-bottom: 1px solid rgba(255,255,255,0.15); }
+.kategori-header { font-size: 1rem; font-weight: 700; color: #1a1a1a; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.75rem; padding-bottom: 0.5rem; border-bottom: 1px solid #e5e2da; }
 .seksjon { margin-bottom: 1.5rem; }
-.seksjon-header { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: rgba(255,255,255,0.3); margin-bottom: 0.5rem; }
+.seksjon-header { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: #a8a59d; margin-bottom: 0.5rem; }
 
-.prepp-item { background: rgba(255,255,255,0.06); border: 0.5px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 0.85rem 1rem; margin-bottom: 6px; display: flex; align-items: center; gap: 0.75rem; transition: opacity 0.2s; }
-.prepp-item.ferdig { opacity: 0.3; }
-.prepp-item input[type=checkbox] { width: 20px; height: 20px; accent-color: #fff; cursor: pointer; flex-shrink: 0; border-radius: 4px; }
-.prepp-tekst { flex: 1; font-size: 0.95rem; line-height: 1.4; }
+.prepp-item { background: #fff; border: 0.5px solid #e5e2da; border-radius: 12px; padding: 0.85rem 1rem; margin-bottom: 6px; display: flex; align-items: center; gap: 0.75rem; transition: opacity 0.2s; }
+.prepp-item.ferdig { opacity: 0.45; }
+.prepp-item input[type=checkbox] { width: 20px; height: 20px; accent-color: #1a1a1a; cursor: pointer; flex-shrink: 0; border-radius: 4px; }
+.prepp-tekst { flex: 1; font-size: 0.95rem; line-height: 1.4; color: #1a1a1a; }
 .prepp-item.ferdig .prepp-tekst { text-decoration: line-through; }
 .item-actions { display: flex; gap: 0.35rem; flex-shrink: 0; }
-.btn-edit, .btn-del { background: none; border: none; color: rgba(255,255,255,0.25); font-size: 0.85rem; cursor: pointer; padding: 0.2rem 0.3rem; border-radius: 6px; }
-.btn-edit:active, .btn-del:active { color: #fff; }
+.btn-edit, .btn-del { background: none; border: none; color: #c4c0b6; font-size: 0.85rem; cursor: pointer; padding: 0.2rem 0.3rem; border-radius: 6px; }
+.btn-edit:active, .btn-del:active { color: #1a1a1a; }
 
-.progress-bar { background: rgba(255,255,255,0.08); border-radius: 4px; height: 4px; margin-bottom: 1.5rem; overflow: hidden; }
-.progress-fill { background: #fff; height: 100%; border-radius: 4px; transition: width 0.3s; }
-.progress-label { font-size: 0.72rem; color: rgba(255,255,255,0.35); margin-bottom: 0.5rem; text-align: right; }
+.progress-bar { background: #e5e2da; border-radius: 4px; height: 4px; margin-bottom: 1.5rem; overflow: hidden; }
+.progress-fill { background: #1a1a1a; height: 100%; border-radius: 4px; transition: width 0.3s; }
+.progress-label { font-size: 0.72rem; color: #a8a59d; margin-bottom: 0.5rem; text-align: right; }
 
-.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 200; display: flex; align-items: flex-end; justify-content: center; backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); }
-.modal { background: #1c1c1a; border-radius: 20px 20px 0 0; padding: 1.5rem 1.25rem; padding-bottom: calc(1.5rem + env(safe-area-inset-bottom)); width: 100%; max-width: 500px; display: flex; flex-direction: column; gap: 0.75rem; }
-.modal-handle { width: 36px; height: 4px; background: rgba(255,255,255,0.2); border-radius: 2px; margin: 0 auto 0.75rem; }
-.modal h3 { font-size: 1rem; font-weight: 600; margin-bottom: 0.25rem; }
-.modal input, .modal select { padding: 0.7rem 0.85rem; border: 0.5px solid rgba(255,255,255,0.15); border-radius: 10px; font-size: 0.95rem; background: rgba(255,255,255,0.08); color: #fff; width: 100%; outline: none; }
-.modal select option { background: #1c1c1a; }
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 200; display: flex; align-items: flex-end; justify-content: center; backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); }
+.modal { background: #fff; border-radius: 20px 20px 0 0; padding: 1.5rem 1.25rem; padding-bottom: calc(1.5rem + env(safe-area-inset-bottom)); width: 100%; max-width: 500px; display: flex; flex-direction: column; gap: 0.75rem; }
+.modal-handle { width: 36px; height: 4px; background: #e5e2da; border-radius: 2px; margin: 0 auto 0.75rem; }
+.modal h3 { font-size: 1rem; font-weight: 600; margin-bottom: 0.25rem; color: #1a1a1a; }
+.modal input, .modal select { padding: 0.7rem 0.85rem; border: 0.5px solid #e5e2da; border-radius: 10px; font-size: 0.95rem; background: #f7f6f3; color: #1a1a1a; width: 100%; outline: none; }
+.modal select option { background: #fff; }
 .modal-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; margin-top: 0.25rem; }
 .modal-btns button { padding: 0.8rem; border-radius: 10px; font-size: 0.95rem; font-weight: 600; cursor: pointer; border: none; }
-.btn-lagre { background: #fff; color: #111110; }
-.btn-avbryt { background: rgba(255,255,255,0.08); color: #fff; }
+.btn-lagre { background: #1a1a1a; color: #fff; }
+.btn-avbryt { background: #f7f6f3; color: #1a1a1a; border: 0.5px solid #e5e2da !important; }
 </style>
 </head>
 <body>
