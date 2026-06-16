@@ -1,0 +1,16 @@
+{
+  "name": "Fager Bistro",
+  "short_name": "Fager Bistro",
+  "start_url": "https://tgillesp-alt.github.io/shopping/portal.html",
+  "scope": "https://tgillesp-alt.github.io/shopping/",
+  "display": "standalone",
+  "background_color": "#1a1a1a",
+  "theme_color": "#1a1a1a",
+  "icons": [
+    {
+      "src": "https://tgillesp-alt.github.io/shopping/logo.png",
+      "sizes": "500x500",
+      "type": "image/png"
+    }
+  ]
+}
