@@ -128,9 +128,7 @@ header { background: var(--dark); color: #fff; padding: 0.9rem 1.25rem; padding-
       <button class="bruker-btn" onclick="velgBruker('Joakim',this)">Joakim</button>
       <button class="bruker-btn" onclick="velgBruker('Benjamin',this)">Benjamin</button>
     </div>
-    <input type="password" id="login-passord" placeholder="Passord" autocomplete="current-password">
-    <button id="login-btn" onclick="loggInn()">Logg inn</button>
-    <div id="login-error">Feil passord</div>
+    <button id="login-btn" onclick="loggInn()">Fortsett</button>
   </div>
 </div>
 
@@ -253,9 +251,6 @@ function velgBruker(navn, el) {
 
 function loggInn() {
   if (!bruker) { alert('Velg navn'); return; }
-  if (document.getElementById('login-passord').value !== PASSORD) {
-    document.getElementById('login-error').style.display = 'block'; return;
-  }
   document.getElementById('login-screen').style.display = 'none';
   document.getElementById('app').style.display = 'block';
   document.getElementById('header-bruker').textContent = bruker;
@@ -421,7 +416,6 @@ async function registrerPush() {
   } catch(e) { console.log('Push ikke tilgjengelig:', e); }
 }
 
-document.getElementById('login-passord').addEventListener('keydown', e => { if (e.key === 'Enter') loggInn(); });
 
 function renderHistorikk() {
   const sok = (document.getElementById('hist-sok').value || '').toLowerCase();
