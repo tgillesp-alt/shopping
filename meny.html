@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<title>Fager Bistro – Meny</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif; background: #111110; color: #fff; min-height: 100vh; }
+
+header { background: #111110; padding: 1rem 1.25rem; padding-top: calc(1rem + env(safe-area-inset-top)); display: flex; align-items: center; gap: 0.75rem; position: sticky; top: 0; z-index: 100; border-bottom: 0.5px solid rgba(255,255,255,0.08); }
+.back-btn { color: rgba(255,255,255,0.5); text-decoration: none; font-size: 0.85rem; display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
+.header-title { font-size: 0.95rem; font-weight: 600; flex: 1; }
+.dl-btn { background: #fff; color: #111110; border: none; padding: 0.4rem 0.75rem; border-radius: 8px; font-size: 0.78rem; font-weight: 600; text-decoration: none; }
+
+.tabs { display: flex; gap: 6px; padding: 1rem 1.25rem 0; max-width: 600px; margin: 0 auto; }
+.tab { flex: 1; text-align: center; padding: 0.65rem; border-radius: 10px; font-size: 0.85rem; font-weight: 600; background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.5); cursor: pointer; border: none; }
+.tab.active { background: #fff; color: #111110; }
+
+.main { padding: 1.25rem; padding-bottom: calc(3rem + env(safe-area-inset-bottom)); max-width: 600px; margin: 0 auto; }
+.menu-page { display: none; }
+.menu-page.active { display: block; }
+
+.menu-title { text-align: center; font-size: 1.3rem; font-weight: 700; letter-spacing: 0.05em; margin-bottom: 0.2rem; }
+.menu-sub { text-align: center; font-size: 0.78rem; color: rgba(255,255,255,0.4); font-style: italic; margin-bottom: 1.5rem; }
+
+.section-title { text-align: center; font-size: 0.85rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; border-top: 0.5px solid rgba(255,255,255,0.15); border-bottom: 0.5px solid rgba(255,255,255,0.15); padding: 0.5rem 0; margin: 1.75rem 0 1rem; color: rgba(255,255,255,0.8); }
+
+.dish { margin-bottom: 1rem; }
+.dish-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.dish-name { font-weight: 700; font-size: 0.95rem; }
+.dish-price { font-weight: 700; font-size: 0.95rem; flex-shrink: 0; }
+.dish-allergens { font-size: 0.68rem; color: rgba(255,255,255,0.4); margin-top: 1px; }
+.dish-desc { font-size: 0.85rem; font-style: italic; color: rgba(255,255,255,0.65); margin-top: 3px; line-height: 1.4; }
+
+.allergen-key { margin-top: 2rem; padding-top: 1rem; border-top: 0.5px solid rgba(255,255,255,0.1); font-size: 0.68rem; color: rgba(255,255,255,0.35); line-height: 1.6; }
+
+.wine-note { text-align: center; color: rgba(255,255,255,0.35); font-style: italic; padding: 2rem 0; }
+</style>
+</head>
+<body>
+<header>
+  <a href="https://tgillesp-alt.github.io/shopping/portal.html" class="back-btn">‹ Portal</a>
+  <div class="header-title">Meny</div>
+  <a id="dl-link" href="Fager_Bistro_Meny_Middag.docx" class="dl-btn" download>⬇ Word</a>
+</header>
+
+<div class="tabs">
+  <button class="tab active" id="tab-middag" onclick="visTab('middag')">Middag</button>
+  <button class="tab" id="tab-lunsj" onclick="visTab('lunsj')">Lunsj</button>
+  <button class="tab" id="tab-vin" onclick="visTab('vin')">Vin</button>
+</div>
+
+<div class="main">
+
+  <div class="menu-page active" id="page-middag">
+    <div class="menu-title">FAGER BISTRO</div>
+    <div class="menu-sub">Menu du soir</div>
+
+    <div class="section-title">Huîtres – Østers</div>
+    <div class="dish"><div class="dish-head"><span class="dish-name">Spéciale Naturelles</span><span class="dish-price">180/360</span></div><div class="dish-allergens">Mo, Su</div><div class="dish-desc">no.3 fra Marennes-Oléron, sjalottløk-mignonette med sherryeddik — 3/6 stk</div></div>
+    <div class="dish"><div class="dish-head"><span class="dish-name">Gillardeau Naturelles</span><span class="dish-price">225/450</span></div><div class="dish-allergens">Mo, Su</div><div class="dish-desc">Premium no.3 fra Gillardeau, sjalottløk-mignonette med sherryeddik — 3/6 stk</div></div>
+
+    <div class="section-title">Entrées – Forretter</div>
+    <div class="dish"><div class="dish-head"><span class="dish-name">Asperges Blanches</span><span class="dish-price">245</span></div><div class="dish-allergens">L, E, H, Su</div><div class="dish-desc">hvite smørdampede asparges fra Alsace, pangratatto og sauce maltaise</div></div>
+    <div class="dish"><div class="dish-head"><span class="dish-name">Poulpe & Merguez</span><span class="dish-price">265</span></div><div class="dish-allergens">Mo, N, Se, Su</div><div class="dish-desc">grillet blekksprut, merguez-crumble, kikertpuré, syltet paprika, dukkah og sauce vierge</div></div>
+    <div class="dish"><div class="dish-head"><span class="dish-name">Noix de St. Jacques</span><span class="dish-price">245</span></div><div class="dish-allergens">H, L, Mo, E</div><div class="dish-desc">dykkerfisket kamskjell fra Frøya, sauce au champagne, sautert purre og ramsløkolje i vol-au-vent</div></div>
+    <div class="dish"><div class="dish-head"><span class="dish-name">Foie Gras Mi-Cuit</span><span class="dish-price">340</span></div><div class="dish-allergens">H, L, Ma, E, Su</div><div class="dish-desc">cognac-marinert foie gras med 5 épices, brioche, syltet steinsopp, kandiserte mandler, rabarbra-fersken puré</div></div>
+
+    <div class="section-title">Plats – Hovedretter</div>
+    <div class="dish"><div class="dish-head"><span class="dish-name">Moules Marinières</span><span class="dish-price">365</span></div><div class="dish-allergens">Mo, E, L, Su</div><div class="dish-desc">500 gr hvitvinsdampede blåskjell fra Sør-Trøndelag, blåskjell-kraft, frites og aioli</div></div>
+    <div class="dish"><div class="dish-head"><span class="dish-name">Médaillon de Lotte</span><span class="dish-price">535</span></div><div class="dish-allergens">F, Sk, L, Su</div><div class="dish-desc">stekt breiflabb med sauce homardine, dampet nykål, syltet fennikel og perlepoteter</div></div>
+    <div class="dish"><div class="dish-head"><span class="dish-name">Cuisse de Canard Confit</span><span class="dish-price">475</span></div><div class="dish-allergens">S, L, H, Su</div><div class="dish-desc">sprøstekt andelår fra Holte Gård i Drangedal, croquette, kumquat, sellerirotpuré, spinat og plomme gastrique</div></div>
+    <div class="dish"><div class="dish-head"><span class="dish-name">Entrecôte Grillée</span><span class="dish-price">535</span></div><div class="dish-allergens">E, L, Su</div><div class="dish-desc">marmorert entrecôte fra Annis Pølsemakeri, haricots verts, estragon-syltede tomater, frites og béarnaise</div></div>
+
+    <div class="section-title">Fromage – Ost</div>
+    <div class="dish"><div class="dish-head"><span class="dish-name">Assiette de Fromages</span><span class="dish-price">265</span></div><div class="dish-allergens">L, H</div><div class="dish-desc">modne franske oster og fiken marmelade</div></div>
+
+    <div class="section-title">Desserts – Desserter</div>
+    <div class="dish"><div class="dish-head"><span class="dish-name">Chocolat</span><span class="dish-price">215</span></div><div class="dish-allergens">E, L</div><div class="dish-desc">sjokoladeganache, valrhona brownie, olivenolje, havsalt og blåbær</div></div>
+    <div class="dish"><div class="dish-head"><span class="dish-name">Crêpes Suzette</span><span class="dish-price">215</span></div><div class="dish-allergens">H, L, E</div><div class="dish-desc">tynn pannekake, appelsinkaramell med Grand Marnier og hjemmelaget vaniljeis</div></div>
+    <div class="dish"><div class="dish-head"><span class="dish-name">Tarte Tatin</span><span class="dish-price">235</span></div><div class="dish-allergens">H, L, E</div><div class="dish-desc">epleterte med krydderkokte epler og hjemmelaget vaniljeis</div></div>
+    <div class="dish"><div class="dish-head"><span class="dish-name">Coupe Colonel</span><span class="dish-price">165</span></div><div class="dish-allergens">-</div><div class="dish-desc">Vodka og sitronsorbet</div></div>
+
+    <div class="allergen-key">Allergener: E Egg, F Fisk, L Lactose, Sn Sennep, Pi Pistasj, So Soya, Se Sesam, By Bygg, H Hvete, Ha Havre, R Rug, Vn Valnøtt, S Selleri, Su Sulfitt, N Nøtter, Ma Mandel, Mo Mollusc, Sk Skalldyr</div>
+  </div>
+
+  <div class="menu-page" id="page-lunsj">
+    <div class="menu-title">FAGER BISTRO</div>
+    <div class="menu-sub">Menu Déjeuner — Lunch Menu</div>
+
+    <div class="section-title">Entrées</div>
+    <div class="dish"><div class="dish-head"><span class="dish-name">Huîtres Spéciale Naturelles</span><span class="dish-price">180/360</span></div><div class="dish-allergens">Mo, Su</div><div class="dish-desc">Spéciale no.3 østers fra Marennes-Oléron, sjalottløk-mignonette med sherryeddik — 3/6 stk</div></div>
+    <div class="dish"><div class="dish-head"><span class="dish-name">Chèvre Chaud</span><span class="dish-price">235</span></div><div class="dish-allergens">H, L, Vn, Sn, Su</div><div class="dish-desc">grillet chèvre på brioche, marinerte sesonggrønnsaker, karamelliserte valnøtter og syltet pære</div></div>
+
+    <div class="section-title">Plats</div>
+    <div class="dish"><div class="dish-head"><span class="dish-name">Moules Marinières</span><span class="dish-price">255</span></div><div class="dish-allergens">Mo, E, L, Su</div><div class="dish-desc">300 gr hvitvinsdampede blåskjell fra Sør-Trøndelag, blåskjell-kraft, frites og aioli</div></div>
+    <div class="dish"><div class="dish-head"><span class="dish-name">Médaillon de Lotte</span><span class="dish-price">395</span></div><div class="dish-allergens">F, L</div><div class="dish-desc">stekt breiflabb, grønn asparges, ovnsbakte perlepoteter og ramsløks hollandaise</div></div>
+    <div class="dish"><div class="dish-head"><span class="dish-name">Canard Confit</span><span class="dish-price">345</span></div><div class="dish-allergens">L, Su</div><div class="dish-desc">sprøstekt andelår fra Gårdsand, syltet asparges og fennikelsalat, marinerte sesonggrønnsaker og andesjy</div></div>
+    <div class="dish"><div class="dish-head"><span class="dish-name">Hamburger</span><span class="dish-price">235</span></div><div class="dish-allergens">H, E, L, Su, Sn</div><div class="dish-desc">170 gr angus-burger, toasted brioche, karamellisert løk, cheddar, kremet coleslaw og chili-pickled agurk</div></div>
+
+    <div class="section-title">Desserts</div>
+    <div class="dish"><div class="dish-head"><span class="dish-name">Tarte Citron</span><span class="dish-price">175</span></div><div class="dish-allergens">H, L, E</div><div class="dish-desc">sitronterte med crème chantilly og friske jordbær</div></div>
+    <div class="dish"><div class="dish-head"><span class="dish-name">Affogato</span><span class="dish-price">115</span></div><div class="dish-allergens">G, L, E</div><div class="dish-desc">vaniljeis i espresso</div></div>
+
+    <div class="section-title">Extras</div>
+    <div class="dish"><div class="dish-head"><span class="dish-name">Brød & Pisket Smør</span><span class="dish-price">65</span></div><div class="dish-allergens">H, L</div></div>
+    <div class="dish"><div class="dish-head"><span class="dish-name">Parmesan-Fries med Rosmarin</span><span class="dish-price">65</span></div><div class="dish-allergens">-</div></div>
+    <div class="dish"><div class="dish-head"><span class="dish-name">Aioli</span><span class="dish-price">35</span></div><div class="dish-allergens">E</div></div>
+    <div class="dish"><div class="dish-head"><span class="dish-name">Chili-Dip</span><span class="dish-price">35</span></div><div class="dish-allergens">-</div></div>
+    <div class="dish"><div class="dish-head"><span class="dish-name">Trøffel Dip</span><span class="dish-price">35</span></div><div class="dish-allergens">E</div></div>
+    <div class="dish"><div class="dish-head"><span class="dish-name">Grønn Salat med Dijon Vinaigrette</span><span class="dish-price">55</span></div><div class="dish-allergens">Su</div></div>
+
+    <div class="allergen-key">Allergener: E Egg, F Fisk, L Lactose, Sn Sennep, Pi Pistasj, So Soya, Se Sesam, By Bygg, H Hvete, Ha Havre, R Rug, Vn Valnøtt, S Selleri, Su Sulfitt, N Nøtter, Ma Mandel, Mo Mollusc, Sk Skalldyr</div>
+  </div>
+
+  <div class="menu-page" id="page-vin">
+    <div class="menu-title">FAGER BISTRO</div>
+    <div class="menu-sub">Vinliste</div>
+    <div class="wine-note">Vinlisten oppdateres</div>
+  </div>
+
+</div>
+
+<script>
+function visTab(side) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.menu-page').forEach(p => p.classList.remove('active'));
+  document.getElementById('tab-' + side).classList.add('active');
+  document.getElementById('page-' + side).classList.add('active');
+
+  const dl = document.getElementById('dl-link');
+  if (side === 'middag') { dl.href = 'Fager_Bistro_Meny_Middag.docx'; dl.style.display = 'block'; }
+  else if (side === 'lunsj') { dl.href = 'Fager_Bistro_Meny_Lunsj.docx'; dl.style.display = 'block'; }
+  else { dl.style.display = 'none'; }
+}
+</script>
+</body>
+</html>
