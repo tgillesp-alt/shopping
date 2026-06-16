@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<title>Fager Bistro – Kjøkken MEP</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif; background: #f7f6f3; color: #1a1a1a; min-height: 100vh; }
+header { background: #1a1a1a; padding: 1rem 1.25rem; padding-top: calc(1rem + env(safe-area-inset-top)); display: flex; align-items: center; gap: 0.75rem; }
+.back-btn { color: rgba(255,255,255,0.6); text-decoration: none; font-size: 0.85rem; display: flex; align-items: center; gap: 4px; }
+.header-title { font-size: 0.95rem; font-weight: 600; color: #fff; }
+.main { padding: 1.5rem 1.25rem; display: flex; flex-direction: column; gap: 10px; max-width: 500px; margin: 0 auto; }
+.menu-btn { background: #fff; border: 0.5px solid #e5e2da; border-radius: 12px; padding: 1.1rem 1.25rem; display: flex; align-items: center; justify-content: space-between; text-decoration: none; color: #1a1a1a; transition: background 0.15s; }
+.menu-btn:active { background: #f2f0ea; }
+.menu-left { display: flex; align-items: center; gap: 14px; }
+.menu-icon { font-size: 22px; width: 36px; text-align: center; }
+.menu-label { font-size: 1rem; font-weight: 600; color: #1a1a1a; }
+.menu-sub { font-size: 0.72rem; color: #a8a59d; margin-top: 2px; }
+.menu-arrow { font-size: 16px; color: #c4c0b6; }
+</style>
+</head>
+<body>
+<header>
+  <a href="https://tgillesp-alt.github.io/shopping/portal.html" class="back-btn">‹ Portal</a>
+  <div class="header-title">Kjøkken MEP</div>
+</header>
+<div class="main">
+  <a href="https://tgillesp-alt.github.io/shopping/prepp-kjokken.html?tidspunkt=lunch" class="menu-btn">
+    <div class="menu-left">
+      <div class="menu-icon">☀️</div>
+      <div><div class="menu-label">Lunch</div><div class="menu-sub">Forretter, hovedretter, desserter</div></div>
+    </div>
+    <div class="menu-arrow">›</div>
+  </a>
+  <a href="https://tgillesp-alt.github.io/shopping/prepp-kjokken.html?tidspunkt=kveld" class="menu-btn">
+    <div class="menu-left">
+      <div class="menu-icon">🌙</div>
+      <div><div class="menu-label">Kveld</div><div class="menu-sub">Forretter, hovedretter, desserter</div></div>
+    </div>
+    <div class="menu-arrow">›</div>
+  </a>
+</div>
+</body>
+</html>
