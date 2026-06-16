@@ -23,17 +23,17 @@
 body { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', sans-serif; background: var(--bg); color: var(--dark); min-height: 100vh; }
 
 /* LOGIN */
-#login-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; padding: 2rem 1.5rem; background: var(--dark); }
+#login-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; padding: 2rem 1.5rem; background: var(--bg); }
 #login-box { width: 100%; max-width: 360px; }
-.login-logo { font-size: 1.1rem; font-weight: 600; color: #fff; letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 0.4rem; }
-.login-sub { font-size: 0.8rem; color: rgba(255,255,255,0.4); letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 2.5rem; }
+.login-logo { font-size: 1.1rem; font-weight: 600; color: var(--dark); letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 0.4rem; }
+.login-sub { font-size: 0.8rem; color: var(--muted); letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 2.5rem; }
 .bruker-valg { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-bottom: 1rem; }
-.bruker-btn { padding: 0.8rem; border: 1px solid rgba(255,255,255,0.12); border-radius: var(--radius-sm); background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.7); font-size: 0.95rem; cursor: pointer; transition: all 0.15s; }
-.bruker-btn.valgt { background: #fff; color: var(--dark); border-color: #fff; font-weight: 500; }
-#login-passord { width: 100%; padding: 0.85rem 1rem; border: 1px solid rgba(255,255,255,0.12); border-radius: var(--radius-sm); background: rgba(255,255,255,0.05); color: #fff; font-size: 1rem; margin-bottom: 0.75rem; outline: none; }
-#login-passord::placeholder { color: rgba(255,255,255,0.3); }
-#login-btn { width: 100%; padding: 0.9rem; background: #fff; color: var(--dark); border: none; border-radius: var(--radius-sm); font-size: 1rem; font-weight: 600; cursor: pointer; letter-spacing: 0.02em; }
-#login-error { color: #ff6b6b; font-size: 0.82rem; margin-top: 0.5rem; display: none; text-align: center; }
+.bruker-btn { padding: 0.8rem; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--card); color: var(--dark); font-size: 0.95rem; cursor: pointer; transition: all 0.15s; }
+.bruker-btn.valgt { background: var(--dark); color: #fff; border-color: var(--dark); font-weight: 500; }
+#login-passord { width: 100%; padding: 0.85rem 1rem; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--card); color: var(--dark); font-size: 1rem; margin-bottom: 0.75rem; outline: none; }
+#login-passord::placeholder { color: #b8b4ab; }
+#login-btn { width: 100%; padding: 0.9rem; background: var(--dark); color: #fff; border: none; border-radius: var(--radius-sm); font-size: 1rem; font-weight: 600; cursor: pointer; letter-spacing: 0.02em; }
+#login-error { color: #c0392b; font-size: 0.82rem; margin-top: 0.5rem; display: none; text-align: center; }
 
 /* APP */
 #app { display: none; }
@@ -117,7 +117,7 @@ header { background: var(--dark); color: #fff; padding: 0.9rem 1.25rem; padding-
 
 <div id="login-screen">
   <div id="login-box">
-    <a href="https://tgillesp-alt.github.io/shopping/portal.html" style="color:#fff; text-decoration:none; font-size:0.8rem; font-weight:600; display:flex; align-items:center; gap:5px; letter-spacing:0.08em; margin-bottom:1.75rem;">‹ PORTAL</a>
+    <a href="https://tgillesp-alt.github.io/shopping/portal.html" style="color:#1a1a1a; text-decoration:none; font-size:0.8rem; font-weight:600; display:flex; align-items:center; gap:5px; letter-spacing:0.08em; margin-bottom:1.75rem;">‹ PORTAL</a>
     <div class="login-logo">Fager Bistro</div>
     <div class="login-sub">Shopping</div>
     <div class="bruker-valg">
