@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<title>Fager Bistro – Lagertelling</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif; background: #f7f6f3; color: #1a1a1a; min-height: 100vh; }
+
+header { background: #1a1a1a; padding: 1rem 1.25rem; padding-top: calc(1rem + env(safe-area-inset-top)); display: flex; align-items: center; gap: 0.75rem; position: sticky; top: 0; z-index: 100; }
+.back-btn { color: rgba(255,255,255,0.6); text-decoration: none; font-size: 0.85rem; display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
+.header-title { font-size: 0.95rem; font-weight: 600; flex: 1; color: #fff; }
+
+.tabs { display: flex; gap: 6px; padding: 1rem 1.25rem 0; max-width: 600px; margin: 0 auto; overflow-x: auto; }
+.tabs::-webkit-scrollbar { display: none; }
+.tab { flex-shrink: 0; padding: 0.6rem 1rem; border-radius: 10px; font-size: 0.82rem; font-weight: 600; background: #fff; border: 0.5px solid #e5e2da; color: #8a8782; cursor: pointer; white-space: nowrap; }
+.tab.active { background: #1a1a1a; color: #fff; border-color: #1a1a1a; }
+
+.main { padding: 1.25rem; padding-bottom: calc(3rem + env(safe-area-inset-bottom)); max-width: 600px; margin: 0 auto; }
+.view { display: none; }
+.view.active { display: block; }
+
+label { font-size: 0.8rem; color: #8a8782; display: block; margin-bottom: 6px; }
+input[type=number], input[type=text], select { width: 100%; padding: 0.7rem 0.85rem; border: 0.5px solid #e5e2da; border-radius: 10px; font-size: 1rem; background: #fff; color: #1a1a1a; outline: none; }
+
+.field-group { margin-bottom: 1.1rem; }
+
+.stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 1.5rem; }
+.stat-card { background: #fff; border: 0.5px solid #e5e2da; border-radius: 10px; padding: 0.9rem; }
+.stat-label { font-size: 0.7rem; color: #a8a59d; margin-bottom: 4px; }
+.stat-value { font-size: 1.15rem; font-weight: 700; color: #1a1a1a; }
+.stat-value.pos { color: #0F6E56; }
+.stat-value.neg { color: #993C1D; }
+
+.section-label { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: #a8a59d; margin: 1.5rem 0 0.6rem; }
+.section-label:first-child { margin-top: 0; }
+
+.produkt-row { background: #fff; border: 0.5px solid #e5e2da; border-radius: 10px; padding: 0.7rem 0.9rem; margin-bottom: 6px; display: flex; align-items: center; gap: 10px; }
+.produkt-navn { flex: 1; font-size: 0.88rem; }
+.produkt-pris { font-size: 0.7rem; color: #a8a59d; margin-top: 1px; }
+.produkt-antall { width: 70px; text-align: right; }
+.produkt-verdi { font-size: 0.8rem; font-weight: 600; min-width: 70px; text-align: right; color: #1a1a1a; }
+.produkt-actions { display: flex; gap: 4px; }
+.btn-icon { background: none; border: none; color: #c4c0b6; font-size: 0.85rem; cursor: pointer; padding: 0.2rem; }
+
+.btn-primary { width: 100%; padding: 0.85rem; background: #1a1a1a; color: #fff; border: none; border-radius: 10px; font-size: 0.95rem; font-weight: 600; cursor: pointer; margin-top: 0.5rem; }
+.btn-secondary { width: 100%; padding: 0.7rem; background: #fff; color: #1a1a1a; border: 0.5px solid #e5e2da; border-radius: 10px; font-size: 0.88rem; font-weight: 600; cursor: pointer; margin-top: 0.5rem; }
+
+.hist-card { background: #fff; border: 0.5px solid #e5e2da; border-radius: 12px; padding: 0.9rem 1.1rem; margin-bottom: 8px; }
+.hist-maned { font-size: 0.95rem; font-weight: 700; margin-bottom: 6px; }
+.hist-row { display: flex; justify-content: space-between; font-size: 0.82rem; color: #6b6862; padding: 2px 0; }
+.hist-row.total { border-top: 0.5px solid #e5e2da; margin-top: 4px; padding-top: 6px; font-weight: 700; color: #1a1a1a; }
+
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 200; display: flex; align-items: flex-end; justify-content: center; backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); }
+.modal { background: #fff; border-radius: 20px 20px 0 0; padding: 1.5rem 1.25rem; padding-bottom: calc(1.5rem + env(safe-area-inset-bottom)); width: 100%; max-width: 500px; display: flex; flex-direction: column; gap: 0.6rem; }
+.modal-handle { width: 36px; height: 4px; background: #e5e2da; border-radius: 2px; margin: 0 auto 0.75rem; }
+.modal h3 { font-size: 1rem; font-weight: 600; margin-bottom: 0.25rem; }
+.modal-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; margin-top: 0.4rem; }
+.modal-btns button { padding: 0.8rem; border-radius: 10px; font-size: 0.95rem; font-weight: 600; cursor: pointer; border: none; }
+.btn-lagre { background: #1a1a1a; color: #fff; }
+.btn-avbryt { background: #f7f6f3; color: #1a1a1a; border: 0.5px solid #e5e2da !important; }
+
+.empty { text-align: center; color: #b8b4ab; font-size: 0.9rem; padding: 2rem 0; }
+</style>
+</head>
+<body>
+<header>
+  <a href="https://tgillesp-alt.github.io/shopping/portal.html" class="back-btn">‹ Portal</a>
+  <div class="header-title">Lagertelling</div>
+</header>
+
+<div class="tabs">
+  <button class="tab active" onclick="visTab('ny')">Ny telling</button>
+  <button class="tab" onclick="visTab('produkter')">Produkter</button>
+  <button class="tab" onclick="visTab('historikk')">Historikk</button>
+  <button class="tab" onclick="visTab('innstillinger')">Innstillinger</button>
+</div>
+
+<div class="main">
+
+  <div class="view active" id="view-ny">
+    <div class="field-group">
+      <label>Måned</label>
+      <input type="text" id="ny-maned" placeholder="f.eks. 2026-06">
+    </div>
+    <div class="field-group">
+      <label>Tørrlager – samlet verdi (kr)</label>
+      <input type="number" id="ny-torrlager" placeholder="0">
+    </div>
+
+    <div id="ny-kategorier"></div>
+
+    <div class="stat-grid" style="margin-top:1.5rem;">
+      <div class="stat-card">
+        <div class="stat-label">Total lagerverdi</div>
+        <div class="stat-value" id="ny-total">0 kr</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Avvik mot inngangsverdi</div>
+        <div class="stat-value" id="ny-avvik">0 kr</div>
+      </div>
+    </div>
+
+    <button class="btn-primary" onclick="lagreTelling()">Lagre telling</button>
+  </div>
+
+  <div class="view" id="view-produkter">
+    <button class="btn-secondary" onclick="apneNyttProdukt()">+ Nytt produkt</button>
+    <div id="produkt-liste" style="margin-top:1rem;"></div>
+  </div>
+
+  <div class="view" id="view-historikk">
+    <div id="hist-liste"></div>
+  </div>
+
+  <div class="view" id="view-innstillinger">
+    <div class="field-group">
+      <label>År</label>
+      <input type="number" id="inn-ar" placeholder="2026">
+    </div>
+    <div class="field-group">
+      <label>Inngangsverdi lager (kr)</label>
+      <input type="number" id="inn-verdi" placeholder="0">
+    </div>
+    <button class="btn-primary" onclick="lagreInnstilling()">Lagre</button>
+  </div>
+
+</div>
+
+<div class="modal-overlay" id="modal" style="display:none" onclick="lukkModalOverlay(event)">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <h3 id="modal-tittel">Nytt produkt</h3>
+    <select id="modal-kategori">
+      <option value="Vin">Vin</option>
+      <option value="Sprit">Sprit</option>
+      <option value="Øl">Øl</option>
+      <option value="Mineralvann">Mineralvann</option>
+    </select>
+    <input type="text" id="modal-navn" placeholder="Produktnavn *">
+    <select id="modal-enhet">
+      <option value="flaske">flaske</option>
+      <option value="liter">liter</option>
+      <option value="stk">stk</option>
+    </select>
+    <input type="number" id="modal-pris" placeholder="Pris (kr) *" step="0.01">
+    <div class="modal-btns">
+      <button class="btn-avbryt" onclick="lukkModal()">Avbryt</button>
+      <button class="btn-lagre" onclick="lagreProdukt()">Lagre</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL = 'https://izdclsyuplghwznsjnom.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml6ZGNsc3l1cGxnaHd6bnNqbm9tIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE1MjY5MjksImV4cCI6MjA5NzEwMjkyOX0.GkjxcToCHZrLAm1pVGsBkcLapIOj7uSYd6IcDC0Lyzk';
+
+let produkter = [], tellinger = [], innstillinger = [], editProduktId = null;
+let nyAntall = {};
+
+async function api(method, path, body) {
+  const opts = { method, headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY, 'Content-Type': 'application/json', 'Prefer': method === 'POST' ? 'return=representation' : '' } };
+  if (body) opts.body = JSON.stringify(body);
+  const res = await fetch(SUPABASE_URL + '/rest/v1/' + path, opts);
+  if (res.status === 204) return [];
+  return res.json();
+}
+
+function fmt(n) { return Math.round(n).toLocaleString('nb-NO') + ' kr'; }
+
+function visTab(tab) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelector(`.tab[onclick="visTab('${tab}')"]`).classList.add('active');
+  document.getElementById('view-' + tab).classList.add('active');
+  if (tab === 'historikk') renderHistorikk();
+  if (tab === 'produkter') renderProduktListe();
+}
+
+async function hentAlt() {
+  produkter = await api('GET', 'lager_produkter?order=kategori.asc,sort_order.asc&select=*');
+  tellinger = await api('GET', 'lager_telling?order=maned.desc&select=*,lager_telling_linjer(*)');
+  innstillinger = await api('GET', 'lager_innstillinger?order=ar.desc&select=*');
+  renderNyTelling();
+}
+
+function getInngangsverdi() {
+  return innstillinger.length ? innstillinger[0].inngangsverdi : 0;
+}
+
+function renderNyTelling() {
+  const kategorier = ['Vin', 'Sprit', 'Øl', 'Mineralvann'];
+  const container = document.getElementById('ny-kategorier');
+  container.innerHTML = kategorier.map(kat => {
+    const items = produkter.filter(p => p.kategori === kat);
+    if (!items.length) return '';
+    return `
+      <div class="section-label">${kat}</div>
+      ${items.map(p => `
+        <div class="produkt-row">
+          <div style="flex:1;">
+            <div class="produkt-navn">${p.navn}</div>
+            <div class="produkt-pris">${p.pris} kr / ${p.enhet}</div>
+          </div>
+          <input type="number" class="produkt-antall" placeholder="0" min="0" step="1" data-id="${p.id}" oninput="oppdaterAntall('${p.id}', this.value)">
+        </div>
+      `).join('')}
+    `;
+  }).join('');
+  oppdaterSummering();
+}
+
+function oppdaterAntall(id, val) {
+  nyAntall[id] = parseFloat(val) || 0;
+  oppdaterSummering();
+}
+
+function oppdaterSummering() {
+  const torrlager = parseFloat(document.getElementById('ny-torrlager').value) || 0;
+  let drikkeVerdi = 0;
+  produkter.forEach(p => {
+    const antall = nyAntall[p.id] || 0;
+    drikkeVerdi += antall * p.pris;
+  });
+  const total = torrlager + drikkeVerdi;
+  const inngang = getInngangsverdi();
+  const avvik = total - inngang;
+  document.getElementById('ny-total').textContent = fmt(total);
+  const avvikEl = document.getElementById('ny-avvik');
+  avvikEl.textContent = (avvik >= 0 ? '+' : '') + fmt(avvik);
+  avvikEl.className = 'stat-value ' + (avvik >= 0 ? 'pos' : 'neg');
+}
+
+document.getElementById('ny-torrlager').addEventListener('input', oppdaterSummering);
+
+async function lagreTelling() {
+  const maned = document.getElementById('ny-maned').value.trim();
+  const torrlager = parseFloat(document.getElementById('ny-torrlager').value) || 0;
+  if (!maned) { alert('Skriv inn måned'); return; }
+
+  const eksisterende = tellinger.find(t => t.maned === maned);
+  let tellingId;
+  if (eksisterende) {
+    if (!confirm('Telling for ' + maned + ' finnes allerede. Overskriv?')) return;
+    await api('DELETE', `lager_telling_linjer?telling_id=eq.${eksisterende.id}`);
+    await api('PATCH', `lager_telling?id=eq.${eksisterende.id}`, { torrlager_verdi: torrlager });
+    tellingId = eksisterende.id;
+  } else {
+    const res = await api('POST', 'lager_telling', { maned, torrlager_verdi: torrlager });
+    tellingId = res[0].id;
+  }
+
+  const linjer = Object.entries(nyAntall).filter(([id, antall]) => antall > 0).map(([id, antall]) => ({
+    telling_id: tellingId, produkt_id: id, antall
+  }));
+  if (linjer.length) await api('POST', 'lager_telling_linjer', linjer);
+
+  alert('Telling lagret for ' + maned);
+  nyAntall = {};
+  document.getElementById('ny-maned').value = '';
+  document.getElementById('ny-torrlager').value = '';
+  await hentAlt();
+  visTab('ny');
+}
+
+function renderProduktListe() {
+  const kategorier = ['Vin', 'Sprit', 'Øl', 'Mineralvann'];
+  const container = document.getElementById('produkt-liste');
+  container.innerHTML = kategorier.map(kat => {
+    const items = produkter.filter(p => p.kategori === kat);
+    return `
+      <div class="section-label">${kat}</div>
+      ${items.length ? items.map(p => `
+        <div class="produkt-row">
+          <div style="flex:1;">
+            <div class="produkt-navn">${p.navn}</div>
+            <div class="produkt-pris">${p.pris} kr / ${p.enhet}</div>
+          </div>
+          <div class="produkt-actions">
+            <button class="btn-icon" onclick="apneRedigerProdukt('${p.id}')">✎</button>
+            <button class="btn-icon" onclick="slettProdukt('${p.id}')">✕</button>
+          </div>
+        </div>
+      `).join('') : '<div class="empty">Ingen produkter</div>'}
+    `;
+  }).join('');
+}
+
+function apneNyttProdukt() {
+  editProduktId = null;
+  document.getElementById('modal-tittel').textContent = 'Nytt produkt';
+  document.getElementById('modal-kategori').value = 'Vin';
+  document.getElementById('modal-navn').value = '';
+  document.getElementById('modal-enhet').value = 'flaske';
+  document.getElementById('modal-pris').value = '';
+  document.getElementById('modal').style.display = 'flex';
+}
+
+function apneRedigerProdukt(id) {
+  const p = produkter.find(p => p.id === id);
+  if (!p) return;
+  editProduktId = id;
+  document.getElementById('modal-tittel').textContent = 'Rediger produkt';
+  document.getElementById('modal-kategori').value = p.kategori;
+  document.getElementById('modal-navn').value = p.navn;
+  document.getElementById('modal-enhet').value = p.enhet;
+  document.getElementById('modal-pris').value = p.pris;
+  document.getElementById('modal').style.display = 'flex';
+}
+
+async function lagreProdukt() {
+  const kategori = document.getElementById('modal-kategori').value;
+  const navn = document.getElementById('modal-navn').value.trim();
+  const enhet = document.getElementById('modal-enhet').value;
+  const pris = parseFloat(document.getElementById('modal-pris').value) || 0;
+  if (!navn) { alert('Skriv inn produktnavn'); return; }
+  if (editProduktId) {
+    await api('PATCH', `lager_produkter?id=eq.${editProduktId}`, { kategori, navn, enhet, pris });
+  } else {
+    await api('POST', 'lager_produkter', { kategori, navn, enhet, pris, sort_order: 999 });
+  }
+  lukkModal();
+  await hentAlt();
+  renderProduktListe();
+}
+
+async function slettProdukt(id) {
+  if (!confirm('Slett dette produktet?')) return;
+  await api('DELETE', `lager_produkter?id=eq.${id}`);
+  await hentAlt();
+  renderProduktListe();
+}
+
+function lukkModal() { document.getElementById('modal').style.display = 'none'; editProduktId = null; }
+function lukkModalOverlay(e) { if (e.target === document.getElementById('modal')) lukkModal(); }
+
+function renderHistorikk() {
+  const container = document.getElementById('hist-liste');
+  if (!tellinger.length) { container.innerHTML = '<div class="empty">Ingen tellinger registrert</div>'; return; }
+  const inngang = getInngangsverdi();
+  container.innerHTML = tellinger.map(t => {
+    const drikkeVerdi = (t.lager_telling_linjer || []).reduce((sum, linje) => {
+      const p = produkter.find(p => p.id === linje.produkt_id);
+      return sum + (p ? p.pris * linje.antall : 0);
+    }, 0);
+    const total = t.torrlager_verdi + drikkeVerdi;
+    const avvik = total - inngang;
+    return `
+      <div class="hist-card">
+        <div class="hist-maned">${t.maned}</div>
+        <div class="hist-row"><span>Tørrlager</span><span>${fmt(t.torrlager_verdi)}</span></div>
+        <div class="hist-row"><span>Vin/Sprit/Øl/Min.vann</span><span>${fmt(drikkeVerdi)}</span></div>
+        <div class="hist-row total"><span>Total</span><span>${fmt(total)}</span></div>
+        <div class="hist-row" style="color:${avvik >= 0 ? '#0F6E56' : '#993C1D'}; font-weight:600;"><span>Avvik mot inngangsverdi</span><span>${avvik >= 0 ? '+' : ''}${fmt(avvik)}</span></div>
+      </div>
+    `;
+  }).join('');
+}
+
+async function lagreInnstilling() {
+  const ar = parseInt(document.getElementById('inn-ar').value);
+  const verdi = parseFloat(document.getElementById('inn-verdi').value) || 0;
+  if (!ar) { alert('Skriv inn år'); return; }
+  const eksisterende = innstillinger.find(i => i.ar === ar);
+  if (eksisterende) {
+    await api('PATCH', `lager_innstillinger?id=eq.${eksisterende.id}`, { inngangsverdi: verdi });
+  } else {
+    await api('POST', 'lager_innstillinger', { ar, inngangsverdi: verdi });
+  }
+  alert('Lagret');
+  await hentAlt();
+}
+
+function fyllInnstillingerFelt() {
+  if (innstillinger.length) {
+    document.getElementById('inn-ar').value = innstillinger[0].ar;
+    document.getElementById('inn-verdi').value = innstillinger[0].inngangsverdi;
+  } else {
+    document.getElementById('inn-ar').value = new Date().getFullYear();
+  }
+}
+
+hentAlt().then(fyllInnstillingerFelt);
+</script>
+</body>
+</html>
