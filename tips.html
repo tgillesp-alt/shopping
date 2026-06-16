@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<title>Fager Bistro – Tips</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif; background: #111110; color: #fff; min-height: 100vh; }
+
+#login-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; padding: 2rem 1.5rem; }
+#login-box { width: 100%; max-width: 360px; }
+.back-link { color: #fff; text-decoration: none; font-size: 0.85rem; font-weight: 600; display: flex; align-items: center; gap: 6px; letter-spacing: 0.08em; margin-bottom: 2rem; opacity: 0.8; }
+.login-logo { font-size: 1.1rem; font-weight: 600; color: #fff; letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 0.4rem; }
+.login-sub { font-size: 0.8rem; color: rgba(255,255,255,0.4); letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 2.5rem; }
+#login-box input { width: 100%; padding: 0.9rem 1rem; border: 0.5px solid rgba(255,255,255,0.15); border-radius: 12px; font-size: 1rem; background: rgba(255,255,255,0.06); color: #fff; outline: none; margin-bottom: 0.85rem; }
+#login-box button { width: 100%; padding: 0.9rem; border-radius: 12px; font-size: 1rem; font-weight: 600; background: #fff; color: #111110; border: none; cursor: pointer; }
+#feil { color: #ff6b6b; font-size: 0.82rem; margin-top: 0.5rem; display: none; }
+
+#app { display: none; }
+header { background: #111110; padding: 1rem 1.25rem; padding-top: calc(1rem + env(safe-area-inset-top)); display: flex; align-items: center; gap: 0.75rem; position: sticky; top: 0; z-index: 100; border-bottom: 0.5px solid rgba(255,255,255,0.08); }
+.back-btn { color: rgba(255,255,255,0.5); text-decoration: none; font-size: 0.85rem; display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
+.header-title { font-size: 0.95rem; font-weight: 600; flex: 1; }
+.main { padding: 1.25rem; padding-bottom: calc(3rem + env(safe-area-inset-bottom)); max-width: 480px; margin: 0 auto; }
+
+label { font-size: 0.8rem; color: rgba(255,255,255,0.5); display: block; margin-bottom: 6px; }
+input[type=number] { width: 100%; padding: 0.7rem 0.85rem; border: 0.5px solid rgba(255,255,255,0.15); border-radius: 10px; font-size: 1rem; background: rgba(255,255,255,0.08); color: #fff; outline: none; }
+
+.stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 1.25rem 0; }
+.stat-card { background: rgba(255,255,255,0.06); border-radius: 10px; padding: 0.85rem; }
+.stat-label { font-size: 0.7rem; color: rgba(255,255,255,0.45); margin-bottom: 4px; }
+.stat-value { font-size: 1.1rem; font-weight: 700; }
+
+.fordeling-card { background: rgba(255,255,255,0.06); border-radius: 10px; padding: 0.85rem; margin-bottom: 1.5rem; }
+.fordeling-sub { font-size: 0.72rem; color: rgba(255,255,255,0.4); margin-top: 4px; }
+
+.pool-title { font-size: 0.85rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; margin: 1.5rem 0 0.75rem; color: rgba(255,255,255,0.8); }
+
+.timer-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.timer-row span.navn { flex: 1; font-size: 0.9rem; }
+.timer-row input { width: 80px; text-align: right; }
+.timer-row span.unit { font-size: 0.72rem; color: rgba(255,255,255,0.35); width: 32px; }
+
+.result-card { background: rgba(255,255,255,0.06); border-radius: 12px; padding: 1rem 1.1rem; margin-top: 1.5rem; }
+.result-card h3 { font-size: 0.95rem; font-weight: 700; margin-bottom: 0.75rem; }
+table { width: 100%; font-size: 0.82rem; border-collapse: collapse; }
+td { padding: 5px 0; }
+.td-navn { color: rgba(255,255,255,0.85); }
+.td-meta { text-align: right; color: rgba(255,255,255,0.4); font-size: 0.72rem; }
+.td-belop { text-align: right; font-weight: 700; }
+.section-label { padding: 10px 0 4px; font-size: 0.72rem; font-weight: 700; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 0.05em; }
+.sum-row td { border-top: 0.5px solid rgba(255,255,255,0.12); font-size: 0.72rem; color: rgba(255,255,255,0.5); padding-top: 8px; }
+</style>
+</head>
+<body>
+
+<div id="login-screen">
+  <div id="login-box">
+    <a href="https://tgillesp-alt.github.io/shopping/portal.html" class="back-link">‹ PORTAL</a>
+    <div class="login-logo">Fager Bistro</div>
+    <div class="login-sub">Tips</div>
+    <input type="password" id="passord" placeholder="Passord" onkeydown="if(event.key==='Enter') loggInn()">
+    <button onclick="loggInn()">Logg inn</button>
+    <div id="feil">Feil passord</div>
+  </div>
+</div>
+
+<div id="app">
+  <header>
+    <a href="https://tgillesp-alt.github.io/shopping/portal.html" class="back-btn">‹ Portal</a>
+    <div class="header-title">Tip pool-kalkulator</div>
+  </header>
+
+  <div class="main">
+    <label>Total driks denne måneden (kr)</label>
+    <input type="number" id="total-tips" value="50000">
+
+    <div class="stat-grid">
+      <div class="stat-card">
+        <div class="stat-label">Til gårdeier (10%)</div>
+        <div class="stat-value" id="out-gardeier">0 kr</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Fuck-ups pott (10%)</div>
+        <div class="stat-value" id="out-fuckups">0 kr</div>
+      </div>
+    </div>
+
+    <div class="fordeling-card">
+      <div class="stat-label">Til fordeling (80%)</div>
+      <div class="stat-value" id="out-fordeling" style="font-size:1.4rem;">0 kr</div>
+      <div class="fordeling-sub" id="out-fordeling-sub"></div>
+    </div>
+
+    <div class="pool-title">Kjøkken</div>
+    <div id="kjokken-rows"></div>
+
+    <div class="pool-title">Sal</div>
+    <div id="sal-rows"></div>
+
+    <div class="result-card">
+      <h3>Utbetaling per person</h3>
+      <table id="result-table"></table>
+    </div>
+  </div>
+</div>
+
+<script>
+const PASSORD = 'bsl06620';
+
+function loggInn() {
+  const input = document.getElementById('passord').value;
+  if (input === PASSORD) {
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    sessionStorage.setItem('tips_auth', '1');
+  } else {
+    document.getElementById('feil').style.display = 'block';
+  }
+}
+
+if (sessionStorage.getItem('tips_auth') === '1') {
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+}
+
+const CAP = 160;
+const kjokken = [
+  { navn: 'Marcus', timer: 160 },
+  { navn: 'Thomas', timer: 160 },
+  { navn: 'Joakim', timer: 100 }
+];
+const sal = [
+  { navn: 'Christine', timer: 160 },
+  { navn: 'Norah', timer: 80 },
+  { navn: 'Benjamin', timer: 120 }
+];
+
+function renderRows(containerId, people) {
+  const el = document.getElementById(containerId);
+  el.innerHTML = people.map((p, i) => `
+    <div class="timer-row">
+      <span class="navn">${p.navn}</span>
+      <input type="number" value="${p.timer}" min="0" step="1" data-group="${containerId}" data-idx="${i}" class="timer-input">
+      <span class="unit">timer</span>
+    </div>
+  `).join('');
+}
+
+function round(n) { return Math.round(n); }
+function fmt(n) { return round(n).toLocaleString('nb-NO') + ' kr'; }
+
+function calculate() {
+  const totalTips = parseFloat(document.getElementById('total-tips').value) || 0;
+  const gardeier = totalTips * 0.10;
+  const fuckups = totalTips * 0.10;
+  const fordeling = totalTips * 0.80;
+  const perPool = fordeling / 2;
+
+  document.getElementById('out-gardeier').textContent = fmt(gardeier);
+  document.getElementById('out-fuckups').textContent = fmt(fuckups);
+  document.getElementById('out-fordeling').textContent = fmt(fordeling);
+  document.getElementById('out-fordeling-sub').textContent = fmt(perPool) + ' kjøkken · ' + fmt(perPool) + ' sal';
+
+  function poolResults(people) {
+    const cappedTimer = people.map(p => Math.min(p.timer, CAP));
+    const sumCapped = cappedTimer.reduce((a, b) => a + b, 0);
+    return people.map((p, i) => {
+      const andel = sumCapped > 0 ? cappedTimer[i] / sumCapped : 0;
+      const belop = andel * perPool;
+      return { navn: p.navn, timer: p.timer, andel, belop };
+    });
+  }
+
+  const kjokkenRes = poolResults(kjokken);
+  const salRes = poolResults(sal);
+
+  function rowsFor(res) {
+    return res.map(r => `
+      <tr>
+        <td class="td-navn">${r.navn}</td>
+        <td class="td-meta">${r.timer}t${r.timer > CAP ? ' (' + CAP + 't tak)' : ''}</td>
+        <td class="td-meta">${round(r.andel * 100)}%</td>
+        <td class="td-belop">${fmt(r.belop)}</td>
+      </tr>
+    `).join('');
+  }
+
+  const kjokkenTotal = kjokkenRes.reduce((a, r) => a + r.belop, 0);
+  const salTotal = salRes.reduce((a, r) => a + r.belop, 0);
+
+  document.getElementById('result-table').innerHTML = `
+    <tr class="section-label"><td colspan="4">Kjøkken</td></tr>
+    ${rowsFor(kjokkenRes)}
+    <tr class="sum-row"><td colspan="3">Sum kjøkken</td><td class="td-belop">${fmt(kjokkenTotal)}</td></tr>
+    <tr class="section-label"><td colspan="4">Sal</td></tr>
+    ${rowsFor(salRes)}
+    <tr class="sum-row"><td colspan="3">Sum sal</td><td class="td-belop">${fmt(salTotal)}</td></tr>
+  `;
+}
+
+renderRows('kjokken-rows', kjokken);
+renderRows('sal-rows', sal);
+document.getElementById('total-tips').addEventListener('input', calculate);
+document.addEventListener('input', (e) => {
+  if (e.target.classList.contains('timer-input')) {
+    const group = e.target.dataset.group;
+    const idx = parseInt(e.target.dataset.idx);
+    const val = parseFloat(e.target.value) || 0;
+    if (group === 'kjokken-rows') kjokken[idx].timer = val;
+    if (group === 'sal-rows') sal[idx].timer = val;
+    calculate();
+  }
+});
+calculate();
+</script>
+</body>
+</html>
