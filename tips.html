@@ -8,50 +8,50 @@
 <title>Fager Bistro – Tips</title>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-body { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif; background: #111110; color: #fff; min-height: 100vh; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif; background: #f7f6f3; color: #1a1a1a; min-height: 100vh; }
 
-#login-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; padding: 2rem 1.5rem; }
+#login-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; padding: 2rem 1.5rem; background: #1a1a1a; }
 #login-box { width: 100%; max-width: 360px; }
 .back-link { color: #fff; text-decoration: none; font-size: 0.85rem; font-weight: 600; display: flex; align-items: center; gap: 6px; letter-spacing: 0.08em; margin-bottom: 2rem; opacity: 0.8; }
 .login-logo { font-size: 1.1rem; font-weight: 600; color: #fff; letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 0.4rem; }
 .login-sub { font-size: 0.8rem; color: rgba(255,255,255,0.4); letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 2.5rem; }
 #login-box input { width: 100%; padding: 0.9rem 1rem; border: 0.5px solid rgba(255,255,255,0.15); border-radius: 12px; font-size: 1rem; background: rgba(255,255,255,0.06); color: #fff; outline: none; margin-bottom: 0.85rem; }
-#login-box button { width: 100%; padding: 0.9rem; border-radius: 12px; font-size: 1rem; font-weight: 600; background: #fff; color: #111110; border: none; cursor: pointer; }
+#login-box button { width: 100%; padding: 0.9rem; border-radius: 12px; font-size: 1rem; font-weight: 600; background: #fff; color: #1a1a1a; border: none; cursor: pointer; }
 #feil { color: #ff6b6b; font-size: 0.82rem; margin-top: 0.5rem; display: none; }
 
 #app { display: none; }
-header { background: #111110; padding: 1rem 1.25rem; padding-top: calc(1rem + env(safe-area-inset-top)); display: flex; align-items: center; gap: 0.75rem; position: sticky; top: 0; z-index: 100; border-bottom: 0.5px solid rgba(255,255,255,0.08); }
-.back-btn { color: rgba(255,255,255,0.5); text-decoration: none; font-size: 0.85rem; display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
-.header-title { font-size: 0.95rem; font-weight: 600; flex: 1; }
+header { background: #1a1a1a; padding: 1rem 1.25rem; padding-top: calc(1rem + env(safe-area-inset-top)); display: flex; align-items: center; gap: 0.75rem; position: sticky; top: 0; z-index: 100; }
+.back-btn { color: rgba(255,255,255,0.6); text-decoration: none; font-size: 0.85rem; display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
+.header-title { font-size: 0.95rem; font-weight: 600; flex: 1; color: #fff; }
 .main { padding: 1.25rem; padding-bottom: calc(3rem + env(safe-area-inset-bottom)); max-width: 480px; margin: 0 auto; }
 
-label { font-size: 0.8rem; color: rgba(255,255,255,0.5); display: block; margin-bottom: 6px; }
-input[type=number] { width: 100%; padding: 0.7rem 0.85rem; border: 0.5px solid rgba(255,255,255,0.15); border-radius: 10px; font-size: 1rem; background: rgba(255,255,255,0.08); color: #fff; outline: none; }
+label { font-size: 0.8rem; color: #8a8782; display: block; margin-bottom: 6px; }
+input[type=number] { width: 100%; padding: 0.7rem 0.85rem; border: 0.5px solid #e5e2da; border-radius: 10px; font-size: 1rem; background: #fff; color: #1a1a1a; outline: none; }
 
 .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 1.25rem 0; }
-.stat-card { background: rgba(255,255,255,0.06); border-radius: 10px; padding: 0.85rem; }
-.stat-label { font-size: 0.7rem; color: rgba(255,255,255,0.45); margin-bottom: 4px; }
-.stat-value { font-size: 1.1rem; font-weight: 700; }
+.stat-card { background: #fff; border: 0.5px solid #e5e2da; border-radius: 10px; padding: 0.85rem; }
+.stat-label { font-size: 0.7rem; color: #a8a59d; margin-bottom: 4px; }
+.stat-value { font-size: 1.1rem; font-weight: 700; color: #1a1a1a; }
 
-.fordeling-card { background: rgba(255,255,255,0.06); border-radius: 10px; padding: 0.85rem; margin-bottom: 1.5rem; }
-.fordeling-sub { font-size: 0.72rem; color: rgba(255,255,255,0.4); margin-top: 4px; }
+.fordeling-card { background: #fff; border: 0.5px solid #e5e2da; border-radius: 10px; padding: 0.85rem; margin-bottom: 1.5rem; }
+.fordeling-sub { font-size: 0.72rem; color: #a8a59d; margin-top: 4px; }
 
-.pool-title { font-size: 0.85rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; margin: 1.5rem 0 0.75rem; color: rgba(255,255,255,0.8); }
+.pool-title { font-size: 0.85rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; margin: 1.5rem 0 0.75rem; color: #4a4844; }
 
 .timer-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
-.timer-row span.navn { flex: 1; font-size: 0.9rem; }
+.timer-row span.navn { flex: 1; font-size: 0.9rem; color: #1a1a1a; }
 .timer-row input { width: 80px; text-align: right; }
-.timer-row span.unit { font-size: 0.72rem; color: rgba(255,255,255,0.35); width: 32px; }
+.timer-row span.unit { font-size: 0.72rem; color: #a8a59d; width: 32px; }
 
-.result-card { background: rgba(255,255,255,0.06); border-radius: 12px; padding: 1rem 1.1rem; margin-top: 1.5rem; }
-.result-card h3 { font-size: 0.95rem; font-weight: 700; margin-bottom: 0.75rem; }
+.result-card { background: #fff; border: 0.5px solid #e5e2da; border-radius: 12px; padding: 1rem 1.1rem; margin-top: 1.5rem; }
+.result-card h3 { font-size: 0.95rem; font-weight: 700; margin-bottom: 0.75rem; color: #1a1a1a; }
 table { width: 100%; font-size: 0.82rem; border-collapse: collapse; }
 td { padding: 5px 0; }
-.td-navn { color: rgba(255,255,255,0.85); }
-.td-meta { text-align: right; color: rgba(255,255,255,0.4); font-size: 0.72rem; }
-.td-belop { text-align: right; font-weight: 700; }
-.section-label { padding: 10px 0 4px; font-size: 0.72rem; font-weight: 700; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 0.05em; }
-.sum-row td { border-top: 0.5px solid rgba(255,255,255,0.12); font-size: 0.72rem; color: rgba(255,255,255,0.5); padding-top: 8px; }
+.td-navn { color: #1a1a1a; }
+.td-meta { text-align: right; color: #a8a59d; font-size: 0.72rem; }
+.td-belop { text-align: right; font-weight: 700; color: #1a1a1a; }
+.section-label { padding: 10px 0 4px; font-size: 0.72rem; font-weight: 700; color: #6b6862; text-transform: uppercase; letter-spacing: 0.05em; }
+.sum-row td { border-top: 0.5px solid #e5e2da; font-size: 0.72rem; color: #8a8782; padding-top: 8px; }
 </style>
 </head>
 <body>
