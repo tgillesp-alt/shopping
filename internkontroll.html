@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<title>Fager Bistro – Internkontroll</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif; background: #f7f6f3; color: #1a1a1a; min-height: 100vh; }
+
+header { background: #1a1a1a; padding: 1rem 1.25rem; padding-top: calc(1rem + env(safe-area-inset-top)); display: flex; align-items: center; gap: 0.75rem; position: sticky; top: 0; z-index: 100; }
+.back-btn { color: rgba(255,255,255,0.6); text-decoration: none; font-size: 0.85rem; display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
+.header-title { font-size: 0.95rem; font-weight: 600; flex: 1; color: #fff; }
+.dl-btn { background: #fff; color: #1a1a1a; border: none; padding: 0.4rem 0.75rem; border-radius: 8px; font-size: 0.78rem; font-weight: 600; text-decoration: none; }
+
+.main { padding: 1.5rem 1.25rem; padding-bottom: calc(3rem + env(safe-area-inset-bottom)); max-width: 680px; margin: 0 auto; }
+
+.doc-title { font-size: 1.2rem; font-weight: 700; text-align: center; margin-bottom: 0.3rem; }
+.doc-sub { font-size: 0.8rem; color: #8a8782; text-align: center; margin-bottom: 1.75rem; font-style: italic; }
+
+.allergen-note { font-size: 0.7rem; color: #a8a59d; background: #fff; border: 0.5px solid #e5e2da; border-radius: 10px; padding: 0.75rem 0.9rem; margin-bottom: 1.75rem; line-height: 1.5; }
+
+.section-title { font-size: 0.95rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: #1a1a1a; margin: 2rem 0 1rem; padding-bottom: 0.5rem; border-bottom: 2px solid #1a1a1a; }
+
+.regel-card { background: #fff; border: 0.5px solid #e5e2da; border-radius: 12px; padding: 1.1rem 1.25rem; margin-bottom: 1rem; }
+.regel-head { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; margin-bottom: 0.7rem; flex-wrap: wrap; }
+.regel-paragraf { font-size: 0.7rem; font-weight: 700; color: #8a8782; text-transform: uppercase; letter-spacing: 0.04em; }
+.regel-prikker { font-size: 0.7rem; font-weight: 700; padding: 0.2rem 0.55rem; border-radius: 20px; flex-shrink: 0; white-space: nowrap; }
+.prikker-8 { background: #FAECE7; color: #993C1D; }
+.prikker-4 { background: #FAEEDA; color: #854F0B; }
+.prikker-2 { background: #FEF6E0; color: #8a6d1a; }
+.prikker-1 { background: #F1EFE8; color: #5F5E5A; }
+
+.regel-overtredelse { font-size: 0.92rem; font-weight: 600; margin-bottom: 0.75rem; line-height: 1.4; }
+
+.regel-block { margin-bottom: 0.65rem; }
+.regel-label { font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #a8a59d; margin-bottom: 0.25rem; }
+.regel-text { font-size: 0.85rem; color: #3a3834; line-height: 1.55; }
+.regel-ansvar { font-size: 0.8rem; color: #6b6862; font-style: italic; margin-top: 0.6rem; padding-top: 0.6rem; border-top: 0.5px solid #e5e2da; }
+
+.praksis-block { background: #fff; border: 0.5px solid #e5e2da; border-radius: 12px; padding: 1.1rem 1.25rem; margin-bottom: 1rem; }
+.praksis-letter { font-weight: 700; }
+</style>
+</head>
+<body>
+<header>
+  <a href="https://tgillesp-alt.github.io/shopping/portal.html" class="back-btn">‹ Portal</a>
+  <div class="header-title">Internkontroll</div>
+  <a href="Internkontroll-FagerBistro-2026.pdf" class="dl-btn" download>⬇ PDF</a>
+</header>
+
+<div class="main">
+  <div class="doc-title">Internkontroll for skjenkested</div>
+  <div class="doc-sub">Fager Bistro</div>
+
+  <div class="allergen-note">
+    Overtredelser er rangert etter alvorlighet, synliggjort ved antall prikker etter prikksystemet som trådte i kraft 1.1.2016.
+  </div>
+
+  <div class="section-title">1. Kartlegging av utfordringer og beskrivelse av tiltak</div>
+
+  <div class="regel-card">
+    <div class="regel-head">
+      <span class="regel-paragraf">AL § 1-5</span>
+      <span class="regel-prikker prikker-8">8 prikker</span>
+    </div>
+    <div class="regel-overtredelse">Skjenking til person som er under 18 år</div>
+    <div class="regel-block">
+      <div class="regel-label">Utfordringer</div>
+      <div class="regel-text">Falsk og lånt legitimasjon vises i døren, mens gjesten betaler med sitt eget bankkort. Mindreårige kommer av og til sammen med en eldre vennegjeng, og det er vanskelig å gjette alder. De kommer ofte tidlig på kvelden før vakten er på plass, og kan få alkohol av eldre gjester. Personalet sjekker ikke legitimasjon.</div>
+    </div>
+    <div class="regel-block">
+      <div class="regel-label">Tiltak / rutiner</div>
+      <div class="regel-text">Personalet har instruks om å sjekke legitimasjon på alle som ser ut som de er under 25 år. Oppslag i baren om at vi ber om legitimasjon fra alle som ser yngre ut enn 25 år. Oversikt over hvilket årstall man må være født i for å være over 18 og 20 år henges opp. Er personalet i tvil om alder, har den ansatte plikt til å spørre om (men ikke kreve) legitimasjon. Vises ikke legitimasjon, skal salg nektes.<br><br>
+      Steg-for-steg ved legitimasjonskontroll: hold legitimasjonen i hånden, sjekk om den er hel og kjennes ekte ut, stryk tommelen diagonalt over ID-kortet for å kjenne om det er i flukt eller forhøyet på riktige steder, bruk god tid, vurder om bildet ligner og alderen stemmer, spør eventuelt om stjernetegn.<br><br>
+      Særskilt fokus på bord med mindreårige. Vurder i forkant sjansene for at det kommer mange mindreårige, og sett inn ekstra servitører/vakter de kveldene med ekstra grundig briefing.</div>
+    </div>
+    <div class="regel-ansvar">Ansvar: Styrer, servitører og ekstravakt. Fortløpende.</div>
+  </div>
+
+  <div class="regel-card">
+    <div class="regel-head">
+      <span class="regel-paragraf">AF § 4-1</span>
+      <span class="regel-prikker prikker-8">8 prikker</span>
+    </div>
+    <div class="regel-overtredelse">Brudd på plikten til å sørge for at personer som trenger det, får nødvendig bistand</div>
+    <div class="regel-block">
+      <div class="regel-label">Utfordringer</div>
+      <div class="regel-text">Gjester drikker for mye, blir syke, får skader eller atypisk rus og blir ute av stand til å ta vare på seg selv uten å få den hjelpen de trenger. Skjer ofte på travle tidspunkter når personalet har mye å gjøre.</div>
+    </div>
+    <div class="regel-block">
+      <div class="regel-label">Tiltak / rutiner</div>
+      <div class="regel-text">Blir noen ute av stand til å ta vare på seg selv, skal en eller flere ansatte hjelpe personen. Hjelpen kan bestå i å sørge for at personen blir ivaretatt av en venn/venninne (ikke la gutter ta vare på jenter de ikke kjenner godt fra før), yte førstehjelp, eller ringe ambulanse, taxi eller politi. Stedet må, selv i travle perioder, kunne frigjøre ansatte til å hjelpe i slike situasjoner, for eksempel ansvarshavende, ryddehjelp eller dørvakt. Pass på at personen ikke har tilgang til alkohol.</div>
+    </div>
+    <div class="regel-ansvar">Ansvar: Styrer informerer nye ansatte på personalmøter. Alle ansatte. Fortløpende.</div>
+  </div>
+
+  <div class="regel-card">
+    <div class="regel-head">
+      <span class="regel-paragraf">AL § 4-7</span>
+      <span class="regel-prikker prikker-8">8 prikker</span>
+    </div>
+    <div class="regel-overtredelse">Brudd på kravet om forsvarlig drift</div>
+    <div class="regel-block">
+      <div class="regel-label">Utfordringer</div>
+      <div class="regel-text">Utfordrende å holde oversikt over alle plikter som følger av regelverket, og å sikre at alle ansatte følger stedets rutiner. Besøkstall kan variere kraftig, noe som gjør det vanskelig å sikre nok ansatte til enhver tid. Utfordrende klientell kan ta oppmerksomheten bort fra andre oppgaver. Mangelfulle forundersøkelser kan føre til at man mister kontrollen over skjenkingen og gjestenes sikkerhet under et arrangement. Ikke nok ryddehjelp gir risiko for at tomme glass knuses og medfører skade.</div>
+    </div>
+    <div class="regel-block">
+      <div class="regel-label">Tiltak / rutiner</div>
+      <div class="regel-text">Sikre at alle får tilstrekkelig opplæring knyttet til sine oppgaver. Bruke arbeidsavtaler, medarbeidersamtaler og personalmøter til å understreke viktigheten av å følge regelverket og våre rutiner. Ved uventede hendelser skal styrer/stedfortreder tilkalles for å vurdere situasjonen og sette i verk nødvendige tiltak, som å tilkalle flere ansatte eller stenge innslipp, bar eller hele stedet. Ved spesielle arrangementer skal styrer gjøre grundige undersøkelser om hvem som kommer, og organisere arrangementet deretter.</div>
+    </div>
+    <div class="regel-ansvar">Ansvar: Styrer/stedfortreder, ansvarshavende.</div>
+  </div>
+
+  <div class="regel-card">
+    <div class="regel-head">
+      <span class="regel-paragraf">AL § 1-9</span>
+      <span class="regel-prikker prikker-8">8 prikker</span>
+    </div>
+    <div class="regel-overtredelse">Hindring av kommunal kontroll</div>
+    <div class="regel-block">
+      <div class="regel-label">Utfordringer</div>
+      <div class="regel-text">Manglende kunnskap om kravet eller usikkerhet om egne plikter kan medføre at ansatte vil konferere med overordnede før de gir kontrollører adgang til lokalet.</div>
+    </div>
+    <div class="regel-block">
+      <div class="regel-label">Tiltak / rutiner</div>
+      <div class="regel-text">Opplæring til alle ansatte. Kontrollørene skal aldri nektes adgang til lokalet, selv om de kommer utenom åpningstiden eller ved private fester. De skal ikke vente eller stå i kø, og ikke nektes hjelp ved behov for informasjon eller legitimasjonskontroll.</div>
+    </div>
+    <div class="regel-ansvar">Ansvar: Styrer/stedfortreder. Fortløpende.</div>
+  </div>
+
+  <div class="regel-card">
+    <div class="regel-head">
+      <span class="regel-paragraf">AF § 4-2</span>
+      <span class="regel-prikker prikker-4">4 prikker</span>
+    </div>
+    <div class="regel-overtredelse">Skjenking til person som er eller må antas å bli åpenbart påvirket av rusmidler</div>
+    <div class="regel-block">
+      <div class="regel-label">Utfordringer</div>
+      <div class="regel-text">Drikkekultur som forventer fyll. Arbeidsforholdene (lys, musikk, fullt lokale) gjør det vanskelig å vurdere rusnivå. Serveringsnekt skaper dårlig stemning og tar tid, og bartendere prioriterer ofte å få unna køen i stedet for å vurdere rusnivå. Det er vanskelig å avvise stamgjester, å peke ut enkeltpersoner når mange er påvirket samtidig, og å vurdere rusnivå når en gjest sitter. Gjester kjøper til hverandre, noe som gjør det vanskelig å kontrollere hvor alkoholen går, og personer kan komme fra vorspiel eller bar med stigende rus.</div>
+    </div>
+    <div class="regel-block">
+      <div class="regel-label">Tiltak / rutiner</div>
+      <div class="regel-text">Arbeidsforholdene legges til rette for gode muligheter til å vurdere rusnivå: god belysning, maksgrense for lydnivå og maks 40 personer i lokalet etter kl. 24.00. Dørvakt vurderer i døren når dørvakt er på jobb, og barpersonalet er oppmerksomme på hver enkelt gjest selv når det er dørvakt. Er personalet i tvil, må personen nektes alkohol; er personen åpenbart påvirket, må personen forlate lokalet, og det skjenkes ikke til resten av bordet før personen har gått. Be om hjelp fra annet personell eller dørvakt ved kranglete gjester.</div>
+    </div>
+    <div class="regel-ansvar">Ansvar: Styrer/stedfortreder og alle ansatte på jobb.</div>
+  </div>
+
+  <div class="regel-card">
+    <div class="regel-head">
+      <span class="regel-paragraf">AL § 4-4</span>
+      <span class="regel-prikker prikker-4">4 prikker</span>
+    </div>
+    <div class="regel-overtredelse">Brudd på skjenketidsbestemmelsene</div>
+    <div class="regel-block">
+      <div class="regel-label">Utfordringer</div>
+      <div class="regel-text">Bestillinger tas imot for sent til å bli levert før kl. 00.30. Skjenking pågår tett opp mot 00.30 med høy musikk og dunkel belysning helt til 00.45, slik at det ikke er tid til å fjerne alkohol og få ut gjester før 01.00. Personalet kan også bli fristet til personalpils etter stengetid.</div>
+    </div>
+    <div class="regel-block">
+      <div class="regel-label">Tiltak / rutiner</div>
+      <div class="regel-text">Bestilling stoppes kl. 22.30, og utdeling av alkohol stoppes før 22.35. Rolig og lav musikk fra kl. 22.30, samt at lyset slås på. Gjestene informeres om at de må begynne å trekke ut kl. 22.50, og at alle må være ute før kl. 23.05. Personalpils etter jobb tillates ikke.</div>
+    </div>
+    <div class="regel-ansvar">Ansvar: Alle ansatte på jobb.</div>
+  </div>
+
+  <div class="regel-card">
+    <div class="regel-head">
+      <span class="regel-paragraf">AL § 1-5, AF § 4-3</span>
+      <span class="regel-prikker prikker-4">4 prikker</span>
+    </div>
+    <div class="regel-overtredelse">Skjenking av alkoholholdig drikk gruppe 3 til person på 18 eller 19 år</div>
+    <div class="regel-block">
+      <div class="regel-label">Utfordringer</div>
+      <div class="regel-text">Slipper 18-/19-åringer inn i lokalet, kan de prøve å bestille shots eller drinker, eller be eldre venner kjøpe for seg.</div>
+    </div>
+    <div class="regel-block">
+      <div class="regel-label">Tiltak / rutiner</div>
+      <div class="regel-text">Be om legitimasjon dersom personen ser ut til å være under 25 år. Runder med shots eller drinker tillates ikke. Følg med på hva som skjer i lokalet, og se ellers punktet om skjenking til mindreårige.</div>
+    </div>
+    <div class="regel-ansvar">Ansvar: Servitører, eventuelt vakt.</div>
+  </div>
+
+  <div class="regel-card">
+    <div class="regel-head">
+      <span class="regel-paragraf">AL § 1-5, AF § 2-3</span>
+      <span class="regel-prikker prikker-4">4 prikker</span>
+    </div>
+    <div class="regel-overtredelse">Brudd på alderskravet til den som skjenker alkoholholdig drikk</div>
+    <div class="regel-block">
+      <div class="regel-label">Utfordringer</div>
+      <div class="regel-text">Manglende kjennskap til innholdet i kravene.</div>
+    </div>
+    <div class="regel-block">
+      <div class="regel-label">Tiltak / rutiner</div>
+      <div class="regel-text">Personer under 20 år tilsettes ikke i stillinger som vil medføre skjenking.</div>
+    </div>
+    <div class="regel-ansvar">Ansvar: Daglig leder.</div>
+  </div>
+
+  <div class="regel-card">
+    <div class="regel-head">
+      <span class="regel-paragraf">AF § 4-1</span>
+      <span class="regel-prikker prikker-2">2 prikker</span>
+    </div>
+    <div class="regel-overtredelse">Adgang gis til person som er åpenbart påvirket, eller bevillingshaver sørger ikke for at personen forlater stedet</div>
+    <div class="regel-block">
+      <div class="regel-label">Utfordringer</div>
+      <div class="regel-text">Vanskelig for dørvakt å bedømme beruselsesnivå. Uten dørvakt på jobb kan åpenbart påvirkede gå rett inn uten at barpersonale oppdager det, og et uoversiktlig lokale gjør det mulig å gjemme seg unna. Åpenbart påvirkede kommer ofte i følge med mange som ikke er det.</div>
+    </div>
+    <div class="regel-block">
+      <div class="regel-label">Tiltak / rutiner</div>
+      <div class="regel-text">Servitør/dørvakt bruker lengre tid, stiller spørsmål eller småprater for å sjekke alkoholnivå. Jevnlige rydderunder i lokalet for å avdekke åpenbart påvirkede personer. Den som er på vakt sier fra til en kollega og får personen ut så raskt som mulig.</div>
+    </div>
+    <div class="regel-ansvar">Ansvar: Ansatte på jobb.</div>
+  </div>
+
+  <div class="regel-card">
+    <div class="regel-head">
+      <span class="regel-paragraf">AL § 1-9, AF kap. 8</span>
+      <span class="regel-prikker prikker-2">2 prikker</span>
+    </div>
+    <div class="regel-overtredelse">Mangler ved bevillingshavers internkontroll</div>
+    <div class="regel-block">
+      <div class="regel-label">Utfordringer</div>
+      <div class="regel-text">Manglende kunnskap om innholdet i kravet, og uklart hvem som har ansvar for utarbeidelsen. Vanskelig å vite hvilke utfordringer man vil møte før stedet har vært i drift en tid, og oppgaven kan oppfattes som byråkratisk. Når systemet er utarbeidet, legges det ofte bort og glemmes, og ansatte føler ikke eierskap til det. Stor turnover gjør det utfordrende å sikre at alle nye kjenner rutinene, og ansatte som opplever at rutiner ikke fungerer optimalt, informerer ikke alltid styrer.</div>
+    </div>
+    <div class="regel-block">
+      <div class="regel-label">Tiltak / rutiner</div>
+      <div class="regel-text">Bruke tid på å tenke gjennom mulige utfordringer og lage gode rutiner. Involvere de ansatte ved utarbeidelsen av systemet, og gi opplæring til ansatte og nyansatte i relevante deler. Alle ansatte må lese og underskrive en utskrift av beskrivelsen samt relevante vedlegg. Oppslag med rutiner bak bar/personalrom, samt oppslag rettet mot gjester. Ansvarshavende skriver logg ved hver vaktslutt over uønskede hendelser og behov for endringer. Internkontrollsystemet tas opp som fast punkt på jevnlige personalmøter, med nye risikovurderinger og vurdering av om rutiner må endres.</div>
+    </div>
+    <div class="regel-ansvar">Ansvar: Styrer. Før åpning av stedet, deretter fortløpende.</div>
+  </div>
+
+  <div class="regel-card">
+    <div class="regel-head">
+      <span class="regel-paragraf">AF kap. 6</span>
+      <span class="regel-prikker prikker-2">2 prikker</span>
+    </div>
+    <div class="regel-overtredelse">Manglende levering av omsetningsoppgave innen kommunens frist</div>
+    <div class="regel-block">
+      <div class="regel-label">Utfordringer</div>
+      <div class="regel-text">Vanskelig å vurdere forventet omsetning, og krevende å holde god oversikt over totalomsetning av alkohol.</div>
+    </div>
+    <div class="regel-block">
+      <div class="regel-label">Tiltak / rutiner</div>
+      <div class="regel-text">Forventet omsetning baseres på fjorårets omsetning, med mindre store endringer er åpenbare (avregning skjer uansett ved årets slutt). All alkoholomsetning registreres og holdes lett tilgjengelig. Arbeid med omsetningsoppgaven legges inn i årshjul med tilstrekkelig tid til forberedelse.</div>
+    </div>
+    <div class="regel-ansvar">Ansvar: Daglig leder.</div>
+  </div>
+
+  <div class="regel-card">
+    <div class="regel-head">
+      <span class="regel-paragraf">AF kap. 6</span>
+      <span class="regel-prikker prikker-2">2 prikker</span>
+    </div>
+    <div class="regel-overtredelse">Manglende betaling av bevillingsgebyr innen kommunens frist</div>
+    <div class="regel-block">
+      <div class="regel-label">Utfordringer</div>
+      <div class="regel-text">Manglende likviditet på betalingstidspunktet, eller at midler ikke er satt av.</div>
+    </div>
+    <div class="regel-block">
+      <div class="regel-label">Tiltak / rutiner</div>
+      <div class="regel-text">Legges inn i årshjul med tilstrekkelig tid til forberedelse.</div>
+    </div>
+    <div class="regel-ansvar">Ansvar: Daglig leder.</div>
+  </div>
+
+  <div class="regel-card">
+    <div class="regel-head">
+      <span class="regel-paragraf">§ 1-7c, AF § 2-2</span>
+      <span class="regel-prikker prikker-2">2 prikker</span>
+    </div>
+    <div class="regel-overtredelse">Brudd på krav om styrer og stedfortreder</div>
+    <div class="regel-block">
+      <div class="regel-label">Utfordringer</div>
+      <div class="regel-text">Stor turnover gjør det vanskelig å finne styrer/stedfortreder med riktig kompetanse og bestått kunnskapsprøve.</div>
+    </div>
+    <div class="regel-block">
+      <div class="regel-label">Tiltak / rutiner</div>
+      <div class="regel-text">Utlyse stillingen og rekruttere i god tid før åpning. Be om dokumentasjon for bestått kunnskapsprøve i alkoholloven, eller melde vedkommende på til prøven. Kommunen informeres ved endringer eller skifte av styrer/stedfortreder.</div>
+    </div>
+    <div class="regel-ansvar">Ansvar: Bevillingshaver/daglig leder.</div>
+  </div>
+
+  <div class="regel-card">
+    <div class="regel-head">
+      <span class="regel-paragraf">AL § 1-8</span>
+      <span class="regel-prikker prikker-2">2 prikker</span>
+    </div>
+    <div class="regel-overtredelse">Gjentatt diskriminering på skjenkestedet</div>
+    <div class="regel-block">
+      <div class="regel-label">Utfordringer</div>
+      <div class="regel-text">Ansatte som oppfatter at stedet kun retter seg mot en bestemt type klientell.</div>
+    </div>
+    <div class="regel-block">
+      <div class="regel-label">Tiltak / rutiner</div>
+      <div class="regel-text">Policy om at alle gjester behandles likt uansett etnisitet, nasjonal opprinnelse, avstamning, hudfarge, språk, religion eller livssyn. Nyansatte informeres om hva diskriminering er, og dette er eget tema på personalmøte én gang årlig. Det vises tydelig at dette ikke aksepteres.</div>
+    </div>
+    <div class="regel-ansvar">Ansvar: Daglig leder. Løpende.</div>
+  </div>
+
+  <div class="regel-card">
+    <div class="regel-head">
+      <span class="regel-paragraf">AL § 1-8</span>
+      <span class="regel-prikker prikker-2">2 prikker</span>
+    </div>
+    <div class="regel-overtredelse">Gjentatt narkotikaomsetning på skjenkestedet</div>
+    <div class="regel-block">
+      <div class="regel-label">Utfordringer</div>
+      <div class="regel-text">Kan være vanskelig å oppdage.</div>
+    </div>
+    <div class="regel-block">
+      <div class="regel-label">Tiltak / rutiner</div>
+      <div class="regel-text">Nyansatte informeres om hva de skal se etter. Toaletter og mørke kroker sjekkes jevnlig. Det følges med på om flere går på toalettet samtidig, og man kan eventuelt banke på og spørre om alt er ok eller om de trenger toalettpapir, slik at det er tydelig at de er observert, men på en vennlig måte. Ryddepersonalet bes ha et våkent øye for dette.</div>
+    </div>
+    <div class="regel-ansvar">Ansvar: Daglig leder og ansatte. Fortløpende.</div>
+  </div>
+
+  <div class="regel-card">
+    <div class="regel-head">
+      <span class="regel-paragraf">AF § 4-6</span>
+      <span class="regel-prikker prikker-1">1 prikk</span>
+    </div>
+    <div class="regel-overtredelse">Brudd på kravet om alkoholfrie alternativer</div>
+    <div class="regel-block">
+      <div class="regel-label">Tiltak / rutiner</div>
+      <div class="regel-text">Sikre at alle hovedkategorier av alkohol har et reelt alternativ, for eksempel alkoholfritt øl/cider til øl, alkoholfri vin eller fruktdrikker til vin, og alkoholfrie drinker. Vurdere hvilke alkoholfrie alternativer som etterspørres, og be de ansatte merke seg dette.</div>
+    </div>
+    <div class="regel-ansvar">Ansvar: Daglig leder/styrer/innkjøpsansvarlig.</div>
+  </div>
+
+  <div class="regel-card">
+    <div class="regel-head">
+      <span class="regel-paragraf">AF § 4-5</span>
+      <span class="regel-prikker prikker-1">1 prikk</span>
+    </div>
+    <div class="regel-overtredelse">Brudd på regler om skjenkemengde</div>
+    <div class="regel-block">
+      <div class="regel-label">Tiltak / rutiner</div>
+      <div class="regel-text">Drikk med mer enn 22 volumprosent alkohol skjenkes kun i mengder à 2 og 4 cl, med unntak for cocktails godkjent av den internasjonale bartenderforeningen (IBA). Egenkomponerte drinker kan ikke ha innhold av slik drikk som overstiger 4 cl til sammen.</div>
+    </div>
+    <div class="regel-ansvar">Ansvar: Styrer.</div>
+  </div>
+
+  <div class="regel-card">
+    <div class="regel-head">
+      <span class="regel-paragraf">AF § 4-4</span>
+      <span class="regel-prikker prikker-1">1 prikk</span>
+    </div>
+    <div class="regel-overtredelse">Konsum av medbrakt alkoholholdig drikk</div>
+    <div class="regel-block">
+      <div class="regel-label">Utfordringer</div>
+      <div class="regel-text">Gjester gjemmer lommelerker på kroppen, eller flasker i vesker, bager eller på toalettet. Skjer særlig i julebordstider og ved spesielle arrangementer.</div>
+    </div>
+    <div class="regel-block">
+      <div class="regel-label">Tiltak / rutiner</div>
+      <div class="regel-text">Sjekke toaletter, og be om å se i bager og innerlommer ved mistanke. Gjesten kan nekte å vise/tømme, men må da forlate stedet eller slippes ikke inn.</div>
+    </div>
+    <div class="regel-ansvar">Ansvar: Styrer, alle ansatte. Fortløpende.</div>
+  </div>
+
+  <div class="regel-card">
+    <div class="regel-head">
+      <span class="regel-paragraf">AF § 4-4</span>
+      <span class="regel-prikker prikker-1">1 prikk</span>
+    </div>
+    <div class="regel-overtredelse">Gjester medtar alkohol ut av lokalet</div>
+    <div class="regel-block">
+      <div class="regel-label">Utfordringer</div>
+      <div class="regel-text">Noen tar med seg en halvliter på innerlomma, eller prøver å kjøpe med seg alkohol til nachspiel.</div>
+    </div>
+    <div class="regel-block">
+      <div class="regel-label">Tiltak / rutiner</div>
+      <div class="regel-text">Hold et godt øye med dem som forlater stedet. Skilt rett innenfor døren om at dette ikke er tillatt. Eget bord der man kan sette fra seg drikke før man går ut, som dørvaktene passer på. Selg ikke alkohol som ikke skal nytes på stedet.</div>
+    </div>
+    <div class="regel-ansvar">Ansvar: Alle ansatte på jobb, eventuelt dørvakt.</div>
+  </div>
+
+  <div class="regel-card">
+    <div class="regel-head">
+      <span class="regel-paragraf">AL § 9-2, AF kap. 14</span>
+      <span class="regel-prikker prikker-1">1 prikk</span>
+    </div>
+    <div class="regel-overtredelse">Brudd på reklameforbudet</div>
+    <div class="regel-block">
+      <div class="regel-label">Utfordringer</div>
+      <div class="regel-text">Manglende kunnskap om innholdet i forbudet. Lett å se hen til hva andre steder gjør, uten at det er sikkert at det er tillatt.</div>
+    </div>
+    <div class="regel-block">
+      <div class="regel-label">Tiltak / rutiner</div>
+      <div class="regel-text">All informasjon rettet mot kunder vurderes opp mot reklameforbudet. Serveringsutstyr og andre artikler med logo sjekkes for at de er tillatt, og informasjon på nettsider vurderes opp mot forbudet. Alkohol, alkoholholdige produkter eller rabatter markedsføres ikke i sosiale medier.</div>
+    </div>
+    <div class="regel-ansvar">Ansvar: Styrer.</div>
+  </div>
+
+  <div class="regel-card">
+    <div class="regel-head">
+      <span class="regel-paragraf">AL § 4-3</span>
+      <span class="regel-prikker prikker-1">1 prikk</span>
+    </div>
+    <div class="regel-overtredelse">Brudd på vilkår i bevillingsvedtaket</div>
+    <div class="regel-block">
+      <div class="regel-text">Knyttet til hvert enkelt vilkår.</div>
+    </div>
+    <div class="regel-ansvar">Ansvar: Knyttet til hvert enkelt vilkår.</div>
+  </div>
+
+  <div class="regel-card">
+    <div class="regel-head">
+      <span class="regel-paragraf">AL § 1-8, 1. ledd</span>
+    </div>
+    <div class="regel-overtredelse">Andre overtredelser etter alkoholloven, blant annet krav om leverandør av alkohol (§ 4-1 annet ledd) og forbud i kapittel 8 (alkohol som gevinst/premie, utdeling i markedsføringsøyemed, innførsel/omsetning av alkohol over 60 volumprosent)</div>
+    <div class="regel-block">
+      <div class="regel-label">Utfordringer</div>
+      <div class="regel-text">Holde oversikt over alle regler.</div>
+    </div>
+    <div class="regel-block">
+      <div class="regel-label">Tiltak / rutiner</div>
+      <div class="regel-text">Sjekke alle nye tiltak knyttet til alkohol opp mot alkoholloven, eventuelt be kommunen om råd.</div>
+    </div>
+    <div class="regel-ansvar">Ansvar: Styrer.</div>
+  </div>
+
+  <div class="section-title">2. Praksis: opplæring og oppfølging av internkontrollen</div>
+
+  <div class="praksis-block">
+    <div class="regel-block">
+      <div class="regel-text"><span class="praksis-letter">a)</span> Gjennomgang før første arbeidsdag av internkontrollen og lover/regler, samt utført Salutt-kurs.</div>
+      <div class="regel-ansvar" style="margin-top:0.3rem; border-top:none; padding-top:0;">Ansvar: Styrer.</div>
+    </div>
+    <div class="regel-block" style="margin-top:1rem;">
+      <div class="regel-text"><span class="praksis-letter">b)</span> Fordeling av ansvar og oppgaver knyttet til internkontrollsystemet og overholdelse av regelverket, særlig i risikoperioder.</div>
+      <div class="regel-ansvar" style="margin-top:0.3rem; border-top:none; padding-top:0;">Ansvar: Styrer.</div>
+    </div>
+    <div class="regel-block" style="margin-top:1rem;">
+      <div class="regel-text"><span class="praksis-letter">c)</span> Tilbakemelding om utfordringer, uønskede hendelser og rutiner som ikke virker etter sin hensikt føres inn i loggbok som ligger i baren.</div>
+      <div class="regel-ansvar" style="margin-top:0.3rem; border-top:none; padding-top:0;">Ansvar: Styrer, og alle som jobber Front of House.</div>
+    </div>
+  </div>
+
+  <div class="section-title">3. Vedlegg</div>
+  <div class="praksis-block">
+    <div class="regel-text">Ansattlister, organisasjonskart, infomateriell, opplæringslister og oversikt over oppgavefordeling.</div>
+  </div>
+
+</div>
+</body>
+</html>
