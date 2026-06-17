@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
-<link rel="manifest" href="manifest.json">
 <title>Fager Bistro – Portal</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
 <style>
@@ -22,18 +21,18 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif
 .home-title { font-size: 1.25rem; font-weight: 600; color: #fff; letter-spacing: 0.01em; }
 .home-sub { font-size: 0.7rem; font-weight: 600; letter-spacing: 0.12em; color: rgba(255,255,255,0.45); text-transform: uppercase; margin-top: 2px; }
 
-.menu { padding: 1.25rem; padding-bottom: calc(2rem + env(safe-area-inset-bottom)); display: flex; flex-direction: column; gap: 10px; max-width: 480px; margin: 0 auto; }
+.menu { padding: 1.25rem; padding-bottom: calc(2rem + env(safe-area-inset-bottom)); display: grid; grid-template-columns: 1fr 1fr; gap: 10px; max-width: 480px; margin: 0 auto; }
 
-.menu-btn { display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.1rem; border-radius: 12px; text-decoration: none; cursor: pointer; border: 0.5px solid #e5e2da; background: #fff; width: 100%; text-align: left; transition: background 0.15s; border-left-width: 3px; }
+.menu-btn { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; padding: 0.9rem 0.9rem; border-radius: 12px; text-decoration: none; cursor: pointer; border: 0.5px solid #e5e2da; background: #fff; width: 100%; text-align: left; transition: background 0.15s; border-left-width: 3px; }
 .menu-btn:active { background: #f2f0ea; }
 
-.menu-btn-left { display: flex; align-items: center; gap: 13px; }
-.menu-icon { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; border-radius: 9px; }
-.menu-icon i { font-size: 19px; }
+.menu-btn-left { display: flex; align-items: center; justify-content: space-between; width: 100%; }
+.menu-icon { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; border-radius: 8px; }
+.menu-icon i { font-size: 17px; }
 
-.menu-label { font-size: 0.95rem; font-weight: 600; color: #1a1a1a; letter-spacing: 0.01em; }
-.menu-sub { font-size: 0.74rem; color: #8a8782; margin-top: 1px; }
-.menu-arrow { font-size: 16px; color: #c4c0b6; }
+.menu-label { font-size: 0.82rem; font-weight: 600; color: #1a1a1a; letter-spacing: 0.01em; line-height: 1.25; }
+.menu-sub { font-size: 0.66rem; color: #8a8782; margin-top: 1px; line-height: 1.3; }
+.menu-arrow { font-size: 14px; color: #c4c0b6; }
 
 .c-green { border-left-color: #1D9E75; } .c-green .menu-icon { background: #E1F5EE; } .c-green .menu-icon i { color: #0F6E56; }
 .c-purple { border-left-color: #7F77DD; } .c-purple .menu-icon { background: #EEEDFE; } .c-purple .menu-icon i { color: #534AB7; }
@@ -119,110 +118,105 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif
     <a href="https://tgillesp-alt.github.io/shopping/" class="menu-btn c-green" target="_blank" rel="noopener">
       <div class="menu-btn-left">
         <div class="menu-icon"><i class="ti ti-shopping-cart"></i></div>
-        <div>
-          <div class="menu-label">Shopping</div>
-          <div class="menu-sub">Varebestillinger</div>
-        </div>
+        <i class="ti ti-external-link menu-arrow"></i>
       </div>
-      <i class="ti ti-external-link menu-arrow"></i>
+      <div class="menu-label">Shopping</div>
     </a>
 
     <div class="menu-btn c-gray" style="cursor:default;">
       <div class="menu-btn-left">
         <div class="menu-icon"><i class="ti ti-calendar"></i></div>
-        <div>
-          <div class="menu-label">Planday</div>
-          <div class="menu-sub">Åpne appen direkte fra hjemskjermen</div>
-        </div>
       </div>
+      <div class="menu-label">Planday</div>
+      <div class="menu-sub">Åpne fra hjemskjermen</div>
     </div>
 
     <button class="menu-btn c-amber" onclick="visPage('leverandorer')">
       <div class="menu-btn-left">
         <div class="menu-icon"><i class="ti ti-truck"></i></div>
-        <div>
-          <div class="menu-label">Leverandører</div>
-          <div class="menu-sub">Bestilling & kontakt</div>
-        </div>
+        <i class="ti ti-chevron-right menu-arrow"></i>
       </div>
-      <i class="ti ti-chevron-right menu-arrow"></i>
+      <div class="menu-label">Leverandører</div>
     </button>
 
     <button class="menu-btn c-blue" onclick="visPage('kontakter')">
       <div class="menu-btn-left">
         <div class="menu-icon"><i class="ti ti-address-book"></i></div>
-        <div>
-          <div class="menu-label">Kontakter</div>
-          <div class="menu-sub">Gårdeier, vaktmester m.fl.</div>
-        </div>
+        <i class="ti ti-chevron-right menu-arrow"></i>
       </div>
-      <i class="ti ti-chevron-right menu-arrow"></i>
+      <div class="menu-label">Kontakter</div>
     </button>
 
     <button class="menu-btn c-blue" onclick="visPage('dokumenter')">
       <div class="menu-btn-left">
         <div class="menu-icon"><i class="ti ti-file-text"></i></div>
-        <div>
-          <div class="menu-label">Internkontroll</div>
-          <div class="menu-sub">Alkoholloven og rutiner</div>
-        </div>
+        <i class="ti ti-chevron-right menu-arrow"></i>
       </div>
-      <i class="ti ti-chevron-right menu-arrow"></i>
+      <div class="menu-label">Internkontroll</div>
     </button>
 
     <a href="https://tgillesp-alt.github.io/shopping/prepp-kjokken-hub.html" class="menu-btn c-purple">
       <div class="menu-btn-left">
         <div class="menu-icon"><i class="ti ti-tools"></i></div>
-        <div>
-          <div class="menu-label">Kjøkken MEP</div>
-          <div class="menu-sub">Prepp og mise en place</div>
-        </div>
+        <i class="ti ti-external-link menu-arrow"></i>
       </div>
-      <i class="ti ti-external-link menu-arrow"></i>
+      <div class="menu-label">Kjøkken MEP</div>
     </a>
 
     <a href="https://tgillesp-alt.github.io/shopping/prepp-foh.html" class="menu-btn c-coral">
       <div class="menu-btn-left">
         <div class="menu-icon"><i class="ti ti-armchair"></i></div>
-        <div>
-          <div class="menu-label">FOH Åpning/Stenging</div>
-          <div class="menu-sub">Rengjøring og oppsett</div>
-        </div>
+        <i class="ti ti-external-link menu-arrow"></i>
       </div>
-      <i class="ti ti-external-link menu-arrow"></i>
+      <div class="menu-label">FOH Åpning/Stenging</div>
     </a>
 
     <a href="https://tgillesp-alt.github.io/shopping/meny.html" class="menu-btn c-pink">
       <div class="menu-btn-left">
         <div class="menu-icon"><i class="ti ti-book-2"></i></div>
-        <div>
-          <div class="menu-label">Meny</div>
-          <div class="menu-sub">Middag, lunsj og vin</div>
-        </div>
+        <i class="ti ti-external-link menu-arrow"></i>
       </div>
-      <i class="ti ti-external-link menu-arrow"></i>
+      <div class="menu-label">Meny</div>
     </a>
 
     <a href="https://tgillesp-alt.github.io/shopping/tips.html" class="menu-btn c-gray">
       <div class="menu-btn-left">
         <div class="menu-icon"><i class="ti ti-coin"></i></div>
-        <div>
-          <div class="menu-label">Tips</div>
-          <div class="menu-sub">Fordelingskalkulator</div>
-        </div>
+        <i class="ti ti-external-link menu-arrow"></i>
       </div>
-      <i class="ti ti-external-link menu-arrow"></i>
+      <div class="menu-label">Tips</div>
     </a>
 
     <a href="https://tgillesp-alt.github.io/shopping/lager.html" class="menu-btn c-amber">
       <div class="menu-btn-left">
         <div class="menu-icon"><i class="ti ti-clipboard-list"></i></div>
-        <div>
-          <div class="menu-label">Lagertelling</div>
-          <div class="menu-sub">Månedlig telling</div>
-        </div>
+        <i class="ti ti-external-link menu-arrow"></i>
       </div>
-      <i class="ti ti-external-link menu-arrow"></i>
+      <div class="menu-label">Lagertelling</div>
+    </a>
+
+    <a href="https://my.gastroplanner.no/" class="menu-btn c-green" target="_blank" rel="noopener">
+      <div class="menu-btn-left">
+        <div class="menu-icon"><i class="ti ti-checklist"></i></div>
+        <i class="ti ti-external-link menu-arrow"></i>
+      </div>
+      <div class="menu-label">Gastroplanner</div>
+    </a>
+
+    <a href="https://www.lightspeedhq.com/login/" class="menu-btn c-coral" target="_blank" rel="noopener">
+      <div class="menu-btn-left">
+        <div class="menu-icon"><i class="ti ti-cash-register"></i></div>
+        <i class="ti ti-external-link menu-arrow"></i>
+      </div>
+      <div class="menu-label">LightSpeed</div>
+    </a>
+
+    <a href="https://portal.nets.eu/" class="menu-btn c-blue" target="_blank" rel="noopener">
+      <div class="menu-btn-left">
+        <div class="menu-icon"><i class="ti ti-credit-card"></i></div>
+        <i class="ti ti-external-link menu-arrow"></i>
+      </div>
+      <div class="menu-label">Nets</div>
     </a>
   </div>
 </div>
