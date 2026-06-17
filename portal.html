@@ -341,7 +341,7 @@ function loggInn() {
     document.getElementById('login-error').style.display = 'block';
     return;
   }
-  sessionStorage.setItem('fager_portal_auth', '1');
+  localStorage.setItem('fager_portal_auth', '1');
   visApp();
 }
 
@@ -352,7 +352,7 @@ function visApp() {
 
 document.getElementById('login-passord').addEventListener('keydown', e => { if (e.key === 'Enter') loggInn(); });
 
-if (sessionStorage.getItem('fager_portal_auth') === '1') {
+if (localStorage.getItem('fager_portal_auth') === '1') {
   visApp();
 }
 
