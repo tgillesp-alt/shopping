@@ -234,6 +234,11 @@ function visTab(side) {
 }
 
 async function genererWord() {
+  if (typeof docx === 'undefined') {
+    alert('Word-biblioteket kunne ikke lastes. Sjekk internettforbindelsen og prøv igjen.');
+    return;
+  }
+  try {
   const { Document, Packer, Paragraph, TextRun, AlignmentType, BorderStyle } = docx;
 
   const liste = retter.filter(r => r.meny === aktivMeny);
@@ -311,6 +316,10 @@ async function genererWord() {
   a.click();
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
+  } catch (err) {
+    console.error(err);
+    alert('Kunne ikke generere Word-dokument: ' + err.message);
+  }
 }
 
 hentRetter();
