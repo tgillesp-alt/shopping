@@ -84,13 +84,13 @@ td { padding: 5px 0; }
         <div class="stat-value" id="out-gardeier">0 kr</div>
       </div>
       <div class="stat-card">
-        <div class="stat-label">Fuck-ups pott (10%)</div>
+        <div class="stat-label">Fuck-ups pott (5%)</div>
         <div class="stat-value" id="out-fuckups">0 kr</div>
       </div>
     </div>
 
     <div class="fordeling-card">
-      <div class="stat-label">Til fordeling (80%)</div>
+      <div class="stat-label">Til fordeling (85%)</div>
       <div class="stat-value" id="out-fordeling" style="font-size:1.4rem;">0 kr</div>
       <div class="fordeling-sub" id="out-fordeling-sub"></div>
     </div>
@@ -156,8 +156,8 @@ function fmt(n) { return round(n).toLocaleString('nb-NO') + ' kr'; }
 function calculate() {
   const totalTips = parseFloat(document.getElementById('total-tips').value) || 0;
   const gardeier = totalTips * 0.10;
-  const fuckups = totalTips * 0.10;
-  const fordeling = totalTips * 0.80;
+  const fuckups = totalTips * 0.05;
+  const fordeling = totalTips * 0.85;
   const perPool = fordeling / 2;
 
   document.getElementById('out-gardeier').textContent = fmt(gardeier);
