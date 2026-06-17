@@ -14,7 +14,11 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif
 header { background: #1a1a1a; padding: 1rem 1.25rem; padding-top: calc(1rem + env(safe-area-inset-top)); display: flex; align-items: center; gap: 0.75rem; position: sticky; top: 0; z-index: 100; }
 .back-btn { color: rgba(255,255,255,0.6); text-decoration: none; font-size: 0.85rem; display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
 .header-title { font-size: 0.95rem; font-weight: 600; flex: 1; color: #fff; }
-.dl-btn { background: #fff; color: #1a1a1a; border: none; padding: 0.4rem 0.75rem; border-radius: 8px; font-size: 0.78rem; font-weight: 600; text-decoration: none; }
+.header-actions { display: flex; gap: 0.5rem; }
+.btn-sm { padding: 0.4rem 0.75rem; border-radius: 8px; font-size: 0.78rem; font-weight: 600; cursor: pointer; border: none; text-decoration: none; }
+.dl-btn { background: #fff; color: #1a1a1a; }
+.edit-btn { background: rgba(255,255,255,0.12); color: rgba(255,255,255,0.85); }
+.edit-btn.active { background: #fff; color: #1a1a1a; }
 
 .tabs { display: flex; gap: 6px; padding: 1rem 1.25rem 0; max-width: 600px; margin: 0 auto; }
 .tab { flex: 1; text-align: center; padding: 0.65rem; border-radius: 10px; font-size: 0.85rem; font-weight: 600; background: #fff; border: 0.5px solid #e5e2da; color: #8a8782; cursor: pointer; }
@@ -29,23 +33,42 @@ header { background: #1a1a1a; padding: 1rem 1.25rem; padding-top: calc(1rem + en
 
 .section-title { text-align: center; font-size: 0.85rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; border-top: 0.5px solid #e5e2da; border-bottom: 0.5px solid #e5e2da; padding: 0.5rem 0; margin: 1.75rem 0 1rem; color: #4a4844; }
 
-.dish { margin-bottom: 1rem; }
+.dish { margin-bottom: 1rem; position: relative; }
 .dish-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
 .dish-name { font-weight: 700; font-size: 0.95rem; color: #1a1a1a; }
 .dish-price { font-weight: 700; font-size: 0.95rem; flex-shrink: 0; color: #1a1a1a; }
 .dish-allergens { font-size: 0.68rem; color: #a8a59d; margin-top: 1px; }
 .dish-desc { font-size: 0.85rem; font-style: italic; color: #6b6862; margin-top: 3px; line-height: 1.4; }
 
+.dish-edit-actions { display: flex; gap: 8px; margin-top: 6px; }
+.dish-edit-actions button { font-size: 0.72rem; padding: 0.25rem 0.6rem; border-radius: 6px; border: 0.5px solid #e5e2da; background: #fff; color: #6b6862; cursor: pointer; }
+
 .allergen-key { margin-top: 2rem; padding-top: 1rem; border-top: 0.5px solid #e5e2da; font-size: 0.68rem; color: #a8a59d; line-height: 1.6; }
 
 .wine-note { text-align: center; color: #a8a59d; font-style: italic; padding: 2rem 0; }
+
+.add-dish-btn { width: 100%; padding: 0.75rem; background: #fff; border: 1px dashed #c4c0b6; border-radius: 10px; font-size: 0.85rem; font-weight: 600; color: #8a8782; cursor: pointer; margin-top: 1rem; }
+
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 200; display: flex; align-items: flex-end; justify-content: center; backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); }
+.modal { background: #fff; border-radius: 20px 20px 0 0; padding: 1.5rem 1.25rem; padding-bottom: calc(1.5rem + env(safe-area-inset-bottom)); width: 100%; max-width: 500px; display: flex; flex-direction: column; gap: 0.6rem; max-height: 85vh; overflow-y: auto; }
+.modal-handle { width: 36px; height: 4px; background: #e5e2da; border-radius: 2px; margin: 0 auto 0.75rem; }
+.modal h3 { font-size: 1rem; font-weight: 600; margin-bottom: 0.25rem; }
+.modal input, .modal select, .modal textarea { padding: 0.7rem 0.85rem; border: 0.5px solid #e5e2da; border-radius: 10px; font-size: 0.95rem; background: #f7f6f3; color: #1a1a1a; width: 100%; outline: none; font-family: inherit; }
+.modal textarea { resize: vertical; min-height: 60px; }
+.modal-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; margin-top: 0.4rem; }
+.modal-btns button { padding: 0.8rem; border-radius: 10px; font-size: 0.95rem; font-weight: 600; cursor: pointer; border: none; }
+.btn-lagre { background: #1a1a1a; color: #fff; }
+.btn-avbryt { background: #f7f6f3; color: #1a1a1a; border: 0.5px solid #e5e2da !important; }
 </style>
 </head>
 <body>
 <header>
   <a href="https://tgillesp-alt.github.io/shopping/portal.html" class="back-btn">‹ Portal</a>
   <div class="header-title">Meny</div>
-  <a id="dl-link" href="Fager_Bistro_Meny_Middag.docx" class="dl-btn" download>⬇ Word</a>
+  <div class="header-actions">
+    <a id="dl-link" href="Fager_Bistro_Meny_Middag.docx" class="btn-sm dl-btn" download>⬇ Word</a>
+    <button id="edit-toggle" class="btn-sm edit-btn" onclick="vekslRedigering()">Rediger</button>
+  </div>
 </header>
 
 <div class="tabs">
@@ -59,61 +82,16 @@ header { background: #1a1a1a; padding: 1rem 1.25rem; padding-top: calc(1rem + en
   <div class="menu-page active" id="page-middag">
     <div class="menu-title">FAGER BISTRO</div>
     <div class="menu-sub">Menu du soir</div>
-
-    <div class="section-title">Huîtres – Østers</div>
-    <div class="dish"><div class="dish-head"><span class="dish-name">Spéciale Naturelles</span><span class="dish-price">180/360</span></div><div class="dish-allergens">Mo, Su</div><div class="dish-desc">no.3 fra Marennes-Oléron, sjalottløk-mignonette med sherryeddik — 3/6 stk</div></div>
-    <div class="dish"><div class="dish-head"><span class="dish-name">Gillardeau Naturelles</span><span class="dish-price">225/450</span></div><div class="dish-allergens">Mo, Su</div><div class="dish-desc">Premium no.3 fra Gillardeau, sjalottløk-mignonette med sherryeddik — 3/6 stk</div></div>
-
-    <div class="section-title">Entrées – Forretter</div>
-    <div class="dish"><div class="dish-head"><span class="dish-name">Asperges Blanches</span><span class="dish-price">245</span></div><div class="dish-allergens">L, E, H, Su</div><div class="dish-desc">hvite smørdampede asparges fra Alsace, pangratatto og sauce maltaise</div></div>
-    <div class="dish"><div class="dish-head"><span class="dish-name">Poulpe & Merguez</span><span class="dish-price">265</span></div><div class="dish-allergens">Mo, N, Se, Su</div><div class="dish-desc">grillet blekksprut, merguez-crumble, kikertpuré, syltet paprika, dukkah og sauce vierge</div></div>
-    <div class="dish"><div class="dish-head"><span class="dish-name">Noix de St. Jacques</span><span class="dish-price">245</span></div><div class="dish-allergens">H, L, Mo, E</div><div class="dish-desc">dykkerfisket kamskjell fra Frøya, sauce au champagne, sautert purre og ramsløkolje i vol-au-vent</div></div>
-    <div class="dish"><div class="dish-head"><span class="dish-name">Foie Gras Mi-Cuit</span><span class="dish-price">340</span></div><div class="dish-allergens">H, L, Ma, E, Su</div><div class="dish-desc">cognac-marinert foie gras med 5 épices, brioche, syltet steinsopp, kandiserte mandler, rabarbra-fersken puré</div></div>
-
-    <div class="section-title">Plats – Hovedretter</div>
-    <div class="dish"><div class="dish-head"><span class="dish-name">Moules Marinières</span><span class="dish-price">365</span></div><div class="dish-allergens">Mo, E, L, Su</div><div class="dish-desc">500 gr hvitvinsdampede blåskjell fra Sør-Trøndelag, blåskjell-kraft, frites og aioli</div></div>
-    <div class="dish"><div class="dish-head"><span class="dish-name">Médaillon de Lotte</span><span class="dish-price">535</span></div><div class="dish-allergens">F, Sk, L, Su</div><div class="dish-desc">stekt breiflabb med sauce homardine, dampet nykål, syltet fennikel og perlepoteter</div></div>
-    <div class="dish"><div class="dish-head"><span class="dish-name">Cuisse de Canard Confit</span><span class="dish-price">475</span></div><div class="dish-allergens">S, L, H, Su</div><div class="dish-desc">sprøstekt andelår fra Holte Gård i Drangedal, croquette, kumquat, sellerirotpuré, spinat og plomme gastrique</div></div>
-    <div class="dish"><div class="dish-head"><span class="dish-name">Entrecôte Grillée</span><span class="dish-price">535</span></div><div class="dish-allergens">E, L, Su</div><div class="dish-desc">marmorert entrecôte fra Annis Pølsemakeri, haricots verts, estragon-syltede tomater, frites og béarnaise</div></div>
-
-    <div class="section-title">Fromage – Ost</div>
-    <div class="dish"><div class="dish-head"><span class="dish-name">Assiette de Fromages</span><span class="dish-price">265</span></div><div class="dish-allergens">L, H</div><div class="dish-desc">modne franske oster og fiken marmelade</div></div>
-
-    <div class="section-title">Desserts – Desserter</div>
-    <div class="dish"><div class="dish-head"><span class="dish-name">Chocolat</span><span class="dish-price">215</span></div><div class="dish-allergens">E, L</div><div class="dish-desc">sjokoladeganache, valrhona brownie, olivenolje, havsalt og blåbær</div></div>
-    <div class="dish"><div class="dish-head"><span class="dish-name">Crêpes Suzette</span><span class="dish-price">215</span></div><div class="dish-allergens">H, L, E</div><div class="dish-desc">tynn pannekake, appelsinkaramell med Grand Marnier og hjemmelaget vaniljeis</div></div>
-    <div class="dish"><div class="dish-head"><span class="dish-name">Tarte Tatin</span><span class="dish-price">235</span></div><div class="dish-allergens">H, L, E</div><div class="dish-desc">epleterte med krydderkokte epler og hjemmelaget vaniljeis</div></div>
-    <div class="dish"><div class="dish-head"><span class="dish-name">Coupe Colonel</span><span class="dish-price">165</span></div><div class="dish-allergens">-</div><div class="dish-desc">Vodka og sitronsorbet</div></div>
-
+    <div id="retter-middag"></div>
+    <button class="add-dish-btn" id="add-middag" style="display:none;" onclick="apneNyRett('middag')">+ Legg til rett</button>
     <div class="allergen-key">Allergener: E Egg, F Fisk, L Lactose, Sn Sennep, Pi Pistasj, So Soya, Se Sesam, By Bygg, H Hvete, Ha Havre, R Rug, Vn Valnøtt, S Selleri, Su Sulfitt, N Nøtter, Ma Mandel, Mo Mollusc, Sk Skalldyr</div>
   </div>
 
   <div class="menu-page" id="page-lunsj">
     <div class="menu-title">FAGER BISTRO</div>
     <div class="menu-sub">Menu Déjeuner — Lunch Menu</div>
-
-    <div class="section-title">Entrées</div>
-    <div class="dish"><div class="dish-head"><span class="dish-name">Huîtres Spéciale Naturelles</span><span class="dish-price">180/360</span></div><div class="dish-allergens">Mo, Su</div><div class="dish-desc">Spéciale no.3 østers fra Marennes-Oléron, sjalottløk-mignonette med sherryeddik — 3/6 stk</div></div>
-    <div class="dish"><div class="dish-head"><span class="dish-name">Chèvre Chaud</span><span class="dish-price">235</span></div><div class="dish-allergens">H, L, Vn, Sn, Su</div><div class="dish-desc">grillet chèvre på brioche, marinerte sesonggrønnsaker, karamelliserte valnøtter og syltet pære</div></div>
-
-    <div class="section-title">Plats</div>
-    <div class="dish"><div class="dish-head"><span class="dish-name">Moules Marinières</span><span class="dish-price">255</span></div><div class="dish-allergens">Mo, E, L, Su</div><div class="dish-desc">300 gr hvitvinsdampede blåskjell fra Sør-Trøndelag, blåskjell-kraft, frites og aioli</div></div>
-    <div class="dish"><div class="dish-head"><span class="dish-name">Médaillon de Lotte</span><span class="dish-price">395</span></div><div class="dish-allergens">F, L</div><div class="dish-desc">stekt breiflabb, grønn asparges, ovnsbakte perlepoteter og ramsløks hollandaise</div></div>
-    <div class="dish"><div class="dish-head"><span class="dish-name">Canard Confit</span><span class="dish-price">345</span></div><div class="dish-allergens">L, Su</div><div class="dish-desc">sprøstekt andelår fra Gårdsand, syltet asparges og fennikelsalat, marinerte sesonggrønnsaker og andesjy</div></div>
-    <div class="dish"><div class="dish-head"><span class="dish-name">Hamburger</span><span class="dish-price">235</span></div><div class="dish-allergens">H, E, L, Su, Sn</div><div class="dish-desc">170 gr angus-burger, toasted brioche, karamellisert løk, cheddar, kremet coleslaw og chili-pickled agurk</div></div>
-
-    <div class="section-title">Desserts</div>
-    <div class="dish"><div class="dish-head"><span class="dish-name">Tarte Citron</span><span class="dish-price">175</span></div><div class="dish-allergens">H, L, E</div><div class="dish-desc">sitronterte med crème chantilly og friske jordbær</div></div>
-    <div class="dish"><div class="dish-head"><span class="dish-name">Affogato</span><span class="dish-price">115</span></div><div class="dish-allergens">G, L, E</div><div class="dish-desc">vaniljeis i espresso</div></div>
-
-    <div class="section-title">Extras</div>
-    <div class="dish"><div class="dish-head"><span class="dish-name">Brød & Pisket Smør</span><span class="dish-price">65</span></div><div class="dish-allergens">H, L</div></div>
-    <div class="dish"><div class="dish-head"><span class="dish-name">Parmesan-Fries med Rosmarin</span><span class="dish-price">65</span></div><div class="dish-allergens">-</div></div>
-    <div class="dish"><div class="dish-head"><span class="dish-name">Aioli</span><span class="dish-price">35</span></div><div class="dish-allergens">E</div></div>
-    <div class="dish"><div class="dish-head"><span class="dish-name">Chili-Dip</span><span class="dish-price">35</span></div><div class="dish-allergens">-</div></div>
-    <div class="dish"><div class="dish-head"><span class="dish-name">Trøffel Dip</span><span class="dish-price">35</span></div><div class="dish-allergens">E</div></div>
-    <div class="dish"><div class="dish-head"><span class="dish-name">Grønn Salat med Dijon Vinaigrette</span><span class="dish-price">55</span></div><div class="dish-allergens">Su</div></div>
-
+    <div id="retter-lunsj"></div>
+    <button class="add-dish-btn" id="add-lunsj" style="display:none;" onclick="apneNyRett('lunsj')">+ Legg til rett</button>
     <div class="allergen-key">Allergener: E Egg, F Fisk, L Lactose, Sn Sennep, Pi Pistasj, So Soya, Se Sesam, By Bygg, H Hvete, Ha Havre, R Rug, Vn Valnøtt, S Selleri, Su Sulfitt, N Nøtter, Ma Mandel, Mo Mollusc, Sk Skalldyr</div>
   </div>
 
@@ -125,7 +103,124 @@ header { background: #1a1a1a; padding: 1rem 1.25rem; padding-top: calc(1rem + en
 
 </div>
 
+<div class="modal-overlay" id="modal" style="display:none" onclick="lukkModalOverlay(event)">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <h3 id="modal-tittel">Ny rett</h3>
+    <input type="text" id="m-kategori" placeholder="Kategori (f.eks. Entrées – Forretter) *">
+    <input type="text" id="m-navn" placeholder="Navn på rett *">
+    <input type="number" id="m-pris" placeholder="Pris (kr)">
+    <input type="text" id="m-allergener" placeholder="Allergener (f.eks. H, L, E)">
+    <textarea id="m-beskrivelse" placeholder="Beskrivelse"></textarea>
+    <div class="modal-btns">
+      <button class="btn-avbryt" onclick="lukkModal()">Avbryt</button>
+      <button class="btn-lagre" onclick="lagreRett()">Lagre</button>
+    </div>
+  </div>
+</div>
+
 <script>
+const SUPABASE_URL = 'https://izdclsyuplghwznsjnom.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml6ZGNsc3l1cGxnaHd6bnNqbm9tIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE1MjY5MjksImV4cCI6MjA5NzEwMjkyOX0.GkjxcToCHZrLAm1pVGsBkcLapIOj7uSYd6IcDC0Lyzk';
+
+let retter = [];
+let redigeringPa = false;
+let editId = null;
+let editMeny = null;
+
+async function api(method, path, body) {
+  const opts = { method, headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY, 'Content-Type': 'application/json', 'Prefer': method === 'POST' ? 'return=representation' : '' } };
+  if (body) opts.body = JSON.stringify(body);
+  const res = await fetch(SUPABASE_URL + '/rest/v1/' + path, opts);
+  if (res.status === 204) return [];
+  return res.json();
+}
+
+async function hentRetter() {
+  retter = await api('GET', 'meny_retter?order=meny.asc,sort_order.asc,created_at.asc&select=*');
+  renderMeny('middag');
+  renderMeny('lunsj');
+}
+
+function renderMeny(meny) {
+  const liste = retter.filter(r => r.meny === meny);
+  const container = document.getElementById('retter-' + meny);
+  const kategorier = [...new Set(liste.map(r => r.kategori))];
+  container.innerHTML = kategorier.map(kat => `
+    <div class="section-title">${kat}</div>
+    ${liste.filter(r => r.kategori === kat).map(r => `
+      <div class="dish">
+        <div class="dish-head"><span class="dish-name">${r.navn}</span><span class="dish-price">${r.pris != null ? r.pris : ''}</span></div>
+        ${r.allergener ? `<div class="dish-allergens">${r.allergener}</div>` : ''}
+        ${r.beskrivelse ? `<div class="dish-desc">${r.beskrivelse}</div>` : ''}
+        ${redigeringPa ? `<div class="dish-edit-actions"><button onclick="apneRedigerRett('${r.id}')">Rediger</button><button onclick="slettRett('${r.id}')">Slett</button></div>` : ''}
+      </div>
+    `).join('')}
+  `).join('');
+}
+
+function vekslRedigering() {
+  redigeringPa = !redigeringPa;
+  document.getElementById('edit-toggle').classList.toggle('active', redigeringPa);
+  document.getElementById('edit-toggle').textContent = redigeringPa ? 'Ferdig' : 'Rediger';
+  document.getElementById('add-middag').style.display = redigeringPa ? 'block' : 'none';
+  document.getElementById('add-lunsj').style.display = redigeringPa ? 'block' : 'none';
+  renderMeny('middag');
+  renderMeny('lunsj');
+}
+
+function apneNyRett(meny) {
+  editId = null;
+  editMeny = meny;
+  document.getElementById('modal-tittel').textContent = 'Ny rett';
+  document.getElementById('m-kategori').value = '';
+  document.getElementById('m-navn').value = '';
+  document.getElementById('m-pris').value = '';
+  document.getElementById('m-allergener').value = '';
+  document.getElementById('m-beskrivelse').value = '';
+  document.getElementById('modal').style.display = 'flex';
+}
+
+function apneRedigerRett(id) {
+  const r = retter.find(r => r.id === id);
+  if (!r) return;
+  editId = id;
+  editMeny = r.meny;
+  document.getElementById('modal-tittel').textContent = 'Rediger rett';
+  document.getElementById('m-kategori').value = r.kategori;
+  document.getElementById('m-navn').value = r.navn;
+  document.getElementById('m-pris').value = r.pris != null ? r.pris : '';
+  document.getElementById('m-allergener').value = r.allergener || '';
+  document.getElementById('m-beskrivelse').value = r.beskrivelse || '';
+  document.getElementById('modal').style.display = 'flex';
+}
+
+async function lagreRett() {
+  const kategori = document.getElementById('m-kategori').value.trim();
+  const navn = document.getElementById('m-navn').value.trim();
+  const pris = document.getElementById('m-pris').value ? parseFloat(document.getElementById('m-pris').value) : null;
+  const allergener = document.getElementById('m-allergener').value.trim();
+  const beskrivelse = document.getElementById('m-beskrivelse').value.trim();
+  if (!kategori || !navn) { alert('Fyll inn kategori og navn'); return; }
+
+  if (editId) {
+    await api('PATCH', `meny_retter?id=eq.${editId}`, { kategori, navn, pris, allergener, beskrivelse });
+  } else {
+    await api('POST', 'meny_retter', { meny: editMeny, kategori, navn, pris, allergener, beskrivelse, sort_order: 999 });
+  }
+  lukkModal();
+  await hentRetter();
+}
+
+async function slettRett(id) {
+  if (!confirm('Slett denne retten?')) return;
+  await api('DELETE', `meny_retter?id=eq.${id}`);
+  await hentRetter();
+}
+
+function lukkModal() { document.getElementById('modal').style.display = 'none'; editId = null; editMeny = null; }
+function lukkModalOverlay(e) { if (e.target === document.getElementById('modal')) lukkModal(); }
+
 function visTab(side) {
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   document.querySelectorAll('.menu-page').forEach(p => p.classList.remove('active'));
@@ -137,6 +232,8 @@ function visTab(side) {
   else if (side === 'lunsj') { dl.href = 'Fager_Bistro_Meny_Lunsj.docx'; dl.style.display = 'block'; }
   else { dl.style.display = 'none'; }
 }
+
+hentRetter();
 </script>
 </body>
 </html>
