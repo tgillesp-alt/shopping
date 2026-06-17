@@ -29,6 +29,7 @@ header { background: #1a1a1a; padding: 1rem 1.25rem; padding-top: calc(1rem + en
 .menu-page.active { display: block; }
 
 .menu-title { text-align: center; font-size: 1.3rem; font-weight: 700; letter-spacing: 0.05em; margin-bottom: 0.2rem; color: #1a1a1a; }
+.print-logo { display: none; }
 .menu-sub { text-align: center; font-size: 0.78rem; color: #8a8782; font-style: italic; margin-bottom: 1.5rem; }
 
 .section-title { text-align: center; font-size: 0.85rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; border-top: 0.5px solid #e5e2da; border-bottom: 0.5px solid #e5e2da; padding: 0.5rem 0; margin: 1.75rem 0 1rem; color: #4a4844; }
@@ -80,7 +81,8 @@ header { background: #1a1a1a; padding: 1rem 1.25rem; padding-top: calc(1rem + en
   .menu-page { display: none !important; }
   .menu-page.printing { display: block !important; }
 
-  .menu-title { font-size: 1rem; margin-bottom: 0; }
+  .print-logo { display: block; margin: 0 auto 0.2rem; height: 13mm; width: auto; }
+  .menu-title { display: none; }
   .menu-sub { font-size: 0.6rem; margin-bottom: 0.3rem; }
 
   .section-title { font-size: 0.65rem; padding: 0.1rem 0; margin: 0.35rem 0 0.25rem; }
@@ -114,6 +116,7 @@ header { background: #1a1a1a; padding: 1rem 1.25rem; padding-top: calc(1rem + en
 <div class="main">
 
   <div class="menu-page active" id="page-middag">
+    <img src="logo-print.png" class="print-logo" alt="Fager Bistro">
     <div class="menu-title">FAGER BISTRO</div>
     <div class="menu-sub">Menu du soir</div>
     <div id="retter-middag"></div>
@@ -122,6 +125,7 @@ header { background: #1a1a1a; padding: 1rem 1.25rem; padding-top: calc(1rem + en
   </div>
 
   <div class="menu-page" id="page-lunsj">
+    <img src="logo-print.png" class="print-logo" alt="Fager Bistro">
     <div class="menu-title">FAGER BISTRO</div>
     <div class="menu-sub">Menu Déjeuner — Lunch Menu</div>
     <div id="retter-lunsj"></div>
@@ -130,6 +134,7 @@ header { background: #1a1a1a; padding: 1rem 1.25rem; padding-top: calc(1rem + en
   </div>
 
   <div class="menu-page" id="page-vin">
+    <img src="logo-print.png" class="print-logo" alt="Fager Bistro">
     <div class="menu-title">FAGER BISTRO</div>
     <div class="menu-sub">Vinliste</div>
     <div class="wine-note">Vinlisten oppdateres</div>
