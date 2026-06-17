@@ -7,7 +7,6 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
 <link rel="manifest" href="manifest.json">
 <title>Fager Bistro – Meny</title>
-<script src="https://cdn.jsdelivr.net/npm/docx@9.7.1/build/index.js"></script>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 body { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif; background: #f7f6f3; color: #1a1a1a; min-height: 100vh; }
@@ -60,6 +59,26 @@ header { background: #1a1a1a; padding: 1rem 1.25rem; padding-top: calc(1rem + en
 .modal-btns button { padding: 0.8rem; border-radius: 10px; font-size: 0.95rem; font-weight: 600; cursor: pointer; border: none; }
 .btn-lagre { background: #1a1a1a; color: #fff; }
 .btn-avbryt { background: #f7f6f3; color: #1a1a1a; border: 0.5px solid #e5e2da !important; }
+
+.snapshot-card { background: #fff; border: 0.5px solid #e5e2da; border-radius: 10px; padding: 0.9rem 1rem; margin-bottom: 8px; cursor: pointer; }
+.snapshot-date { font-size: 0.85rem; font-weight: 600; color: #1a1a1a; }
+.snapshot-meny { font-size: 0.72rem; color: #a8a59d; margin-top: 2px; }
+.snapshot-del { background: none; border: none; color: #c4c0b6; font-size: 0.8rem; cursor: pointer; float: right; }
+
+.snap-dish { background: #fff; border: 0.5px solid #e5e2da; border-radius: 10px; padding: 0.85rem 1rem; margin-bottom: 6px; }
+.snap-dish-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.snap-dish-name { font-weight: 700; font-size: 0.9rem; color: #1a1a1a; }
+.snap-dish-price { font-weight: 700; font-size: 0.9rem; color: #1a1a1a; flex-shrink: 0; }
+.snap-dish-desc { font-size: 0.8rem; font-style: italic; color: #6b6862; margin-top: 3px; }
+.copy-btn { font-size: 0.7rem; padding: 0.25rem 0.6rem; border-radius: 6px; border: 0.5px solid #e5e2da; background: #f7f6f3; color: #6b6862; cursor: pointer; margin-top: 6px; }
+
+@media print {
+  header, .tabs, .add-dish-btn, .dish-edit-actions { display: none !important; }
+  body { background: #fff; }
+  .main { max-width: 100%; padding: 0; }
+  .menu-page { display: none !important; }
+  .menu-page.printing { display: block !important; }
+}
 </style>
 </head>
 <body>
@@ -67,7 +86,8 @@ header { background: #1a1a1a; padding: 1rem 1.25rem; padding-top: calc(1rem + en
   <a href="https://tgillesp-alt.github.io/shopping/portal.html" class="back-btn">‹ Portal</a>
   <div class="header-title">Meny</div>
   <div class="header-actions">
-    <button id="dl-link" class="btn-sm dl-btn" onclick="genererWord()">⬇ Word</button>
+    <button id="dl-link" class="btn-sm dl-btn" onclick="printMeny()">🖨 Print</button>
+    <button class="btn-sm edit-btn" onclick="visTab('bibliotek')">Bibliotek</button>
     <button id="edit-toggle" class="btn-sm edit-btn" onclick="vekslRedigering()">Rediger</button>
   </div>
 </header>
@@ -100,6 +120,18 @@ header { background: #1a1a1a; padding: 1rem 1.25rem; padding-top: calc(1rem + en
     <div class="menu-title">FAGER BISTRO</div>
     <div class="menu-sub">Vinliste</div>
     <div class="wine-note">Vinlisten oppdateres</div>
+  </div>
+
+  <div class="menu-page" id="page-bibliotek">
+    <div class="menu-title">BIBLIOTEK</div>
+    <div class="menu-sub">Tidligere menyversjoner</div>
+    <div id="bibliotek-liste"></div>
+  </div>
+
+  <div class="menu-page" id="page-snapshot">
+    <div class="menu-title" id="snapshot-title">VERSJON</div>
+    <button class="add-dish-btn" onclick="visTab('bibliotek')">‹ Tilbake til bibliotek</button>
+    <div id="snapshot-retter" style="margin-top:1rem;"></div>
   </div>
 
 </div>
@@ -227,97 +259,80 @@ let aktivMeny = 'middag';
 function visTab(side) {
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   document.querySelectorAll('.menu-page').forEach(p => p.classList.remove('active'));
-  document.getElementById('tab-' + side).classList.add('active');
+  if (document.getElementById('tab-' + side)) document.getElementById('tab-' + side).classList.add('active');
   document.getElementById('page-' + side).classList.add('active');
   aktivMeny = side;
-  document.getElementById('dl-link').style.display = (side === 'vin') ? 'none' : 'block';
+  document.getElementById('dl-link').style.display = (side === 'vin' || side === 'bibliotek' || side === 'snapshot') ? 'none' : 'block';
+  if (side === 'bibliotek') hentBibliotek();
 }
 
-async function genererWord() {
-  if (typeof docx === 'undefined') {
-    alert('Word-biblioteket kunne ikke lastes. Sjekk internettforbindelsen og prøv igjen.');
-    return;
-  }
-  try {
-  const { Document, Packer, Paragraph, TextRun, AlignmentType, BorderStyle } = docx;
+async function printMeny() {
+  if (aktivMeny === 'vin' || aktivMeny === 'bibliotek' || aktivMeny === 'snapshot') { window.print(); return; }
 
   const liste = retter.filter(r => r.meny === aktivMeny);
-  const kategorier = [...new Set(liste.map(r => r.kategori))];
-  const tittel = aktivMeny === 'middag' ? 'MENU DU SOIR' : 'MENU DÉJEUNER — LUNCH MENU';
-  const filnavn = aktivMeny === 'middag' ? 'Fager_Bistro_Meny_Middag.docx' : 'Fager_Bistro_Meny_Lunsj.docx';
+  await api('POST', 'meny_snapshots', { meny: aktivMeny, retter: liste });
 
-  const children = [];
+  document.querySelectorAll('.menu-page').forEach(p => p.classList.remove('printing'));
+  document.getElementById('page-' + aktivMeny).classList.add('printing');
+  window.print();
+}
 
-  children.push(new Paragraph({
-    alignment: AlignmentType.CENTER,
-    spacing: { after: 60 },
-    children: [new TextRun({ text: 'FAGER BISTRO', bold: true, size: 32, font: 'Garamond' })]
-  }));
-  children.push(new Paragraph({
-    alignment: AlignmentType.CENTER,
-    spacing: { after: 320 },
-    children: [new TextRun({ text: tittel, italics: true, size: 22, font: 'Garamond' })]
-  }));
+function fmtDato(iso) {
+  const d = new Date(iso);
+  return d.toLocaleDateString('nb-NO', { day: '2-digit', month: '2-digit', year: 'numeric' }) + ' ' + d.toLocaleTimeString('nb-NO', { hour: '2-digit', minute: '2-digit' });
+}
 
-  kategorier.forEach(kat => {
-    children.push(new Paragraph({
-      alignment: AlignmentType.CENTER,
-      spacing: { before: 280, after: 160 },
-      border: { top: { style: BorderStyle.SINGLE, size: 4, color: '999999' }, bottom: { style: BorderStyle.SINGLE, size: 4, color: '999999' } },
-      children: [new TextRun({ text: kat.toUpperCase(), bold: true, size: 18, font: 'Garamond' })]
-    }));
+let snapshots = [];
 
-    liste.filter(r => r.kategori === kat).forEach(r => {
-      const prisTekst = r.pris != null ? String(r.pris) : '';
-      children.push(new Paragraph({
-        alignment: AlignmentType.CENTER,
-        spacing: { after: 20 },
-        children: [
-          new TextRun({ text: r.navn.toUpperCase() + (prisTekst ? '  ' + prisTekst : ''), bold: true, size: 22, font: 'Garamond' }),
-          ...(r.allergener ? [new TextRun({ text: '  (' + r.allergener + ')', size: 18, font: 'Garamond', color: '666666' })] : [])
-        ]
-      }));
-      if (r.beskrivelse) {
-        children.push(new Paragraph({
-          alignment: AlignmentType.CENTER,
-          spacing: { after: 200 },
-          children: [new TextRun({ text: r.beskrivelse, italics: true, size: 20, font: 'Garamond' })]
-        }));
-      } else {
-        children.push(new Paragraph({ spacing: { after: 100 }, children: [] }));
-      }
-    });
-  });
+async function hentBibliotek() {
+  snapshots = await api('GET', 'meny_snapshots?order=dato.desc&select=*');
+  const container = document.getElementById('bibliotek-liste');
+  if (!snapshots.length) { container.innerHTML = '<div class="wine-note">Ingen lagrede versjoner ennå</div>'; return; }
+  container.innerHTML = snapshots.map(s => `
+    <div class="snapshot-card" onclick="visSnapshot('${s.id}')">
+      <button class="snapshot-del" onclick="event.stopPropagation(); slettSnapshot('${s.id}')">✕</button>
+      <div class="snapshot-date">${fmtDato(s.dato)}</div>
+      <div class="snapshot-meny">${s.meny === 'middag' ? 'Middag' : 'Lunsj'} · ${s.retter.length} retter</div>
+    </div>
+  `).join('');
+}
 
-  children.push(new Paragraph({
-    alignment: AlignmentType.CENTER,
-    spacing: { before: 360 },
-    children: [new TextRun({ text: 'Allergener: E Egg, F Fisk, L Lactose, Sn Sennep, Pi Pistasj, So Soya, Se Sesam, By Bygg, H Hvete, Ha Havre, R Rug, Vn Valnøtt, S Selleri, Su Sulfitt, N Nøtter, Ma Mandel, Mo Mollusc, Sk Skalldyr', size: 14, font: 'Garamond', color: '999999' })]
-  }));
+function visSnapshot(id) {
+  const s = snapshots.find(s => s.id === id);
+  if (!s) return;
+  document.getElementById('snapshot-title').textContent = (s.meny === 'middag' ? 'MIDDAG' : 'LUNSJ') + ' — ' + fmtDato(s.dato);
+  const kategorier = [...new Set(s.retter.map(r => r.kategori))];
+  document.getElementById('snapshot-retter').innerHTML = kategorier.map(kat => `
+    <div class="section-title">${kat}</div>
+    ${s.retter.filter(r => r.kategori === kat).map(r => `
+      <div class="snap-dish">
+        <div class="snap-dish-head"><span class="snap-dish-name">${r.navn}</span><span class="snap-dish-price">${r.pris != null ? r.pris : ''}</span></div>
+        ${r.beskrivelse ? `<div class="snap-dish-desc">${r.beskrivelse}</div>` : ''}
+        <button class="copy-btn" onclick='kopierRett(${JSON.stringify(r).replace(/'/g, "&apos;")})'>Kopier til ny rett</button>
+      </div>
+    `).join('')}
+  `).join('');
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.menu-page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-snapshot').classList.add('active');
+}
 
-  const doc = new Document({
-    sections: [{
-      properties: {
-        page: {
-          size: { width: 11906, height: 16838 },
-          margin: { top: 720, right: 720, bottom: 720, left: 720 }
-        }
-      },
-      children
-    }]
-  });
+function kopierRett(r) {
+  editId = null;
+  editMeny = aktivMeny === 'bibliotek' || aktivMeny === 'snapshot' ? 'middag' : aktivMeny;
+  document.getElementById('modal-tittel').textContent = 'Ny rett (kopiert)';
+  document.getElementById('m-kategori').value = r.kategori || '';
+  document.getElementById('m-navn').value = r.navn || '';
+  document.getElementById('m-pris').value = r.pris != null ? r.pris : '';
+  document.getElementById('m-allergener').value = r.allergener || '';
+  document.getElementById('m-beskrivelse').value = r.beskrivelse || '';
+  document.getElementById('modal').style.display = 'flex';
+}
 
-  const base64 = await Packer.toBase64String(doc);
-  const a = document.createElement('a');
-  a.href = 'data:application/vnd.openxmlformats-officedocument.wordprocessingml.document;base64,' + base64;
-  a.download = filnavn;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  } catch (err) {
-    console.error(err);
-    alert('Kunne ikke generere Word-dokument: ' + err.message);
-  }
+async function slettSnapshot(id) {
+  if (!confirm('Slett denne versjonen fra biblioteket?')) return;
+  await api('DELETE', `meny_snapshots?id=eq.${id}`);
+  await hentBibliotek();
 }
 
 hentRetter();
