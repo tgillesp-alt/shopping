@@ -73,11 +73,24 @@ header { background: #1a1a1a; padding: 1rem 1.25rem; padding-top: calc(1rem + en
 .copy-btn { font-size: 0.7rem; padding: 0.25rem 0.6rem; border-radius: 6px; border: 0.5px solid #e5e2da; background: #f7f6f3; color: #6b6862; cursor: pointer; margin-top: 6px; }
 
 @media print {
+  @page { size: A4; margin: 10mm 12mm; }
   header, .tabs, .add-dish-btn, .dish-edit-actions { display: none !important; }
   body { background: #fff; }
   .main { max-width: 100%; padding: 0; }
   .menu-page { display: none !important; }
   .menu-page.printing { display: block !important; }
+
+  .menu-title { font-size: 1.1rem; margin-bottom: 0.1rem; }
+  .menu-sub { font-size: 0.7rem; margin-bottom: 0.6rem; }
+
+  .section-title { font-size: 0.72rem; padding: 0.2rem 0; margin: 0.6rem 0 0.4rem; }
+
+  .dish { margin-bottom: 0.4rem; }
+  .dish-name, .dish-price { font-size: 0.78rem; }
+  .dish-allergens { font-size: 0.58rem; }
+  .dish-desc { font-size: 0.7rem; line-height: 1.2; margin-top: 1px; }
+
+  .allergen-key { margin-top: 0.6rem; padding-top: 0.4rem; font-size: 0.58rem; line-height: 1.3; }
 }
 </style>
 </head>
