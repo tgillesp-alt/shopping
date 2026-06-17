@@ -125,6 +125,7 @@ header { background: #1a1a1a; padding: 1rem 1.25rem; padding-top: calc(1rem + en
   <div class="menu-page" id="page-bibliotek">
     <div class="menu-title">BIBLIOTEK</div>
     <div class="menu-sub">Tidligere menyversjoner</div>
+    <input type="text" id="bibliotek-sok" placeholder="Søk på dato eller produkt/ingrediens..." oninput="filtrerBibliotek()" style="width:100%; padding:0.7rem 0.85rem; border:0.5px solid #e5e2da; border-radius:10px; font-size:0.9rem; background:#fff; color:#1a1a1a; outline:none; margin-bottom:1rem;">
     <div id="bibliotek-liste"></div>
   </div>
 
@@ -286,15 +287,36 @@ let snapshots = [];
 
 async function hentBibliotek() {
   snapshots = await api('GET', 'meny_snapshots?order=dato.desc&select=*');
+  document.getElementById('bibliotek-sok').value = '';
+  renderBibliotek(snapshots);
+}
+
+function renderBibliotek(liste) {
   const container = document.getElementById('bibliotek-liste');
-  if (!snapshots.length) { container.innerHTML = '<div class="wine-note">Ingen lagrede versjoner ennå</div>'; return; }
-  container.innerHTML = snapshots.map(s => `
+  if (!liste.length) { container.innerHTML = '<div class="wine-note">Ingen treff</div>'; return; }
+  container.innerHTML = liste.map(s => `
     <div class="snapshot-card" onclick="visSnapshot('${s.id}')">
       <button class="snapshot-del" onclick="event.stopPropagation(); slettSnapshot('${s.id}')">✕</button>
       <div class="snapshot-date">${fmtDato(s.dato)}</div>
       <div class="snapshot-meny">${s.meny === 'middag' ? 'Middag' : 'Lunsj'} · ${s.retter.length} retter</div>
     </div>
   `).join('');
+}
+
+function filtrerBibliotek() {
+  const q = document.getElementById('bibliotek-sok').value.trim().toLowerCase();
+  if (!q) { renderBibliotek(snapshots); return; }
+  const treff = snapshots.filter(s => {
+    if (fmtDato(s.dato).toLowerCase().includes(q)) return true;
+    if (s.dato.toLowerCase().includes(q)) return true;
+    return s.retter.some(r =>
+      (r.navn || '').toLowerCase().includes(q) ||
+      (r.beskrivelse || '').toLowerCase().includes(q) ||
+      (r.allergener || '').toLowerCase().includes(q) ||
+      (r.kategori || '').toLowerCase().includes(q)
+    );
+  });
+  renderBibliotek(treff);
 }
 
 function visSnapshot(id) {
