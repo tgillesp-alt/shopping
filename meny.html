@@ -101,8 +101,8 @@ header { background: #1a1a1a; padding: 1rem 1.25rem; padding-top: calc(1rem + en
   <a href="https://tgillesp-alt.github.io/shopping/portal.html" class="back-btn">‹ Portal</a>
   <div class="header-title">Meny</div>
   <div class="header-actions">
-    <button id="dl-link" class="btn-sm dl-btn" style="display:none;" onclick="printMeny()">🖨 Print</button>
-    <button class="btn-sm edit-btn" style="display:none;" onclick="visTab('bibliotek')">Bibliotek</button>
+    <button id="dl-link" class="btn-sm dl-btn" onclick="printMeny()">🖨 Print</button>
+    <button class="btn-sm edit-btn" onclick="visTab('bibliotek')">Bibliotek</button>
     <button id="edit-toggle" class="btn-sm edit-btn" onclick="vekslRedigering()">Rediger</button>
   </div>
 </header>
@@ -197,7 +197,24 @@ async function hentRetter() {
 function renderMeny(meny) {
   const liste = retter.filter(r => r.meny === meny);
   const container = document.getElementById('retter-' + meny);
-  const kategorier = [...new Set(liste.map(r => r.kategori))];
+
+  const katRekkefølge = [
+    'Huîtres', 'Huîtres – Østers', 'Østers',
+    'Entrées', 'Entrées – Forretter', 'Forretter',
+    'Plats', 'Plats – Hovedretter', 'Hovedretter',
+    'Fromage', 'Fromage – Ost', 'Ost',
+    'Desserts', 'Desserts – Desserter', 'Desserter',
+    'Extras', 'Extra', 'Tillegg'
+  ];
+
+  const kategorier = [...new Set(liste.map(r => r.kategori))].sort((a, b) => {
+    const ai = katRekkefølge.findIndex(k => a.toLowerCase().includes(k.toLowerCase()));
+    const bi = katRekkefølge.findIndex(k => b.toLowerCase().includes(k.toLowerCase()));
+    const av = ai === -1 ? 999 : ai;
+    const bv = bi === -1 ? 999 : bi;
+    return av - bv;
+  });
+
   container.innerHTML = kategorier.map(kat => `
     <div class="section-title">${kat}</div>
     ${liste.filter(r => r.kategori === kat).map(r => `
