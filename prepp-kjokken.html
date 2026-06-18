@@ -49,6 +49,24 @@ header { background: #1a1a1a; padding: 1rem 1.25rem; padding-top: calc(1rem + en
 .modal-btns button { padding: 0.8rem; border-radius: 10px; font-size: 0.95rem; font-weight: 600; cursor: pointer; border: none; }
 .btn-lagre { background: #1a1a1a; color: #fff; }
 .btn-avbryt { background: #f7f6f3; color: #1a1a1a; border: 0.5px solid #e5e2da !important; }
+
+@media print {
+  @page { size: A4; margin: 12mm 14mm; }
+  body { background: #fff; }
+  header, .progress-bar, .progress-label, .item-actions, .modal-overlay { display: none !important; }
+  .main { max-width: 100%; padding: 0; }
+
+  .prepp-item.ferdig { display: none !important; }
+
+  .kategori-block { margin-bottom: 0.9rem; }
+  .kategori-header { font-size: 0.95rem; margin-bottom: 0.4rem; padding-bottom: 0.25rem; }
+  .seksjon { margin-bottom: 0.6rem; }
+  .seksjon-header { font-size: 0.62rem; margin-bottom: 0.25rem; }
+
+  .prepp-item { background: none; border: none; border-radius: 0; padding: 0.18rem 0; margin-bottom: 0; gap: 0.5rem; }
+  .prepp-item input[type="checkbox"] { -webkit-appearance: none; appearance: none; width: 12px; height: 12px; border: 1px solid #1a1a1a; border-radius: 2px; margin: 0; }
+  .prepp-tekst { font-size: 0.78rem; line-height: 1.3; }
+}
 </style>
 </head>
 <body>
@@ -227,6 +245,20 @@ async function lagreItem() {
 
 function lukkModal() { document.getElementById('modal').style.display = 'none'; editId = null; }
 function lukkModalOverlay(e) { if (e.target === document.getElementById('modal')) lukkModal(); }
+
+window.addEventListener('beforeprint', () => {
+  document.querySelectorAll('.seksjon').forEach(sek => {
+    const synlige = sek.querySelectorAll('.prepp-item:not(.ferdig)').length;
+    sek.style.display = synlige === 0 ? 'none' : '';
+  });
+  document.querySelectorAll('.kategori-block').forEach(kat => {
+    const synlige = kat.querySelectorAll('.prepp-item:not(.ferdig)').length;
+    kat.style.display = synlige === 0 ? 'none' : '';
+  });
+});
+window.addEventListener('afterprint', () => {
+  document.querySelectorAll('.seksjon, .kategori-block').forEach(el => el.style.display = '');
+});
 
 hent();
 setInterval(hent, 20000);
