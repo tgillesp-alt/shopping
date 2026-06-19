@@ -468,7 +468,7 @@ async function lastNedPDF(btn) {
       doc.setFontSize(16);
       doc.setTextColor(154, 2, 3);
       doc.text(kat.toUpperCase(), mL, y);
-      y += 18;
+      y += 22;
 
       for (const r of retter.filter(r2 => r2.kategori === kat)) {
         const navn = (r.navn || '').toUpperCase();
