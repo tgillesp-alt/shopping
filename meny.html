@@ -101,8 +101,9 @@ header { background: #1a1a1a; padding: 1rem 1.25rem; padding-top: calc(1rem + en
   <a href="https://tgillesp-alt.github.io/shopping/portal.html" class="back-btn">‹ Portal</a>
   <div class="header-title">Meny</div>
   <div class="header-actions">
-    <button id="dl-link" class="btn-sm dl-btn" onclick="printMeny()">🖨 Print</button>
-    <button class="btn-sm edit-btn" onclick="visTab('bibliotek')">Bibliotek</button>
+    <button id="dl-link" class="btn-sm dl-btn" style="display:none;" onclick="printMeny()">🖨 Print</button>
+    <button class="btn-sm edit-btn" style="display:none;" onclick="visTab('bibliotek')">Bibliotek</button>
+    <button class="btn-sm edit-btn" onclick="delMedGjest()">↗ Del</button>
     <button id="edit-toggle" class="btn-sm edit-btn" onclick="vekslRedigering()">Rediger</button>
   </div>
 </header>
@@ -226,6 +227,20 @@ function renderMeny(meny) {
       </div>
     `).join('')}
   `).join('');
+}
+
+function delMedGjest() {
+  const url = 'https://tgillesp-alt.github.io/shopping/gjester.html';
+  if (navigator.share) {
+    navigator.share({ title: 'Fager Bistro – Meny', url });
+  } else {
+    navigator.clipboard.writeText(url).then(() => {
+      const btn = document.querySelector('[onclick="delMedGjest()"]');
+      const orig = btn.textContent;
+      btn.textContent = '✓ Kopiert!';
+      setTimeout(() => { btn.textContent = orig; }, 2000);
+    });
+  }
 }
 
 function vekslRedigering() {
