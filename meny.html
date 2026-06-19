@@ -425,22 +425,18 @@ async function lastNedPDF(btn) {
   const orig = btn.textContent;
   btn.textContent = '…';
   btn.disabled = true;
-
   try {
     const { jsPDF } = window.jspdf;
-    const doc = new jsPDF({ unit: 'mm', format: 'a4' });
-
-    const W = 210, H = 297;
-    const mL = 18, mR = 18, mT = 16, mB = 14;
+    const doc = new jsPDF({ unit: 'pt', format: 'a4' });
+    const W = 595, H = 842;
+    const mL = 51, mR = 51, mT = 45, mB = 40;
     const cW = W - mL - mR;
 
-    // --- Logo ---
     const logoImg = await loadImg('logo-print.png');
-    const lh = 20, lw = 20;
+    const lh = 56, lw = 56;
     doc.addImage(logoImg, 'PNG', W/2 - lw/2, mT, lw, lh);
-    let y = mT + lh + 6;
+    let y = mT + lh + 18;
 
-    // --- Hent retter ---
     const res = await fetch(`${SUPABASE_URL}/rest/v1/meny_retter?meny=eq.middag&order=sort_order.asc,created_at.asc`, {
       headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` }
     });
@@ -448,60 +444,52 @@ async function lastNedPDF(btn) {
     const kategorier = [...new Set(retter.map(r => r.kategori))].sort(katSortPDF);
 
     for (const kat of kategorier) {
-      // Seksjonstittel
-      y += 2.5;
+      y += 8;
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(9);
       doc.setTextColor(154, 2, 3);
       doc.text(kat.toUpperCase(), W/2, y, { align: 'center' });
-      y += 5;
+      y += 14;
 
-      const items = retter.filter(r => r.kategori === kat);
-      for (const r of items) {
+      for (const r of retter.filter(r2 => r2.kategori === kat)) {
         const navn = (r.navn || '').toUpperCase();
         const pris = r.pris != null ? String(r.pris) : '';
         const allerg = r.allergener ? '( ' + r.allergener + ' )' : '';
 
-        // Rettnavn fet venstrejustert + allergener inline + pris høyrejustert
         doc.setFont('helvetica', 'bold');
-        doc.setFontSize(10);
+        doc.setFontSize(11);
         doc.setTextColor(26, 26, 26);
-
         const navnW = doc.getTextWidth(navn);
         doc.text(navn, mL, y);
 
         if (allerg) {
           doc.setFont('helvetica', 'normal');
-          doc.setFontSize(7.5);
+          doc.setFontSize(8);
           doc.setTextColor(168, 165, 157);
-          doc.text(allerg, mL + navnW + 2, y);
+          doc.text(allerg, mL + navnW + 5, y);
         }
-
         if (pris) {
           doc.setFont('helvetica', 'bold');
-          doc.setFontSize(10);
+          doc.setFontSize(11);
           doc.setTextColor(26, 26, 26);
           doc.text(pris, W - mR, y, { align: 'right' });
         }
+        y += 13;
 
-        y += 4;
-
-        // Beskrivelse
         if (r.beskrivelse) {
           doc.setFont('helvetica', 'italic');
-          doc.setFontSize(8.5);
+          doc.setFontSize(9.5);
           doc.setTextColor(80, 78, 75);
           const lines = doc.splitTextToSize(r.beskrivelse, cW);
           doc.text(lines, mL, y);
-          y += lines.length * 3.8;
+          y += lines.length * 12;
         }
-        y += 2.5;
+        y += 7;
       }
     }
 
-    // --- Allergen-nøkkel ---
     doc.setFont('helvetica', 'normal');
-    doc.setFontSize(5.5);
+    doc.setFontSize(6.5);
     doc.setTextColor(168, 165, 157);
     const aT = 'Allergener: E Egg, F Fisk, L Lactose, Sn Sennep, Pi Pistasj, So Soya, Se Sesam, By Bygg, H Hvete, Ha Havre, R Rug, Vn Valnøtt, S Selleri, Su sulfitt, N Nøtter, Ma Mandel, Mo Mollusc, Sk Skalldyr';
     const aLines = doc.splitTextToSize(aT, cW);
@@ -509,10 +497,7 @@ async function lastNedPDF(btn) {
 
     const dato = new Date().toLocaleDateString('no-NO', { day: '2-digit', month: '2-digit', year: '2-digit' }).replace(/\./g, '_');
     doc.save(`Fager_Bistro_Meny_${dato}.pdf`);
-  } catch(e) {
-    alert('Kunne ikke generere PDF: ' + e.message);
-  }
-
+  } catch(e) { alert('Feil: ' + e.message); }
   btn.textContent = orig;
   btn.disabled = false;
 }
