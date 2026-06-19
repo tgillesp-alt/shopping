@@ -94,9 +94,9 @@ header { background: var(--dark); color: #fff; padding: 0.9rem 1.25rem; padding-
 .vare-del:active { color: var(--warn); background: #fef2ee; }
 
 .empty { text-align: center; color: #bbb; font-size: 0.9rem; padding: 3rem 0; }
-.hist-toolbar { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
-.hist-toolbar input { flex: 1; padding: 0.7rem 0.85rem; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 0.95rem; background: var(--bg); outline: none; }
-.hist-toolbar select { padding: 0.7rem 0.75rem; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 0.9rem; background: var(--bg); outline: none; }
+.hist-toolbar { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1rem; }
+.hist-toolbar input { flex: 1; min-width: 120px; padding: 0.7rem 0.85rem; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 0.95rem; background: var(--bg); outline: none; }
+.hist-toolbar select { flex: 1; min-width: 100px; padding: 0.7rem 0.5rem; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 0.85rem; background: var(--bg); outline: none; }
 .hist-item { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 0.85rem 1rem; margin-bottom: 0.45rem; }
 .hist-navn { font-size: 0.95rem; font-weight: 500; margin-bottom: 0.35rem; }
 .hist-tags { display: flex; gap: 0.3rem; flex-wrap: wrap; }
@@ -191,11 +191,9 @@ header { background: var(--dark); color: #fff; padding: 0.9rem 1.25rem; padding-
     <div id="liste"></div>
     <div id="historikk-view" style="display:none">
       <div class="hist-toolbar">
-        <input type="text" id="hist-sok" placeholder="Søk i historikk..." oninput="renderHistorikk()" autocomplete="off">
-        <select id="hist-gruppe" onchange="renderHistorikk()">
-          <option value="kategori">Kategori</option>
-          <option value="leverandor">Leverandør</option>
-        </select>
+        <input type="text" id="hist-sok" placeholder="Søk vare..." oninput="renderHistorikk()" autocomplete="off">
+        <select id="hist-kat" onchange="renderHistorikk()"><option value="">Alle kategorier</option></select>
+        <select id="hist-lev" onchange="renderHistorikk()"><option value="">Alle lev.</option></select>
       </div>
       <div id="hist-liste"></div>
     </div>
@@ -420,20 +418,35 @@ async function registrerPush() {
 
 function renderHistorikk() {
   const sok = (document.getElementById('hist-sok').value || '').toLowerCase();
-  const gruppe = document.getElementById('hist-gruppe').value;
-  let data = varer.filter(v => v.mottatt);
-  if (sok) data = data.filter(v =>
-    v.navn.toLowerCase().includes(sok) ||
-    (v.kategori||'').toLowerCase().includes(sok) ||
-    (v.leverandor||'').toLowerCase().includes(sok)
-  );
+  const filtKat = document.getElementById('hist-kat').value;
+  const filtLev = document.getElementById('hist-lev').value;
+
+  const mottatte = varer.filter(v => v.mottatt);
+
+  // Populate dropdowns dynamically
+  const kats = [...new Set(mottatte.map(v => v.kategori).filter(Boolean))].sort();
+  const levs = [...new Set(mottatte.map(v => v.leverandor).filter(Boolean))].sort();
+  const katSel = document.getElementById('hist-kat');
+  const levSel = document.getElementById('hist-lev');
+  const prevKat = katSel.value, prevLev = levSel.value;
+  katSel.innerHTML = '<option value="">Alle kategorier</option>' + kats.map(k => `<option value="${k}">${k}</option>`).join('');
+  levSel.innerHTML = '<option value="">Alle lev.</option>' + levs.map(l => `<option value="${l}">${l}</option>`).join('');
+  katSel.value = prevKat; levSel.value = prevLev;
+
+  let data = mottatte;
+  if (filtKat) data = data.filter(v => v.kategori === filtKat);
+  if (filtLev) data = data.filter(v => v.leverandor === filtLev);
+  if (sok) data = data.filter(v => v.navn.toLowerCase().includes(sok));
+
   data.sort((a,b) => new Date(b.mottatt_dato||b.created_at) - new Date(a.mottatt_dato||a.created_at));
+
   const grouped = {};
   data.forEach(v => {
-    const key = (gruppe === 'leverandor' ? v.leverandor : v.kategori) || 'Ukjent';
+    const key = v.kategori || 'Ukjent';
     if (!grouped[key]) grouped[key] = [];
     grouped[key].push(v);
   });
+
   const container = document.getElementById('hist-liste');
   if (!data.length) { container.innerHTML = '<div class="empty">Ingen historikk</div>'; return; }
   container.innerHTML = Object.entries(grouped).sort((a,b)=>a[0].localeCompare(b[0])).map(([group, items]) => `
