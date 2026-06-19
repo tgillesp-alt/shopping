@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fager Bistro – Omsetningsoppgave</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #f7f6f3; font-family: -apple-system, sans-serif; color: #1a1a1a; }
+header { background: #1a1a1a; color: #fff; padding: 1rem 1.25rem; display: flex; align-items: center; gap: 1rem; }
+.back-btn { color: rgba(255,255,255,0.6); text-decoration: none; font-size: 0.85rem; }
+.header-title { font-weight: 700; font-size: 1rem; letter-spacing: 0.05em; flex: 1; }
+.main { max-width: 600px; margin: 0 auto; padding: 1.5rem 1.25rem 4rem; }
+
+.velger { background: #fff; border-radius: 16px; padding: 1.25rem; margin-bottom: 1.5rem; border: 0.5px solid #e5e2da; }
+.velger h3 { font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #a8a59d; margin-bottom: 1rem; }
+.velger-row { display: flex; gap: 0.75rem; align-items: center; margin-bottom: 0.75rem; }
+.velger-row label { font-size: 0.85rem; color: #5a5855; min-width: 40px; }
+select { flex: 1; padding: 0.6rem 0.75rem; border: 1px solid #e5e2da; border-radius: 10px; font-size: 0.9rem; background: #f7f6f3; }
+.btn-primary { width: 100%; padding: 0.85rem; background: #1a1a1a; color: #fff; border: none; border-radius: 12px; font-size: 0.95rem; font-weight: 600; cursor: pointer; margin-top: 0.5rem; }
+
+.rapport { background: #fff; border-radius: 16px; padding: 1.25rem; border: 0.5px solid #e5e2da; display: none; }
+.rapport-header { text-align: center; margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid #e5e2da; }
+.rapport-header h2 { font-size: 1.1rem; font-weight: 700; }
+.rapport-header p { font-size: 0.8rem; color: #a8a59d; margin-top: 0.25rem; }
+
+.kat-block { margin-bottom: 1.25rem; }
+.kat-navn { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: #a8a59d; margin-bottom: 0.5rem; }
+.kat-liter { font-size: 2rem; font-weight: 700; color: #1a1a1a; }
+.kat-liter span { font-size: 1rem; font-weight: 400; color: #a8a59d; margin-left: 4px; }
+
+.divider { border: none; border-top: 1px solid #e5e2da; margin: 1rem 0; }
+
+.sum-block { display: flex; justify-content: space-between; align-items: baseline; padding: 0.75rem 0; }
+.sum-label { font-size: 0.9rem; font-weight: 600; }
+.sum-verdi { font-size: 1.4rem; font-weight: 700; }
+.sum-omsetning { color: #1a1a1a; }
+.sum-mineralvann { color: #a8a59d; font-size: 0.85rem; }
+
+.notat { margin-top: 1.5rem; padding: 1rem; background: #f7f6f3; border-radius: 10px; font-size: 0.75rem; color: #5a5855; line-height: 1.5; }
+.notat strong { color: #1a1a1a; }
+
+.empty { text-align: center; padding: 2rem; color: #a8a59d; font-size: 0.9rem; }
+
+@media print {
+  header, .velger, .btn-primary { display: none !important; }
+  .rapport { display: block !important; border: none; }
+  body { background: #fff; }
+}
+</style>
+</head>
+<body>
+<header>
+  <a href="portal.html" class="back-btn">‹ Portal</a>
+  <div class="header-title">Omsetningsoppgave</div>
+</header>
+
+<div class="main">
+  <div class="velger">
+    <h3>Velg periode</h3>
+    <div class="velger-row">
+      <label>Fra</label>
+      <select id="fra-telling"></select>
+    </div>
+    <div class="velger-row">
+      <label>Til</label>
+      <select id="til-telling"></select>
+    </div>
+    <button class="btn-primary" onclick="genererRapport()">Generer rapport</button>
+  </div>
+
+  <div class="rapport" id="rapport">
+    <div class="rapport-header">
+      <h2>FAGER BISTRO</h2>
+      <p id="rapport-periode"></p>
+      <p style="font-size:0.75rem;color:#a8a59d;margin-top:0.25rem;">Org.nr: [fyll inn]</p>
+    </div>
+
+    <div id="rapport-innhold"></div>
+
+    <div class="notat">
+      <strong>RF-1126 Særavgiftsoppgave</strong><br>
+      Mottatt alkohol i liter per kategori — basert på differanse mellom to lagertellinger.<br>
+      Vin = under 15% · Hetvin = 15–22% · Sprit = over 22% · Øl inkl. cider
+    </div>
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL = 'https://izdclsyuplghwznsjnom.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml6ZGNsc3l1cGxnaHd6bnNqbm9tIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE1MjY5MjksImV4cCI6MjA5NzEwMjkyOX0.GkjxcToCHZrLAm1pVGsBkcLapIOj7uSYd6IcDC0Lyzk';
+
+const OMSETNING_KAT = ['Vin', 'Hetvin', 'Sprit', 'Øl'];
+
+async function api(path) {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
+    headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` }
+  });
+  return res.json();
+}
+
+let tellinger = [], produkter = [];
+
+async function init() {
+  [tellinger, produkter] = await Promise.all([
+    api('lager_telling?order=maned.asc&select=*,lager_telling_linjer(*)'),
+    api('lager_produkter?select=*')
+  ]);
+
+  if (!tellinger.length) {
+    document.querySelector('.velger').innerHTML = '<div class="empty">Ingen tellinger registrert ennå</div>';
+    return;
+  }
+
+  const opts = tellinger.map(t => `<option value="${t.id}">${t.maned}</option>`).join('');
+  document.getElementById('fra-telling').innerHTML = opts;
+  document.getElementById('til-telling').innerHTML = opts;
+  // Default: fra = første, til = siste
+  document.getElementById('til-telling').selectedIndex = tellinger.length - 1;
+}
+
+function getLiterForTelling(telling, kat) {
+  const linjer = telling.lager_telling_linjer || [];
+  return linjer.reduce((sum, linje) => {
+    const p = produkter.find(p => p.id === linje.produkt_id);
+    if (!p || p.kategori !== kat) return sum;
+    // Bruk lagret liter_total hvis finnes, ellers beregn
+    const liter = linje.liter_total || (linje.antall * (parseFloat(p.volum_liter) || 0.75));
+    return sum + liter;
+  }, 0);
+}
+
+function genererRapport() {
+  const fraId = document.getElementById('fra-telling').value;
+  const tilId = document.getElementById('til-telling').value;
+  const fra = tellinger.find(t => t.id == fraId);
+  const til = tellinger.find(t => t.id == tilId);
+
+  if (!fra || !til) return;
+
+  document.getElementById('rapport-periode').textContent =
+    `Periode: ${fra.maned} – ${til.maned}`;
+
+  // Alle kategorier
+  const alleKat = [...new Set(produkter.map(p => p.kategori).filter(Boolean))];
+  const mineralvann = alleKat.filter(k => !OMSETNING_KAT.includes(k));
+
+  let html = '';
+  let totalOmsetning = 0;
+
+  // Omsetningsoppgave-kategorier
+  for (const kat of OMSETNING_KAT) {
+    const fraLiter = getLiterForTelling(fra, kat);
+    const tilLiter = getLiterForTelling(til, kat);
+    const diff = Math.max(0, fraLiter - tilLiter); // IB - UB = forbruk
+    totalOmsetning += diff;
+
+    html += `
+      <div class="kat-block">
+        <div class="kat-navn">${kat}</div>
+        <div class="kat-liter">${diff.toFixed(2)}<span>liter</span></div>
+        <div style="font-size:0.72rem;color:#a8a59d;margin-top:2px;">
+          IB: ${fraLiter.toFixed(2)} L · UB: ${tilLiter.toFixed(2)} L
+        </div>
+      </div>`;
+  }
+
+  html += `<hr class="divider">
+    <div class="sum-block">
+      <span class="sum-label">Sum omsetningsoppgave</span>
+      <span class="sum-verdi sum-omsetning">${totalOmsetning.toFixed(2)} L</span>
+    </div>`;
+
+  // Mineralvann etc — lagerverdi, ikke omsetning
+  for (const kat of mineralvann) {
+    const fraLiter = getLiterForTelling(fra, kat);
+    const tilLiter = getLiterForTelling(til, kat);
+    const diff = Math.max(0, fraLiter - tilLiter);
+    html += `
+      <div class="sum-block">
+        <span class="sum-label" style="color:#a8a59d;font-size:0.85rem;">${kat} (ikke omsetning)</span>
+        <span class="sum-verdi sum-mineralvann">${diff.toFixed(2)} L</span>
+      </div>`;
+  }
+
+  document.getElementById('rapport-innhold').innerHTML = html;
+  document.getElementById('rapport').style.display = 'block';
+  document.getElementById('rapport').scrollIntoView({ behavior: 'smooth' });
+}
+
+init();
+</script>
+</body>
+</html>
