@@ -454,7 +454,7 @@ async function lastNedPDF(btn) {
     const logoImg = await loadImg('logo-print.png');
     const lh = 90, lw = 90;
     doc.addImage(logoImg, 'PNG', W/2 - lw/2, mT, lw, lh);
-    let y = mT + lh + 18;
+    let y = mT + lh + 10;  // nærmere logo
 
     const res = await fetch(`${SUPABASE_URL}/rest/v1/meny_retter?meny=eq.middag&order=sort_order.asc,created_at.asc`, {
       headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` }
@@ -463,63 +463,55 @@ async function lastNedPDF(btn) {
     const kategorier = [...new Set(retter.map(r => r.kategori))].sort(katSortPDF);
 
     for (const kat of kategorier) {
-      y += 14;
+      y += 11;
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(13);
       doc.setTextColor(154, 2, 3);
       doc.text(kat.toUpperCase(), mL, y);
-      y += 17;
+      y += 14;
 
       for (const r of retter.filter(r2 => r2.kategori === kat)) {
         const navn = (r.navn || '').toUpperCase();
         const pris = r.pris != null ? String(r.pris) : '';
         const allerg = r.allergener ? '( ' + r.allergener + ' )' : '';
 
-        // Rettnavn 13pt
         doc.setFont('helvetica', 'bold');
         doc.setFontSize(13);
         doc.setTextColor(26, 26, 26);
         doc.text(navn, mL, y);
         const navnW = doc.getTextWidth(navn);
 
-        // Pris rett etter navn med litt mellomrom
         if (pris) {
           doc.setFont('helvetica', 'bold');
           doc.setFontSize(13);
-          doc.setTextColor(26, 26, 26);
           doc.text(pris, mL + navnW + 8, y);
           const prisW = doc.getTextWidth(pris);
-
-          // Allergener etter pris
           if (allerg) {
             doc.setFont('helvetica', 'normal');
             doc.setFontSize(8.5);
-            doc.setTextColor(26, 26, 26);
             doc.text(allerg, mL + navnW + 8 + prisW + 5, y);
           }
         } else if (allerg) {
           doc.setFont('helvetica', 'normal');
           doc.setFontSize(8.5);
-          doc.setTextColor(26, 26, 26);
           doc.text(allerg, mL + navnW + 8, y);
         }
 
-        y += 15;
+        y += 13;
 
-        // Beskrivelse 10pt
         if (r.beskrivelse) {
           doc.setFont('helvetica', 'italic');
           doc.setFontSize(10);
           doc.setTextColor(80, 78, 75);
           const lines = doc.splitTextToSize(r.beskrivelse, cW);
           doc.text(lines, mL, y);
-          y += lines.length * 12;
+          y += lines.length * 11.5;
         }
-        y += 9;
+        y += 6;
       }
     }
 
-    // Allergenliste — svart, 8pt
+    // Allergenliste fast i bunn — svart, 8pt
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(8);
     doc.setTextColor(26, 26, 26);
