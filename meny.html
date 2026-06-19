@@ -454,11 +454,7 @@ async function lastNedPDF(btn) {
       doc.setFontSize(7);
       doc.setTextColor(154, 2, 3);
       doc.text(kat.toUpperCase(), W/2, y, { align: 'center' });
-      y += 1.2;
-      doc.setDrawColor(220, 210, 200);
-      doc.setLineWidth(0.2);
-      doc.line(mL, y, W - mR, y);
-      y += 3.5;
+      y += 4;
 
       const items = retter.filter(r => r.kategori === kat);
       for (const r of items) {
@@ -504,12 +500,13 @@ async function lastNedPDF(btn) {
     }
 
     // --- Allergen-nøkkel ---
+    y += 4;
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(5.5);
     doc.setTextColor(168, 165, 157);
     const aT = 'Allergener: E Egg, F Fisk, L Lactose, Sn Sennep, Pi Pistasj, So Soya, Se Sesam, By Bygg, H Hvete, Ha Havre, R Rug, Vn Valnøtt, S Selleri, Su sulfitt, N Nøtter, Ma Mandel, Mo Mollusc, Sk Skalldyr';
     const aLines = doc.splitTextToSize(aT, cW);
-    doc.text(aLines, W/2, H - mB, { align: 'center' });
+    doc.text(aLines, W/2, y, { align: 'center' });
 
     const dato = new Date().toLocaleDateString('no-NO', { day: '2-digit', month: '2-digit', year: '2-digit' }).replace(/\./g, '_');
     doc.save(`Fager_Bistro_Meny_${dato}.pdf`);
