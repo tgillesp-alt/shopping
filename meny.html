@@ -37,7 +37,7 @@ header { background: #1a1a1a; padding: 1rem 1.25rem; padding-top: calc(1rem + en
 
 .dish { margin-bottom: 1rem; position: relative; }
 .dish-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
-.dish-name { font-weight: 700; font-size: 0.95rem; color: #1a1a1a; }
+.dish-name { font-weight: 700; font-size: 0.95rem; color: #1a1a1a; text-transform: uppercase; }
 .dish-price { font-weight: 700; font-size: 0.95rem; flex-shrink: 0; color: #1a1a1a; }
 .dish-allergens { font-size: 0.68rem; color: #a8a59d; margin-top: 1px; }
 .dish-desc { font-size: 0.85rem; font-style: italic; color: #6b6862; margin-top: 3px; line-height: 1.4; }
@@ -239,7 +239,7 @@ function renderMeny(meny) {
     <div class="section-title">${kat}</div>
     ${liste.filter(r => r.kategori === kat).map(r => `
       <div class="dish">
-        <div class="dish-head"><span class="dish-name">${r.navn}</span><span class="dish-price">${r.pris != null ? r.pris : ''}</span></div>
+        <div class="dish-head"><span class="dish-name">${(r.navn||"").toUpperCase()}</span><span class="dish-price">${r.pris != null ? r.pris : ''}</span></div>
         ${r.allergener ? `<div class="dish-allergens">${r.allergener}</div>` : ''}
         ${r.beskrivelse ? `<div class="dish-desc">${r.beskrivelse}</div>` : ''}
         ${redigeringPa ? `<div class="dish-edit-actions"><button onclick="apneRedigerRett('${r.id}')">Rediger</button><button onclick="slettRett('${r.id}')">Slett</button></div>` : ''}
