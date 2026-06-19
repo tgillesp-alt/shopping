@@ -447,7 +447,7 @@ async function lastNedPDF(btn) {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF({ unit: 'pt', format: 'a4' });
     const W = 595, H = 842;
-    const mL = 45, mR = 45, mT = 55, mB = 38;
+    const mL = 45, mR = 45, mT = 55, mB = 42;
     const cW = W - mL - mR;
 
     // Logo
@@ -463,38 +463,44 @@ async function lastNedPDF(btn) {
     const kategorier = [...new Set(retter.map(r => r.kategori))].sort(katSortPDF);
 
     for (const kat of kategorier) {
-      y += 8;
+      y += 14;
+      // Rød seksjonstittel — større enn rettnavn
       doc.setFont('helvetica', 'bold');
-      doc.setFontSize(9);
+      doc.setFontSize(13);
       doc.setTextColor(154, 2, 3);
       doc.text(kat.toUpperCase(), mL, y);
-      y += 13;
+      y += 16;
 
       for (const r of retter.filter(r2 => r2.kategori === kat)) {
         const navn = (r.navn || '').toUpperCase();
         const pris = r.pris != null ? String(r.pris) : '';
         const allerg = r.allergener ? '( ' + r.allergener + ' )' : '';
 
+        // Rettnavn 11pt fet svart
         doc.setFont('helvetica', 'bold');
         doc.setFontSize(11);
         doc.setTextColor(26, 26, 26);
         const navnW = doc.getTextWidth(navn);
         doc.text(navn, mL, y);
 
+        // Allergener svart etter rettnavn
         if (allerg) {
           doc.setFont('helvetica', 'normal');
-          doc.setFontSize(7.5);
-          doc.setTextColor(168, 165, 157);
+          doc.setFontSize(8);
+          doc.setTextColor(26, 26, 26);
           doc.text(allerg, mL + navnW + 4, y);
         }
+
+        // Pris høyrejustert
         if (pris) {
           doc.setFont('helvetica', 'bold');
           doc.setFontSize(11);
           doc.setTextColor(26, 26, 26);
           doc.text(pris, W - mR, y, { align: 'right' });
         }
-        y += 12;
+        y += 13;
 
+        // Beskrivelse
         if (r.beskrivelse) {
           doc.setFont('helvetica', 'italic');
           doc.setFontSize(9);
@@ -503,14 +509,14 @@ async function lastNedPDF(btn) {
           doc.text(lines, mL, y);
           y += lines.length * 11;
         }
-        y += 5;
+        y += 8;
       }
     }
 
-    // Allergen-nøkkel fast i bunn
+    // Allergen-nøkkel — større, svart
     doc.setFont('helvetica', 'normal');
-    doc.setFontSize(6.5);
-    doc.setTextColor(168, 165, 157);
+    doc.setFontSize(8);
+    doc.setTextColor(26, 26, 26);
     const aT = 'Allergener: E Egg, F Fisk, L Lactose, Sn Sennep, Pi Pistasj, So Soya, Se Sesam, By Bygg, H Hvete, Ha Havre, R Rug, Vn Valnøtt, S Selleri, Su sulfitt, N Nøtter, Ma Mandel, Mo Mollusc, Sk Skalldyr';
     const aLines = doc.splitTextToSize(aT, cW);
     doc.text(aLines, W/2, H - mB, { align: 'center' });
