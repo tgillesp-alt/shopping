@@ -468,7 +468,7 @@ async function lastNedPDF(btn) {
       doc.setFontSize(16);
       doc.setTextColor(154, 2, 3);
       doc.text(kat.toUpperCase(), mL, y);
-      y += 14;
+      y += 18;
 
       for (const r of retter.filter(r2 => r2.kategori === kat)) {
         const navn = (r.navn || '').toUpperCase();
@@ -488,12 +488,12 @@ async function lastNedPDF(btn) {
           const prisW = doc.getTextWidth(pris);
           if (allerg) {
             doc.setFont('helvetica', 'normal');
-            doc.setFontSize(8.5);
+            doc.setFontSize(7);
             doc.text(allerg, mL + navnW + 8 + prisW + 5, y);
           }
         } else if (allerg) {
           doc.setFont('helvetica', 'normal');
-          doc.setFontSize(8.5);
+          doc.setFontSize(7);
           doc.text(allerg, mL + navnW + 8, y);
         }
 
