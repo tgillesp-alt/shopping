@@ -192,8 +192,7 @@ header { background: var(--dark); color: #fff; padding: 0.9rem 1.25rem; padding-
     <div id="historikk-view" style="display:none">
       <div class="hist-toolbar">
         <input type="text" id="hist-sok" placeholder="Søk vare..." oninput="renderHistorikk()" autocomplete="off">
-        <select id="hist-kat" onchange="renderHistorikk()"><option value="">Alle kategorier</option></select>
-        <select id="hist-lev" onchange="renderHistorikk()"><option value="">Alle lev.</option></select>
+        <select id="hist-lev" onchange="renderHistorikk()"><option value="">Alle leverandører</option></select>
       </div>
       <div id="hist-liste"></div>
     </div>
@@ -418,23 +417,18 @@ async function registrerPush() {
 
 function renderHistorikk() {
   const sok = (document.getElementById('hist-sok').value || '').toLowerCase();
-  const filtKat = document.getElementById('hist-kat').value;
   const filtLev = document.getElementById('hist-lev').value;
 
   const mottatte = varer.filter(v => v.mottatt);
 
-  // Populate dropdowns dynamically
-  const kats = [...new Set(mottatte.map(v => v.kategori).filter(Boolean))].sort();
-  const levs = [...new Set(mottatte.map(v => v.leverandor).filter(Boolean))].sort();
-  const katSel = document.getElementById('hist-kat');
+  // Populate leverandor dropdown dynamically
   const levSel = document.getElementById('hist-lev');
-  const prevKat = katSel.value, prevLev = levSel.value;
-  katSel.innerHTML = '<option value="">Alle kategorier</option>' + kats.map(k => `<option value="${k}">${k}</option>`).join('');
-  levSel.innerHTML = '<option value="">Alle lev.</option>' + levs.map(l => `<option value="${l}">${l}</option>`).join('');
-  katSel.value = prevKat; levSel.value = prevLev;
+  const prevLev = levSel.value;
+  const levs = [...new Set(mottatte.map(v => v.leverandor).filter(Boolean))].sort();
+  levSel.innerHTML = '<option value="">Alle leverandører</option>' + levs.map(l => `<option value="${l}">${l}</option>`).join('');
+  levSel.value = prevLev;
 
   let data = mottatte;
-  if (filtKat) data = data.filter(v => v.kategori === filtKat);
   if (filtLev) data = data.filter(v => v.leverandor === filtLev);
   if (sok) data = data.filter(v => v.navn.toLowerCase().includes(sok));
 
@@ -458,9 +452,6 @@ function renderHistorikk() {
           ${v.leverandor ? `<span class="tag lev">${v.leverandor}</span>` : ''}
           ${v.kategori ? `<span class="tag">${v.kategori}</span>` : ''}
           ${v.mengde ? `<span class="tag">${v.mengde}${v.enhet?' '+v.enhet:''}</span>` : ''}
-          ${v.lagt_inn_av ? `<span class="tag">av ${v.lagt_inn_av}</span>` : ''}
-          ${v.created_at ? `<span class="tag">lagt inn ${fmt(v.created_at)}</span>` : ''}
-          ${v.bestilt_dato ? `<span class="tag">bestilt ${fmt(v.bestilt_dato)}</span>` : ''}
           ${v.mottatt_dato ? `<span class="tag">mottatt ${fmt(v.mottatt_dato)}</span>` : ''}
         </div>
       </div>`).join('')}
