@@ -451,10 +451,10 @@ async function lastNedPDF(btn) {
       // Seksjonstittel
       y += 2.5;
       doc.setFont('helvetica', 'bold');
-      doc.setFontSize(7);
+      doc.setFontSize(9);
       doc.setTextColor(154, 2, 3);
       doc.text(kat.toUpperCase(), W/2, y, { align: 'center' });
-      y += 4;
+      y += 5;
 
       const items = retter.filter(r => r.kategori === kat);
       for (const r of items) {
@@ -462,9 +462,9 @@ async function lastNedPDF(btn) {
         const pris = r.pris != null ? String(r.pris) : '';
         const allerg = r.allergener ? '( ' + r.allergener + ' )' : '';
 
-        // Rettnavn (fet, stor) + allergener inline + pris til høyre
+        // Rettnavn fet venstrejustert + allergener inline + pris høyrejustert
         doc.setFont('helvetica', 'bold');
-        doc.setFontSize(8);
+        doc.setFontSize(10);
         doc.setTextColor(26, 26, 26);
 
         const navnW = doc.getTextWidth(navn);
@@ -472,30 +472,30 @@ async function lastNedPDF(btn) {
 
         if (allerg) {
           doc.setFont('helvetica', 'normal');
-          doc.setFontSize(6.2);
+          doc.setFontSize(7.5);
           doc.setTextColor(168, 165, 157);
-          doc.text(allerg, mL + navnW + 1.5, y);
+          doc.text(allerg, mL + navnW + 2, y);
         }
 
         if (pris) {
           doc.setFont('helvetica', 'bold');
-          doc.setFontSize(8);
+          doc.setFontSize(10);
           doc.setTextColor(26, 26, 26);
           doc.text(pris, W - mR, y, { align: 'right' });
         }
 
-        y += 3.2;
+        y += 4;
 
         // Beskrivelse
         if (r.beskrivelse) {
           doc.setFont('helvetica', 'italic');
-          doc.setFontSize(7);
+          doc.setFontSize(8.5);
           doc.setTextColor(80, 78, 75);
           const lines = doc.splitTextToSize(r.beskrivelse, cW);
           doc.text(lines, mL, y);
-          y += lines.length * 3;
+          y += lines.length * 3.8;
         }
-        y += 1.8;
+        y += 2.5;
       }
     }
 
