@@ -97,7 +97,7 @@ async function lastMeny() {
     if (sistOppdatert > new Date(0)) {
       document.getElementById('sist-oppdatert').textContent =
         'Oppdatert ' +
-        sistOppdatert.toLocaleDateString('no-NO', { day: 'numeric', month: 'numeric' }).replace('.', '/').replace(' ', '') + ' ' +
+        sistOppdatert.toLocaleDateString('no-NO', { day: 'numeric', month: 'numeric' }).replace('.', '/').replace(' ', '') + ' Kl: ' +
         sistOppdatert.toLocaleTimeString('no-NO', { hour: '2-digit', minute: '2-digit' });
     }
   } catch(e) {
