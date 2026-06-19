@@ -38,6 +38,7 @@ body { background: #f7f6f3; font-family: -apple-system, BlinkMacSystemFont, 'Seg
 
 
   <div id="meny-innhold"><div class="loading">Laster meny…</div></div>
+  <div id="sist-oppdatert" style="text-align:center; font-size:0.72rem; color:#a8a59d; margin-top:-0.5rem; margin-bottom:1.5rem;"></div>
 
   <div class="allergen-key">
     Allergener: E Egg, F Fisk, L Lactose, Sn Sennep, Pi Pistasj, So Soya, Se Sesam, By Bygg, H Hvete, Ha Havre,
@@ -88,6 +89,15 @@ async function lastMeny() {
     `).join('');
 
     document.getElementById('meny-innhold').innerHTML = html;
+
+    const sistOppdatert = retter.reduce((max, r) => {
+      const d = new Date(r.updated_at || r.created_at);
+      return d > max ? d : max;
+    }, new Date(0));
+    if (sistOppdatert > new Date(0)) {
+      document.getElementById('sist-oppdatert').textContent =
+        'Sist oppdatert ' + sistOppdatert.toLocaleDateString('no-NO', { day: 'numeric', month: 'long', year: 'numeric' });
+    }
   } catch(e) {
     document.getElementById('meny-innhold').innerHTML = '<div class="error">Kunne ikke laste menyen. Prøv igjen.</div>';
   }
