@@ -96,7 +96,9 @@ async function lastMeny() {
     }, new Date(0));
     if (sistOppdatert > new Date(0)) {
       document.getElementById('sist-oppdatert').textContent =
-        'Sist oppdatert ' + sistOppdatert.toLocaleDateString('no-NO', { day: 'numeric', month: 'long', year: 'numeric' });
+        'Oppdatert ' +
+        sistOppdatert.toLocaleDateString('no-NO', { day: 'numeric', month: 'numeric' }).replace('.', '/').replace(' ', '') + ' ' +
+        sistOppdatert.toLocaleTimeString('no-NO', { hour: '2-digit', minute: '2-digit' });
     }
   } catch(e) {
     document.getElementById('meny-innhold').innerHTML = '<div class="error">Kunne ikke laste menyen. Prøv igjen.</div>';
