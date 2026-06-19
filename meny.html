@@ -464,56 +464,62 @@ async function lastNedPDF(btn) {
 
     for (const kat of kategorier) {
       y += 14;
-      // Rød seksjonstittel — større enn rettnavn
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(13);
       doc.setTextColor(154, 2, 3);
       doc.text(kat.toUpperCase(), mL, y);
-      y += 16;
+      y += 17;
 
       for (const r of retter.filter(r2 => r2.kategori === kat)) {
         const navn = (r.navn || '').toUpperCase();
         const pris = r.pris != null ? String(r.pris) : '';
         const allerg = r.allergener ? '( ' + r.allergener + ' )' : '';
 
-        // Rettnavn 11pt fet svart
+        // Rettnavn 13pt
         doc.setFont('helvetica', 'bold');
-        doc.setFontSize(11);
+        doc.setFontSize(13);
         doc.setTextColor(26, 26, 26);
-        const navnW = doc.getTextWidth(navn);
         doc.text(navn, mL, y);
+        const navnW = doc.getTextWidth(navn);
 
-        // Allergener svart etter rettnavn
-        if (allerg) {
-          doc.setFont('helvetica', 'normal');
-          doc.setFontSize(8);
-          doc.setTextColor(26, 26, 26);
-          doc.text(allerg, mL + navnW + 4, y);
-        }
-
-        // Pris høyrejustert
+        // Pris rett etter navn med litt mellomrom
         if (pris) {
           doc.setFont('helvetica', 'bold');
-          doc.setFontSize(11);
+          doc.setFontSize(13);
           doc.setTextColor(26, 26, 26);
-          doc.text(pris, W - mR, y, { align: 'right' });
-        }
-        y += 13;
+          doc.text(pris, mL + navnW + 8, y);
+          const prisW = doc.getTextWidth(pris);
 
-        // Beskrivelse
+          // Allergener etter pris
+          if (allerg) {
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(8.5);
+            doc.setTextColor(26, 26, 26);
+            doc.text(allerg, mL + navnW + 8 + prisW + 5, y);
+          }
+        } else if (allerg) {
+          doc.setFont('helvetica', 'normal');
+          doc.setFontSize(8.5);
+          doc.setTextColor(26, 26, 26);
+          doc.text(allerg, mL + navnW + 8, y);
+        }
+
+        y += 15;
+
+        // Beskrivelse 10pt
         if (r.beskrivelse) {
           doc.setFont('helvetica', 'italic');
-          doc.setFontSize(9);
+          doc.setFontSize(10);
           doc.setTextColor(80, 78, 75);
           const lines = doc.splitTextToSize(r.beskrivelse, cW);
           doc.text(lines, mL, y);
-          y += lines.length * 11;
+          y += lines.length * 12;
         }
-        y += 8;
+        y += 9;
       }
     }
 
-    // Allergen-nøkkel — større, svart
+    // Allergenliste — svart, 8pt
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(8);
     doc.setTextColor(26, 26, 26);
