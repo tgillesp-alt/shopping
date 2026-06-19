@@ -130,6 +130,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif
         <i class="ti ti-external-link menu-arrow"></i>
       </div>
       <div class="menu-label">Meny</div>
+      <div class="menu-sub" id="meny-dato" style="font-size:0.62rem;color:#a8a59d;margin-top:1px;"></div>
     </a>
 
     <a href="https://my.gastroplanner.no/fager-bistro/index.php?controller=AdminBookings&amp;action=schedule" class="menu-btn c-green" target="_blank" rel="noopener">
@@ -402,6 +403,22 @@ async function slettKontakt(id) {
   await api('DELETE', `kontakter?id=eq.${id}`);
   hentKontakter();
 }
+</script>
+<script>
+(async () => {
+  try {
+    const res = await fetch('https://izdclsyuplghwznsjnom.supabase.co/rest/v1/meny_retter?meny=eq.middag&select=updated_at,created_at&order=updated_at.desc&limit=1', {
+      headers: { apikey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml6ZGNsc3l1cGxnaHd6bnNqbm9tIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE1MjY5MjksImV4cCI6MjA5NzEwMjkyOX0.GkjxcToCHZrLAm1pVGsBkcLapIOj7uSYd6IcDC0Lyzk', Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml6ZGNsc3l1cGxnaHd6bnNqbm9tIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE1MjY5MjksImV4cCI6MjA5NzEwMjkyOX0.GkjxcToCHZrLAm1pVGsBkcLapIOj7uSYd6IcDC0Lyzk' }
+    });
+    const data = await res.json();
+    if (data.length) {
+      const d = new Date(data[0].updated_at || data[0].created_at);
+      const dato = d.toLocaleDateString('no-NO', { day: 'numeric', month: 'numeric' }).replace('.', '/').replace(/\s/g,'');
+      const kl = d.toLocaleTimeString('no-NO', { hour: '2-digit', minute: '2-digit' });
+      document.getElementById('meny-dato').textContent = 'Oppdatert ' + dato + ' Kl: ' + kl;
+    }
+  } catch(e) {}
+})();
 </script>
 </body>
 </html>
