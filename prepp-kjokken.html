@@ -32,8 +32,10 @@ header { background: #1a1a1a; padding: 1rem 1.25rem; padding-top: calc(1rem + en
 .prepp-tekst { flex: 1; font-size: 0.95rem; line-height: 1.4; color: #1a1a1a; }
 .prepp-item.ferdig .prepp-tekst { text-decoration: line-through; }
 .item-actions { display: flex; gap: 0.35rem; flex-shrink: 0; }
-.btn-edit, .btn-del { background: none; border: none; color: #c4c0b6; font-size: 0.85rem; cursor: pointer; padding: 0.2rem 0.3rem; border-radius: 6px; }
-.btn-edit:active, .btn-del:active { color: #1a1a1a; }
+.btn-edit { background: #eef0f5; border: none; color: #5a6b8c; font-size: 0.9rem; cursor: pointer; padding: 0.35rem 0.55rem; border-radius: 8px; }
+.btn-edit:active { background: #1a1a1a; color: #fff; }
+.btn-del { background: none; border: none; color: #c4c0b6; font-size: 0.85rem; cursor: pointer; padding: 0.2rem 0.3rem; border-radius: 6px; }
+.btn-del:active { color: #1a1a1a; }
 
 .progress-bar { background: #e5e2da; border-radius: 4px; height: 4px; margin-bottom: 1.5rem; overflow: hidden; }
 .progress-fill { background: #1a1a1a; height: 100%; border-radius: 4px; transition: width 0.3s; }
@@ -180,7 +182,7 @@ function render() {
               <input type="checkbox" ${i.ferdig ? 'checked' : ''} onchange="toggleFerdig('${i.id}', this.checked)">
               <span class="prepp-tekst">${i.tekst}</span>
               <div class="item-actions">
-                <button class="btn-edit" onclick="apneRediger('${i.id}')">✎</button>
+                <button class="btn-edit" onclick="apneRediger('${i.id}')">✏️ Rediger</button>
                 <button class="btn-del" onclick="slett('${i.id}')">✕</button>
               </div>
             </div>
