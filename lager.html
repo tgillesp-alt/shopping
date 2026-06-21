@@ -136,7 +136,9 @@ input[type=number], input[type=text], select { width: 100%; padding: 0.7rem 0.85
     <div class="modal-handle"></div>
     <h3 id="modal-tittel">Nytt produkt</h3>
     <select id="modal-kategori">
-      <option value="Vin">Vin</option>
+      <option value="Rødvin">Rødvin</option>
+      <option value="Hvitvin">Hvitvin</option>
+      <option value="Hetvin">Hetvin</option>
       <option value="Sprit">Sprit</option>
       <option value="Øl">Øl</option>
       <option value="Mineralvann">Mineralvann</option>
@@ -202,7 +204,7 @@ function literTotal(kat) {
 }
 
 function renderNyTelling() {
-  const kategorier = ['Vin', 'Sprit', 'Øl', 'Mineralvann'];
+  const kategorier = ['Rødvin', 'Hvitvin', 'Hetvin', 'Sprit', 'Øl', 'Mineralvann'];
   const container = document.getElementById('ny-kategorier');
   container.innerHTML = kategorier.map(kat => {
     const items = produkter.filter(p => p.kategori === kat);
@@ -295,7 +297,7 @@ async function lagreTelling() {
 }
 
 function renderProduktListe() {
-  const kategorier = ['Vin', 'Sprit', 'Øl', 'Mineralvann'];
+  const kategorier = ['Rødvin', 'Hvitvin', 'Hetvin', 'Sprit', 'Øl', 'Mineralvann'];
   const container = document.getElementById('produkt-liste');
   container.innerHTML = kategorier.map(kat => {
     const items = produkter.filter(p => p.kategori === kat);
@@ -320,7 +322,7 @@ function renderProduktListe() {
 function apneNyttProdukt() {
   editProduktId = null;
   document.getElementById('modal-tittel').textContent = 'Nytt produkt';
-  document.getElementById('modal-kategori').value = 'Vin';
+  document.getElementById('modal-kategori').value = 'Rødvin';
   document.getElementById('modal-navn').value = '';
   document.getElementById('modal-enhet').value = 'flaske';
   document.getElementById('modal-pris').value = '';
