@@ -178,7 +178,8 @@ function render() {
 
   // Group by kategori, then by seksjon within kategori
   const byKategori = {};
-  items.forEach(i => {
+  const visibleItems = aktivPerson !== 'alle' ? items.filter(i => !i.ferdig) : items;
+  visibleItems.forEach(i => {
     const kat = i.kategori || 'ANNET';
     if (!byKategori[kat]) byKategori[kat] = {};
     const sek = i.seksjon || 'ANNET';
