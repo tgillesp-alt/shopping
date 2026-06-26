@@ -16,6 +16,36 @@
       min-height: 100vh;
     }
 
+
+    /* ── Scenario toggle ── */
+    .scenario-toggle {
+      display: flex;
+      background: #fff;
+      border-radius: 10px;
+      margin-bottom: 14px;
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0,0,0,.07);
+    }
+    .scenario-btn {
+      flex: 1;
+      padding: 13px 10px;
+      text-align: center;
+      font-size: 13px;
+      font-weight: 600;
+      color: #888;
+      cursor: pointer;
+      border: none;
+      background: none;
+      border-bottom: 3px solid transparent;
+      transition: all .15s;
+    }
+    .scenario-btn.active {
+      color: #1a1a1a;
+      border-bottom: 3px solid #1a1a1a;
+    }
+    .scenario-btn span { display: block; font-size: 11px; font-weight: 400; color: #aaa; margin-top: 2px; }
+    .scenario-btn.active span { color: #777; }
+
     /* ── Top bar ── */
     .topbar {
       background: #1a1a1a;
@@ -234,6 +264,18 @@
 </div>
 
 <div class="page">
+
+  <div class="scenario-toggle">
+    <button class="scenario-btn active" id="btnA" onclick="setScenario('A')">
+      Scenario A
+      <span>Ansatte på timelønn</span>
+    </button>
+    <button class="scenario-btn" id="btnB" onclick="setScenario('B')">
+      Scenario B
+      <span>Thomas &amp; Christine gjør jobben selv</span>
+    </button>
+  </div>
+
   <div class="page-title">Fager Bistro — 2026</div>
 
   <!-- FORUTSETNINGER -->
@@ -289,6 +331,7 @@
     </div>
 
     <!-- Lønn subheader -->
+    <div id="lon-section">
     <div style="background:#f0f4ff; padding:8px 14px; border-bottom:1px solid #e8eaf0;">
       <span style="font-size:11px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:#4a5fa0;">Lønnskostnader</span>
     </div>
@@ -317,7 +360,8 @@
     </div>
     <input type="hidden" id="lonBase">
     <input type="hidden" id="agaKr">
-    <div class="row">
+    </div><!-- /lon-section -->
+    <div class="row" id="lon-total-row">
       <span class="row-label" style="font-weight:700;">Lønnskost inkl sos.avg (pr dag)</span>
       <span class="row-value" id="lonTotal">–</span>
     </div>
@@ -350,7 +394,7 @@
       <span class="val bold" id="gpMnd">–</span>
       <span class="val bold" id="gpAar">–</span>
     </div>
-    <div class="row3">
+    <div class="row3" id="lonResultRow">
       <span class="lbl">Lønnskost inkl sos.avg</span>
       <span class="val" id="lonDag">–</span>
       <span class="val" id="lonMnd">–</span>
@@ -433,6 +477,19 @@
     el.className = 'kpi-value ' + (v === 0 ? '' : pos ? 'pos' : 'neg');
   }
 
+  const scenario = { val: 'A' };
+
+  function setScenario(s) {
+    scenario.val = s;
+    document.getElementById('btnA').className = 'scenario-btn' + (s === 'A' ? ' active' : '');
+    document.getElementById('btnB').className = 'scenario-btn' + (s === 'B' ? ' active' : '');
+    document.getElementById('lon-section').style.display = s === 'A' ? '' : 'none';
+    document.getElementById('lon-total-row').style.display = s === 'A' ? '' : 'none';
+    // Also hide lønn rows in resultat table
+    document.getElementById('lonResultRow').style.display = s === 'A' ? '' : 'none';
+    calc();
+  }
+
   function calc() {
     const dpw  = +document.getElementById('dagerPrUke').value  || 0;
     const wpy  = +document.getElementById('ukerPrAar').value   || 0;
@@ -460,7 +517,8 @@
     const agaKr    = (lonBase + tipsKr) * aga;
     const lonTotal = lonBase + agaKr;
 
-    const nettoDag = gpDag - lonTotal;
+    const lonEffektiv = scenario.val === 'A' ? lonTotal : 0;
+    const nettoDag = gpDag - lonEffektiv;
     const nettoMnd = nettoDag * dpw * 4;
     const nettoAar = nettoDag * dpw * wpy;
 
@@ -488,9 +546,9 @@
     document.getElementById('gpDag').textContent   = nok(gpDag);
     document.getElementById('gpMnd').textContent   = nok(gpDag * dpw * 4);
     document.getElementById('gpAar').textContent   = nok(gpDag * dpw * wpy);
-    document.getElementById('lonDag').textContent  = nok(lonTotal);
-    document.getElementById('lonMnd').textContent  = nok(lonTotal * dpw * 4);
-    document.getElementById('lonAar').textContent  = nok(lonTotal * dpw * wpy);
+    document.getElementById('lonDag').textContent  = nok(lonEffektiv);
+    document.getElementById('lonMnd').textContent  = nok(lonEffektiv * dpw * 4);
+    document.getElementById('lonAar').textContent  = nok(lonEffektiv * dpw * wpy);
     document.getElementById('nettoDag').textContent= nok(nettoDag);
     document.getElementById('nettoMnd').textContent= nok(nettoMnd);
     document.getElementById('nettoAar').textContent= nok(nettoAar);
@@ -518,9 +576,13 @@
     kjokkenEl.textContent = pct(vpct);
     kjokkenEl.className = 'kpi-value ' + (vpct > 0.38 ? 'neg' : vpct > 0.32 ? 'warn' : 'pos');
 
-    // Disponibelt til lønn = GP fullt år / (1 + aga)
-    const gpAar   = gpDag * dpw * wpy;
-    const dispLon = gpAar / (1 + aga);
+    const gpAar     = gpDag * dpw * wpy;
+    const tipsKrAar = tipsKr * dpw * wpy;
+    // Scenario A: ansatte dekker lønn, disponibelt = resterende GP / (1+aga)
+    // Scenario B: Thomas & Christine tar alt inkl tips / (1+aga)
+    const dispLon = scenario.val === 'A'
+      ? nettoAar / (1 + aga)
+      : (gpAar + tipsKrAar) / (1 + aga);
     const dispLonEl = document.getElementById('kpiDispLon');
     dispLonEl.textContent = nok(dispLon);
     color(dispLonEl, dispLon);
