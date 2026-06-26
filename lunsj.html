@@ -433,7 +433,7 @@
         <span class="kpi-value" id="kpiKjokken">–</span>
       </div>
       <div class="kpi">
-        <span class="kpi-label">Disponibelt til lønn (12 mnd)</span>
+        <span class="kpi-label" id="kpiDispLonLabel">Resultat (12 mnd)</span>
         <span class="kpi-value" id="kpiDispLon">–</span>
       </div>
     </div>
@@ -485,8 +485,8 @@
     document.getElementById('btnB').className = 'scenario-btn' + (s === 'B' ? ' active' : '');
     document.getElementById('lon-section').style.display = s === 'A' ? '' : 'none';
     document.getElementById('lon-total-row').style.display = s === 'A' ? '' : 'none';
-    // Also hide lønn rows in resultat table
     document.getElementById('lonResultRow').style.display = s === 'A' ? '' : 'none';
+    document.getElementById('kpiDispLonLabel').textContent = s === 'A' ? 'Resultat (12 mnd)' : 'Disponibelt til lønn (12 mnd)';
     calc();
   }
 
