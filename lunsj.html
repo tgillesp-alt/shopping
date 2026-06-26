@@ -518,8 +518,10 @@
     kjokkenEl.textContent = pct(vpct);
     kjokkenEl.className = 'kpi-value ' + (vpct > 0.38 ? 'neg' : vpct > 0.32 ? 'warn' : 'pos');
 
-    // Disponibelt til lønn = netto bidrag på fullt år (hva Thomas og Christine kan ta ut)
-    const dispLon = nettoAar;
+    // Disponibelt til lønn = GP (år) minus sos.avg på tips
+    // = maks lønnskapasitet før egne lønninger trekkes
+    const tipsKrAar = tipsKr * dpw * wpy;
+    const dispLon = gpAar - (tipsKrAar * aga);
     const dispLonEl = document.getElementById('kpiDispLon');
     dispLonEl.textContent = nok(dispLon);
     color(dispLonEl, dispLon);
