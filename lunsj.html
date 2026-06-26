@@ -518,8 +518,8 @@
     kjokkenEl.textContent = pct(vpct);
     kjokkenEl.className = 'kpi-value ' + (vpct > 0.38 ? 'neg' : vpct > 0.32 ? 'warn' : 'pos');
 
-    // Disponibelt til lønn = GP / (1 + aga) 
-    // slik at sos.avg er dekket og det står igjen null
+    // Disponibelt til lønn = GP fullt år / (1 + aga)
+    const gpAar   = gpDag * dpw * wpy;
     const dispLon = gpAar / (1 + aga);
     const dispLonEl = document.getElementById('kpiDispLon');
     dispLonEl.textContent = nok(dispLon);
