@@ -255,7 +255,7 @@
     <div class="card-header">Omsetning</div>
     <div class="row">
       <span class="row-label">Kuverter pr dag (PAX)</span>
-      <input class="inp" id="pax" type="number" value="16" min="0">
+      <input class="inp" id="pax" type="number" value="15" min="0">
     </div>
     <div class="row">
       <span class="row-label">Snitt mat pr kuvert (eks mva)</span>
@@ -383,6 +383,14 @@
         <span class="kpi-label">Breakeven PAX pr dag</span>
         <span class="kpi-value" id="kpiBe">–</span>
       </div>
+      <div class="kpi">
+        <span class="kpi-label">Kjøkken %</span>
+        <span class="kpi-value" id="kpiKjokken">–</span>
+      </div>
+      <div class="kpi">
+        <span class="kpi-label">Disponibelt til lønn</span>
+        <span class="kpi-value" id="kpiDispLon">–</span>
+      </div>
     </div>
   </div>
 
@@ -501,6 +509,20 @@
     const beEl = document.getElementById('kpiBe');
     beEl.textContent = be !== null ? be : '–';
     beEl.className = 'kpi-value';
+
+    // Kjøkken% = varekost / omsetning (ex tips)
+    const omsExTips = snitt * pax;
+    const kjokkenPct = omsExTips > 0 ? (omsExTips * vpct) / omsExTips : 0;
+    const kjokkenEl = document.getElementById('kpiKjokken');
+    kjokkenEl.textContent = pct(vpct);
+    kjokkenEl.className = 'kpi-value ' + (vpct > 0.38 ? 'neg' : vpct > 0.32 ? 'warn' : 'pos');
+
+    // Disponibelt til lønn = GP - lønnskost (dvs hvor mye GP det er å gå på)
+    // = GP pr dag (før lønn trekkes)
+    const dispLon = gpDag;
+    const dispLonEl = document.getElementById('kpiDispLon');
+    dispLonEl.textContent = nok(dispLon);
+    color(dispLonEl, dispLon);
 
     // Banner
     const banner = document.getElementById('beBanner');
