@@ -517,9 +517,8 @@
     kjokkenEl.textContent = pct(vpct);
     kjokkenEl.className = 'kpi-value ' + (vpct > 0.38 ? 'neg' : vpct > 0.32 ? 'warn' : 'pos');
 
-    // Disponibelt til lønn = GP - lønnskost (dvs hvor mye GP det er å gå på)
-    // = GP pr dag (før lønn trekkes)
-    const dispLon = gpDag;
+    // Disponibelt til lønn = GP + lønnskost inkl sos.avg
+    const dispLon = gpDag + lonTotal;
     const dispLonEl = document.getElementById('kpiDispLon');
     dispLonEl.textContent = nok(dispLon);
     color(dispLonEl, dispLon);
