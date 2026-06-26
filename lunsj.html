@@ -259,11 +259,11 @@
     </div>
     <div class="row">
       <span class="row-label">Snitt mat pr kuvert (eks mva)</span>
-      <input class="inp" id="sniMat" type="number" value="185" min="0">
+      <input class="inp" id="sniMat" type="number" value="300" min="0">
     </div>
     <div class="row">
       <span class="row-label">Snitt drikke pr kuvert (eks mva)</span>
-      <input class="inp" id="sniDrikke" type="number" value="95" min="0">
+      <input class="inp" id="sniDrikke" type="number" value="60" min="0">
     </div>
     <div class="row">
       <span class="row-label">Snitt total pr kuvert</span>
@@ -296,7 +296,7 @@
       <span class="lbl">FOH</span>
       <div class="pair">
         <span class="pair-label">Timer</span>
-        <input class="inp sm" id="fohTimer" type="number" value="7" min="0" max="24">
+        <input class="inp sm" id="fohTimer" type="number" value="6" min="0" max="24">
       </div>
       <div class="pair">
         <span class="pair-label">Timelønn</span>
@@ -307,21 +307,15 @@
       <span class="lbl">Kokk</span>
       <div class="pair">
         <span class="pair-label">Timer</span>
-        <input class="inp sm" id="kokkTimer" type="number" value="8" min="0" max="24">
+        <input class="inp sm" id="kokkTimer" type="number" value="6" min="0" max="24">
       </div>
       <div class="pair">
         <span class="pair-label">Timelønn</span>
         <input class="inp sm" id="kokkLon" type="number" value="250" min="0">
       </div>
     </div>
-    <div class="row">
-      <span class="row-label sub">Lønn før sos.avg (pr dag)</span>
-      <span class="row-value computed" id="lonBase">–</span>
-    </div>
-    <div class="row">
-      <span class="row-label sub">Sos.avg på lønn + tips</span>
-      <span class="row-value computed" id="agaKr">–</span>
-    </div>
+    <input type="hidden" id="lonBase">
+    <input type="hidden" id="agaKr">
     <div class="row">
       <span class="row-label" style="font-weight:700;">Lønnskost inkl sos.avg (pr dag)</span>
       <span class="row-value" id="lonTotal">–</span>
