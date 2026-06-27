@@ -458,10 +458,11 @@ async function lastNedPDF(btn, meny) {
     doc.addImage(logoImg, 'PNG', W/2 - lw/2, mT, lw, lh);
     let y = mT + lh + 55;
 
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/meny_retter?meny=eq.${meny}&order=sort_order.asc,created_at.asc&_=${Date.now()}`, {
-      headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` }
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/meny_retter?meny=eq.${meny}&order=sort_order.asc,created_at.asc`, {
+      headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}`, 'Cache-Control': 'no-cache' }
     });
     const retter = await res.json();
+    if (!Array.isArray(retter)) throw new Error('Supabase feil: ' + JSON.stringify(retter));
 
     if (meny === 'lunsj') {
       // LUNSJ: sentrert, kun EXTRAS vises som seksjonstitel
