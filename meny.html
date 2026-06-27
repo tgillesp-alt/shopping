@@ -465,8 +465,15 @@ async function lastNedPDF(btn, meny) {
     const retter = await res.json();
 
     if (meny === 'lunsj') {
-      // LUNSJ: sentrert, ingen seksjonstittler
-      for (const r of retter) {
+      // LUNSJ: sentrert, ingen seksjonstittler, sortert etter kategori
+      const lunsjKatOrder = ['Entrées','Forretter','Plats','Hovedretter','Desserts','Desserter','Extras'];
+      const sortedRetter = [...retter].sort((a, b) => {
+        const ai = lunsjKatOrder.findIndex(k => (a.kategori||'').toLowerCase().includes(k.toLowerCase()));
+        const bi = lunsjKatOrder.findIndex(k => (b.kategori||'').toLowerCase().includes(k.toLowerCase()));
+        if (ai !== bi) return (ai === -1 ? 999 : ai) - (bi === -1 ? 999 : bi);
+        return (a.sort_order || 0) - (b.sort_order || 0);
+      });
+      for (const r of sortedRetter) {
         const navn = (r.navn || '').toUpperCase();
         const pris = r.pris != null ? String(r.pris) : '';
         const allerg = r.allergener ? '( ' + r.allergener + ' )' : '';
@@ -494,7 +501,7 @@ async function lastNedPDF(btn, meny) {
           doc.text(lines, W/2, y, { align: 'center' });
           y += lines.length * 12;
         }
-        y += 8;
+        y += 14;
       }
     } else {
       // MIDDAG (og andre): venstrejustert med seksjonstittler
