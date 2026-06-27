@@ -326,7 +326,9 @@ function lukkModalOverlay(e) { if (e.target === document.getElementById('modal')
 
 let aktivMeny = 'middag';
 
+let aktivTab = 'middag';
 function visTab(side) {
+  aktivTab = side;
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   document.querySelectorAll('.menu-page').forEach(p => p.classList.remove('active'));
   if (document.getElementById('tab-' + side)) document.getElementById('tab-' + side).classList.add('active');
