@@ -283,13 +283,13 @@
     <div class="card-header">Forutsetninger</div>
     <div class="row">
       <span class="row-label">Antall dager pr uke</span>
-      <input class="inp" id="dagerPrUke" type="number" value="5" min="1" max="7">
+      <input class="inp" id="dagerPrUke" type="number"  min="1" max="7">
     </div>
     <div class="row">
       <span class="row-label">Antall uker pr år i drift</span>
-      <input class="inp" id="ukerPrAar" type="number" value="48" min="1" max="52">
+      <input class="inp" id="ukerPrAar" type="number"  min="1" max="52">
     </div>
-    <input type="hidden" id="aga" value="14.1">
+    <input type="hidden" id="aga" >
     <!-- cache bust v2 -->
   </div>
 
@@ -298,15 +298,15 @@
     <div class="card-header">Omsetning</div>
     <div class="row">
       <span class="row-label">Kuverter pr dag (PAX)</span>
-      <input class="inp" id="pax" type="number" value="15" min="0">
+      <input class="inp" id="pax" type="number"  min="0">
     </div>
     <div class="row">
       <span class="row-label">Snitt mat pr kuvert (eks mva)</span>
-      <input class="inp" id="sniMat" type="number" value="260" min="0">
+      <input class="inp" id="sniMat" type="number"  min="0">
     </div>
     <div class="row">
       <span class="row-label">Snitt drikke pr kuvert (eks mva)</span>
-      <input class="inp" id="sniDrikke" type="number" value="50" min="0">
+      <input class="inp" id="sniDrikke" type="number"  min="0">
     </div>
     <div class="row">
       <span class="row-label">Snitt total pr kuvert</span>
@@ -314,7 +314,7 @@
     </div>
     <div class="row">
       <span class="row-label">Tips % av omsetning</span>
-      <input class="inp" id="tipsPct" type="number" value="5" min="0" max="30" step="0.5">
+      <input class="inp" id="tipsPct" type="number"  min="0" max="30" step="0.5">
     </div>
     <div class="row">
       <span class="row-label sub">herav tips (kr pr dag)</span>
@@ -327,7 +327,7 @@
     <div class="card-header">Kostnader</div>
     <div class="row">
       <span class="row-label">Varekost %</span>
-      <input class="inp" id="varekostPct" type="number" value="32" min="0" max="80" step="0.5">
+      <input class="inp" id="varekostPct" type="number"  min="0" max="80" step="0.5">
     </div>
 
     <!-- Lønn subheader -->
@@ -340,22 +340,22 @@
       <span class="lbl">FOH</span>
       <div class="pair">
         <span class="pair-label">Timer</span>
-        <input class="inp sm" id="fohTimer" type="number" value="6" min="0" max="24">
+        <input class="inp sm" id="fohTimer" type="number"  min="0" max="24">
       </div>
       <div class="pair">
         <span class="pair-label">Timelønn</span>
-        <input class="inp sm" id="fohLon" type="number" value="200" min="0">
+        <input class="inp sm" id="fohLon" type="number"  min="0">
       </div>
     </div>
     <div class="row-2inp">
       <span class="lbl">Kokk</span>
       <div class="pair">
         <span class="pair-label">Timer</span>
-        <input class="inp sm" id="kokkTimer" type="number" value="6" min="0" max="24">
+        <input class="inp sm" id="kokkTimer" type="number"  min="0" max="24">
       </div>
       <div class="pair">
         <span class="pair-label">Timelønn</span>
-        <input class="inp sm" id="kokkLon" type="number" value="250" min="0">
+        <input class="inp sm" id="kokkLon" type="number"  min="0">
       </div>
     </div>
     <input type="hidden" id="lonBase">
@@ -608,6 +608,42 @@
   });
 
   calc();
+</script>
+
+<script>
+const LS_KEY = 'fager_lunsj_v1';
+const FELT = ["dagerPrUke", "ukerPrAar", "aga", "pax", "sniMat", "sniDrikke", "tipsPct", "varekostPct", "fohTimer", "fohLon", "kokkTimer", "kokkLon"];
+
+function lagreVerdier() {
+  const data = {};
+  FELT.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) data[id] = el.value;
+  });
+  localStorage.setItem(LS_KEY, JSON.stringify(data));
+}
+
+function lastVerdier() {
+  try {
+    const data = JSON.parse(localStorage.getItem(LS_KEY) || '{}');
+    FELT.forEach(id => {
+      const el = document.getElementById(id);
+      if (el && data[id] !== undefined) {
+        el.value = data[id];
+      }
+    });
+    // Trigger recalc if function exists
+    if (typeof oppdater === 'function') oppdater();
+  } catch(e) {}
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  lastVerdier();
+  FELT.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('input', lagreVerdier);
+  });
+});
 </script>
 </body>
 </html>
