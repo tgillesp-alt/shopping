@@ -463,6 +463,7 @@ async function lastNedPDF(btn, meny) {
     });
     const retter = await res.json();
     if (!Array.isArray(retter)) throw new Error('Supabase feil: ' + JSON.stringify(retter));
+    alert('Hentet ' + retter.length + ' retter for meny=' + meny + '. Første: ' + (retter[0]?.navn||'ingen'));
 
     if (meny === 'lunsj') {
       // LUNSJ: sentrert, kun EXTRAS vises som seksjonstitel
