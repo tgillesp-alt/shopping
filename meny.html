@@ -442,6 +442,7 @@ function katSortPDF(a, b) {
 
 async function lastNedPDF(btn, meny) {
   meny = meny || 'middag';
+  alert('Genererer PDF for: ' + meny + ' | window.aktivTab: ' + window.aktivTab);
   const orig = btn.textContent;
   btn.textContent = '…';
   btn.disabled = true;
