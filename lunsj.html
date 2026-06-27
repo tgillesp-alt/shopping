@@ -505,7 +505,8 @@
     const kLon = +document.getElementById('kokkLon').value     || 0;
 
     const snitt    = mat + drikk;
-    const tipsKr   = snitt * pax * tpct;
+    const snittInklMva = snitt * 1.25;
+    const tipsKr   = snittInklMva * pax * tpct;
     const omsDag   = snitt * pax * (1 + tpct);
     const omsMnd   = omsDag * dpw * 4;
     const omsAar   = omsDag * dpw * wpy;
