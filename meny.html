@@ -105,7 +105,7 @@ header { background: #1a1a1a; padding: 1rem 1.25rem; padding-top: calc(1rem + en
   <div class="header-actions">
     <button id="dl-link" class="btn-sm dl-btn" style="display:none;" onclick="printMeny()">🖨 Print</button>
     <button class="btn-sm edit-btn" style="display:none;" onclick="visTab('bibliotek')">Bibliotek</button>
-    <button class="btn-sm edit-btn" onclick="lastNedPDF(this, window.aktivTab||'middag')">↓ PDF</button>
+    <button class="btn-sm edit-btn" onclick="lastNedPDF(this)">↓ PDF</button>
     <button class="btn-sm edit-btn" onclick="delMedGjest()">↗ Del</button>
     <button id="edit-toggle" class="btn-sm edit-btn" onclick="vekslRedigering()">Rediger</button>
   </div>
@@ -441,7 +441,7 @@ function katSortPDF(a, b) {
 }
 
 async function lastNedPDF(btn, meny) {
-  meny = (meny || 'middag').trim().toLowerCase();
+  meny = (window.aktivTab || meny || 'middag').trim().toLowerCase();
   const orig = btn.textContent;
   btn.textContent = '…';
   btn.disabled = true;
