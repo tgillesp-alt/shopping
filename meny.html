@@ -105,7 +105,7 @@ header { background: #1a1a1a; padding: 1rem 1.25rem; padding-top: calc(1rem + en
   <div class="header-actions">
     <button id="dl-link" class="btn-sm dl-btn" style="display:none;" onclick="printMeny()">🖨 Print</button>
     <button class="btn-sm edit-btn" style="display:none;" onclick="visTab('bibliotek')">Bibliotek</button>
-    <button class="btn-sm edit-btn" onclick="lastNedPDF(this)">↓ PDF</button>
+    <button class="btn-sm edit-btn" onclick="lastNedPDF(this, aktivTab)">↓ PDF</button>
     <button class="btn-sm edit-btn" onclick="delMedGjest()">↗ Del</button>
     <button id="edit-toggle" class="btn-sm edit-btn" onclick="vekslRedigering()">Rediger</button>
   </div>
@@ -439,7 +439,8 @@ function katSortPDF(a, b) {
   return (ai === -1 ? 999 : ai) - (bi === -1 ? 999 : bi);
 }
 
-async function lastNedPDF(btn) {
+async function lastNedPDF(btn, meny) {
+  meny = meny || 'middag';
   const orig = btn.textContent;
   btn.textContent = '…';
   btn.disabled = true;
@@ -456,7 +457,7 @@ async function lastNedPDF(btn) {
     doc.addImage(logoImg, 'PNG', W/2 - lw/2, mT, lw, lh);
     let y = mT + lh + 0;
 
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/meny_retter?meny=eq.middag&order=sort_order.asc,created_at.asc`, {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/meny_retter?meny=eq.${meny}&order=sort_order.asc,created_at.asc`, {
       headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` }
     });
     const retter = await res.json();
@@ -531,7 +532,8 @@ async function lastNedPDF(btn) {
     doc.text(aLines, W/2, H - mB, { align: 'center' });
 
     const dato = new Date().toLocaleDateString('no-NO', { day: '2-digit', month: '2-digit', year: '2-digit' }).replace(/\./g, '_');
-    doc.save(`Fager_Bistro_Meny_${dato}.pdf`);
+    const menynavn = meny.charAt(0).toUpperCase() + meny.slice(1);
+    doc.save(`Fager_Bistro_${menynavn}_${dato}.pdf`);
   } catch(e) { alert('Feil: ' + e.message); }
   btn.textContent = orig;
   btn.disabled = false;
