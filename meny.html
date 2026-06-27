@@ -441,7 +441,7 @@ function katSortPDF(a, b) {
 }
 
 async function lastNedPDF(btn, meny) {
-  meny = meny || 'middag';
+  meny = (meny || 'middag').trim().toLowerCase();
   const orig = btn.textContent;
   btn.textContent = '…';
   btn.disabled = true;
@@ -463,9 +463,8 @@ async function lastNedPDF(btn, meny) {
     });
     const retter = await res.json();
     if (!Array.isArray(retter)) throw new Error('Supabase feil: ' + JSON.stringify(retter));
-    alert('Hentet ' + retter.length + ' retter for meny=' + meny + '. Første: ' + (retter[0]?.navn||'ingen'));
 
-    if (meny === 'lunsj') {
+    if (meny.includes('lunsj')) {
       // LUNSJ: sentrert, kun EXTRAS vises som seksjonstitel
       let sisteKat = null;
       for (const r of retter) {
