@@ -452,8 +452,8 @@ async function lastNedPDF(btn, meny) {
     const W = 595, H = 842;
     const mL = 45, mR = 45, mT = 55, mB = 52;
     const cW = W - mL - mR;
+    const burgunder = [120, 20, 30];
 
-    // Logo
     const logoImg = await loadImg('logo-print.png');
     const lh = 90, lw = 90;
     doc.addImage(logoImg, 'PNG', W/2 - lw/2, mT, lw, lh);
@@ -464,40 +464,88 @@ async function lastNedPDF(btn, meny) {
     });
     const retter = await res.json();
 
-    const burgunder = [120, 20, 30];
+    if (meny === 'lunsj') {
+      // LUNSJ: sentrert, ingen seksjonstittler
+      for (const r of retter) {
+        const navn = (r.navn || '').toUpperCase();
+        const pris = r.pris != null ? String(r.pris) : '';
+        const allerg = r.allergener ? '( ' + r.allergener + ' )' : '';
+        const navnPris = navn + (pris ? '  ' + pris : '');
 
-    for (const r of retter) {
-      const navn = (r.navn || '').toUpperCase();
-      const pris = r.pris != null ? String(r.pris) : '';
-      const allerg = r.allergener ? '( ' + r.allergener + ' )' : '';
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(12);
+        doc.setTextColor(26, 26, 26);
+        doc.text(navnPris, W/2, y, { align: 'center' });
 
-      // Rettnavn sentrert
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(12);
-      doc.setTextColor(26, 26, 26);
-      const navnPris = navn + (pris ? '  ' + pris : '');
-      doc.text(navnPris, W/2, y, { align: 'center' });
+        if (allerg) {
+          const navnPrisW = doc.getTextWidth(navnPris);
+          doc.setFont('helvetica', 'normal');
+          doc.setFontSize(7);
+          doc.setTextColor(120, 118, 115);
+          doc.text(allerg, W/2 + navnPrisW/2 + 4, y);
+        }
+        y += 13;
 
-      // Allergener sentrert, liten
-      if (allerg) {
-        const navnPrisW = doc.getTextWidth(navnPris);
-        doc.setFont('helvetica', 'normal');
-        doc.setFontSize(7);
-        doc.setTextColor(120, 118, 115);
-        doc.text(allerg, W/2 + navnPrisW/2 + 4, y);
+        if (r.beskrivelse) {
+          doc.setFont('helvetica', 'normal');
+          doc.setFontSize(10);
+          doc.setTextColor(60, 58, 55);
+          const lines = doc.splitTextToSize(r.beskrivelse, cW);
+          doc.text(lines, W/2, y, { align: 'center' });
+          y += lines.length * 12;
+        }
+        y += 8;
       }
-      y += 13;
+    } else {
+      // MIDDAG (og andre): venstrejustert med seksjonstittler
+      const kategorier = [...new Set(retter.map(r => r.kategori))].sort(katSortPDF);
+      for (const kat of kategorier) {
+        y += 10;
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(13);
+        doc.setTextColor(...burgunder);
+        doc.text(kat.toUpperCase(), mL, y);
+        y += 22;
 
-      // Beskrivelse sentrert
-      if (r.beskrivelse) {
-        doc.setFont('helvetica', 'normal');
-        doc.setFontSize(10);
-        doc.setTextColor(60, 58, 55);
-        const lines = doc.splitTextToSize(r.beskrivelse, cW);
-        doc.text(lines, W/2, y, { align: 'center' });
-        y += lines.length * 12;
+        for (const r of retter.filter(r2 => r2.kategori === kat)) {
+          const navn = (r.navn || '').toUpperCase();
+          const pris = r.pris != null ? String(r.pris) : '';
+          const allerg = r.allergener ? '( ' + r.allergener + ' )' : '';
+
+          doc.setFont('helvetica', 'bold');
+          doc.setFontSize(12);
+          doc.setTextColor(26, 26, 26);
+          doc.text(navn, mL, y);
+          const navnW = doc.getTextWidth(navn);
+
+          if (pris) {
+            doc.text(pris, mL + navnW + 7, y);
+            if (allerg) {
+              const prisW = doc.getTextWidth(pris);
+              doc.setFont('helvetica', 'normal');
+              doc.setFontSize(7);
+              doc.setTextColor(120, 118, 115);
+              doc.text(allerg, mL + navnW + 7 + prisW + 4, y);
+            }
+          } else if (allerg) {
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(7);
+            doc.setTextColor(120, 118, 115);
+            doc.text(allerg, mL + navnW + 7, y);
+          }
+          y += 13;
+
+          if (r.beskrivelse) {
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(10);
+            doc.setTextColor(60, 58, 55);
+            const lines = doc.splitTextToSize(r.beskrivelse, cW);
+            doc.text(lines, mL, y);
+            y += lines.length * 11;
+          }
+          y += 6;
+        }
       }
-      y += 8;
     }
 
     // Allergenliste fast i bunn
