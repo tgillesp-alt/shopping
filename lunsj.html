@@ -266,7 +266,7 @@
 <div class="page">
 
   <div class="scenario-toggle">
-    <button class="scenario-btn active" id="btnA" onclick="setScenario('A')">
+    <button class="scenario-btn active" id="btnA" onclick="setScenario('A')" style="display:none;">
       Scenario A
       <span>Ansatte på timelønn</span>
     </button>
@@ -519,7 +519,7 @@
     const agaKr    = (lonBase + tipsKr) * aga;
     const lonTotal = lonBase + agaKr;
 
-    const lonEffektiv = scenario.val === 'A' ? lonTotal : 0;
+    const lonEffektiv = 0;  // Scenario B: Thomas & Christine — ingen lønnskostnad
     const nettoDag = gpDag + tipsKr - lonEffektiv;         // netto: GP + tips - lønn
     const nettoMnd = nettoDag * dpw * 4;
     const nettoAar = nettoDag * dpw * wpy;
