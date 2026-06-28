@@ -579,9 +579,7 @@
     const tipsKrAar = tipsKr * dpw * wpy;
     // Scenario A: ansatte dekker lønn, disponibelt = resterende GP / (1+aga)
     // Scenario B: Thomas & Christine tar alt inkl tips / (1+aga)
-    const dispLon = scenario.val === 'A'
-      ? nettoAar / (1 + aga)
-      : nettoAar;
+    const dispLon = nettoAar;
     const dispLonEl = document.getElementById('kpiDispLon');
     dispLonEl.textContent = nok(dispLon);
     color(dispLonEl, dispLon);
