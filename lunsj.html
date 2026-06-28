@@ -394,7 +394,7 @@
       <span class="val bold" id="gpMnd">–</span>
       <span class="val bold" id="gpAar">–</span>
     </div>
-    <div class="row3" id="lonResultRow">
+    <div class="row3" id="lonResultRow" style="display:none;">
       <span class="lbl">Lønnskost inkl sos.avg</span>
       <span class="val" id="lonDag">–</span>
       <span class="val" id="lonMnd">–</span>
@@ -516,7 +516,7 @@
     const gpDag    = omsDag - vkDag;
 
     const lonBase  = fTim * fLon + kTim * kLon;       // pr dag
-    const agaKr    = (lonBase + tipsKr) * aga;
+    const agaKr    = tipsKr * aga;   // Scenario B: AGA kun på tips
     const lonTotal = lonBase + agaKr;
 
     const lonEffektiv = scenario.val === 'A' ? lonTotal : 0;
