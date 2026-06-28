@@ -265,8 +265,8 @@
 
 <div class="page">
 
-  <div class="scenario-toggle" style="display:none;">
-    <button class="scenario-btn active" id="btnA" onclick="setScenario('A')" style="display:none;">
+  <div class="scenario-toggle">
+    <button class="scenario-btn active" id="btnA" onclick="setScenario('A')">
       Scenario A
       <span>Ansatte på timelønn</span>
     </button>
@@ -394,7 +394,7 @@
       <span class="val bold" id="gpMnd">–</span>
       <span class="val bold" id="gpAar">–</span>
     </div>
-    <div class="row3" id="lonResultRow" style="display:none;">
+    <div class="row3" id="lonResultRow">
       <span class="lbl">Lønnskost inkl sos.avg</span>
       <span class="val" id="lonDag">–</span>
       <span class="val" id="lonMnd">–</span>
@@ -424,7 +424,7 @@
         <span class="kpi-label">Netto bidragsmargin %</span>
         <span class="kpi-value" id="kpiNetto">–</span>
       </div>
-      <div class="kpi">
+      <div class="kpi" style="display:none;">
         <span class="kpi-label">Breakeven PAX pr dag</span>
         <span class="kpi-value" id="kpiBe">–</span>
       </div>
@@ -440,7 +440,7 @@
   </div>
 
   <!-- BREAKEVEN STATUS -->
-  <div class="be-banner neutral" id="beBanner">
+  <div class="be-banner neutral" id="beBanner" style="display:none;">
     Juster tallene for å se status
   </div>
 
@@ -516,7 +516,7 @@
     const gpDag    = omsDag - vkDag;
 
     const lonBase  = fTim * fLon + kTim * kLon;       // pr dag
-    const agaKr    = tipsKr * aga;   // Scenario B: AGA kun på tips
+    const agaKr    = (lonBase + tipsKr) * aga;
     const lonTotal = lonBase + agaKr;
 
     const lonEffektiv = scenario.val === 'A' ? lonTotal : 0;
