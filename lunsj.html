@@ -581,7 +581,7 @@
     // Scenario B: Thomas & Christine tar alt inkl tips / (1+aga)
     const dispLon = scenario.val === 'A'
       ? nettoAar / (1 + aga)
-      : (gpAar + tipsKrAar) / (1 + aga);
+      : nettoAar;
     const dispLonEl = document.getElementById('kpiDispLon');
     dispLonEl.textContent = nok(dispLon);
     color(dispLonEl, dispLon);
