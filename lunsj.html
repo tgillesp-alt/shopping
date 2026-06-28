@@ -266,7 +266,7 @@
 <div class="page">
 
   <div class="scenario-toggle">
-    <button class="scenario-btn active" id="btnA" onclick="setScenario('A')" style="display:none;">
+    <button class="scenario-btn active" id="btnA" onclick="setScenario('A')">
       Scenario A
       <span>Ansatte på timelønn</span>
     </button>
@@ -377,7 +377,7 @@
       <span>Fullt år</span>
     </div>
     <div class="row3">
-      <span class="lbl">Omsetning eks mva</span>
+      <span class="lbl">Brutto omsetning inkl tips</span>
       <span class="val" id="omsDag">–</span>
       <span class="val" id="omsMnd">–</span>
       <span class="val" id="omsAar">–</span>
@@ -417,7 +417,7 @@
         <span class="kpi-value" id="kpiGp">–</span>
       </div>
       <div class="kpi">
-        <span class="kpi-label">Lønnskost %</span>
+        <span class="kpi-label">AGA på tips (pr dag)</span>
         <span class="kpi-value" id="kpiLon">–</span>
       </div>
       <div class="kpi">
@@ -504,31 +504,32 @@
     const kTim = +document.getElementById('kokkTimer').value   || 0;
     const kLon = +document.getElementById('kokkLon').value     || 0;
 
-    const snitt        = mat + drikk;                      // eks mva pr kuvert
-    const snittInklMva = snitt * 1.25;                     // inkl mva pr kuvert
-    const tipsKr       = snittInklMva * pax * tpct;        // tips: inkl mva × pax × %, ingen mva
-    const omsEksMva    = snitt * pax;                      // omsetning eks mva pr dag
-    const omsDag       = omsEksMva;                        // grunnlag for GP er eks mva
+    const snitt        = mat + drikk;           // eks mva
+    const snittInklMva = snitt * 1.25;           // inkl mva
+    const tipsKr       = snittInklMva * pax * tpct;  // tips av inkl mva, ingen mva på tips
+    const omsEksMva    = snitt * pax;            // omsetning eks mva (uten tips)
+    const omsDag       = omsEksMva + tipsKr;     // total brutto pr dag (eks mva mat/drikke + tips)
     const omsMnd       = omsDag * dpw * 4;
     const omsAar       = omsDag * dpw * wpy;
 
-    const vkDag    = omsEksMva * vpct;
-    const gpDag    = omsEksMva - vkDag;                    // GP eks mva, eks tips
+    const vkDag    = omsEksMva * vpct;          // varekost av omsetning eks mva (ikke av tips)
+    const gpDag    = omsDag - vkDag;
 
-    const lonBase  = fTim * fLon + kTim * kLon;
+    const lonBase  = fTim * fLon + kTim * kLon;       // pr dag
     const agaKr    = (lonBase + tipsKr) * aga;
     const lonTotal = lonBase + agaKr;
 
-    const lonEffektiv = 0;  // Scenario B: Thomas & Christine — ingen lønnskostnad
-    const nettoDag = gpDag + tipsKr - lonEffektiv;         // netto: GP + tips - lønn
+    const lonEffektiv = scenario.val === 'A' ? lonTotal : 0;
+    const nettoDag = gpDag - lonEffektiv;
     const nettoMnd = nettoDag * dpw * 4;
     const nettoAar = nettoDag * dpw * wpy;
 
-    const gpPct    = omsEksMva > 0 ? gpDag / omsEksMva : 0;
-    const lonPct   = omsEksMva > 0 ? lonTotal / omsEksMva : 0;
-    const nettoPct = omsEksMva > 0 ? nettoDag / omsEksMva : 0;
+    const gpPct    = omsDag > 0 ? gpDag / omsDag : 0;
+    const lonPct   = omsDag > 0 ? lonTotal / omsDag : 0;
+    const nettoPct = omsDag > 0 ? nettoDag / omsDag : 0;
 
-    const contribPerCover = snitt * (1 - vpct) + snittInklMva * tpct * (1 - aga);
+    // Breakeven: lonBase / (snitt*(1+tpct)*(1-vpct) - snitt*tpct*aga)
+    const contribPerCover = snittInklMva * (1 - vpct) + snittInklMva * tpct - snittInklMva * tpct * aga;
     const be = contribPerCover > 0 ? Math.ceil(lonBase / contribPerCover) : null;
 
     // ── Write ──
@@ -559,8 +560,8 @@
     color(gpEl, gpPct);
 
     const lonEl = document.getElementById('kpiLon');
-    lonEl.textContent = pct(lonPct);
-    lonEl.className = 'kpi-value ' + (lonPct > 0.45 ? 'neg' : lonPct > 0.35 ? 'warn' : 'pos');
+    lonEl.textContent = nok(agaKr);
+    lonEl.className = 'kpi-value ' + (agaKr > 0 ? 'warn' : 'pos');
 
     const nettoEl = document.getElementById('kpiNetto');
     nettoEl.textContent = pct(nettoPct);
