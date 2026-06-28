@@ -513,11 +513,11 @@
     const gpDag    = omsDag - vkDag;
 
     const lonBase  = fTim * fLon + kTim * kLon;       // pr dag
-    const agaKr    = (lonBase + tipsKr) * aga;
-    const lonTotal = lonBase + agaKr;
+    const agaKr    = tipsKr * aga;              // Scenario B: AGA kun på tips
+    const lonTotal = lonBase + lonBase * aga;      // kun for referanse
 
-    const lonEffektiv = scenario.val === 'A' ? lonTotal : 0;
-    const nettoDag = gpDag - lonEffektiv;
+    const lonEffektiv = 0;                         // Scenario B: ingen lønn
+    const nettoDag = gpDag + tipsKr - agaKr;       // GP + tips - AGA på tips
     const nettoMnd = nettoDag * dpw * 4;
     const nettoAar = nettoDag * dpw * wpy;
 
