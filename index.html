@@ -112,6 +112,14 @@ header { background: var(--dark); color: #fff; padding: 0.9rem 1.25rem; padding-
 .modal-btns button { padding: 0.8rem; border-radius: var(--radius-sm); font-size: 0.95rem; font-weight: 600; cursor: pointer; border: none; }
 .btn-lagre { background: var(--dark); color: #fff; }
 .btn-avbryt { background: var(--bg); color: var(--dark); border: 1px solid var(--border) !important; }
+
+@media print {
+  header, .tabs, .filter-row, .add-form, .check-wrap, .vare-actions, .badge { display: none !important; }
+  body { background: #fff; }
+  .vare-card { box-shadow: none; border: 0.5px solid #ccc; break-inside: avoid; margin-bottom: 0.5rem; }
+  .vare-navn { font-size: 1rem; font-weight: 600; }
+  #tab-mottatt, #tab-historikk { display: none !important; }
+}
 </style>
 </head>
 <body>
@@ -139,6 +147,7 @@ header { background: var(--dark); color: #fff; padding: 0.9rem 1.25rem; padding-
       <span style="font-size:1.1rem; line-height:1;">‹</span> Portal
     </a>
     <div class="header-title" style="flex:1; text-align:center;">Shopping</div>
+    <button onclick="window.print()" style="background:rgba(255,255,255,0.15);border:none;color:#fff;padding:0.4rem 0.75rem;border-radius:8px;font-size:0.78rem;cursor:pointer;flex-shrink:0;">🖨</button>
     <div class="header-user" id="header-bruker" style="flex-shrink:0;"></div>
   </header>
 
