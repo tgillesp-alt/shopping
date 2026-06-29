@@ -122,28 +122,35 @@ header { background: var(--dark); color: #fff; padding: 0.9rem 1.25rem; padding-
 }
 #print-liste {
   display: none;
-  padding: 1cm;
+  padding: 0.5cm 1cm;
   font-family: -apple-system, sans-serif;
-  column-count: 3;
-  column-gap: 1.5rem;
+}
+#print-liste table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+#print-liste td {
+  vertical-align: top;
+  width: 33.33%;
+  padding-right: 0.75rem;
 }
 .print-kategori {
-  break-inside: avoid;
   margin-bottom: 0.75rem;
 }
 .print-kat-navn {
-  font-size: 0.65rem;
+  font-size: 0.6rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: #888;
   border-bottom: 0.5px solid #ccc;
-  margin-bottom: 0.3rem;
-  padding-bottom: 0.15rem;
+  margin-bottom: 0.25rem;
+  padding-bottom: 0.1rem;
 }
 .print-vare {
-  font-size: 0.8rem;
-  padding: 0.1rem 0;
+  font-size: 0.75rem;
+  padding: 0.05rem 0;
   color: #1a1a1a;
 }
 </style>
@@ -509,13 +516,25 @@ function byggPrintListe() {
   });
 
   const sorted = Object.keys(byKat).sort();
+  // Split categories into 3 columns
+  const cols = [[], [], []];
+  sorted.forEach((k, i) => { cols[i % 3].push(k); });
+
+  function renderKol(ks) {
+    return ks.map(k => `
+      <div class="print-kategori">
+        <div class="print-kat-navn">${k}</div>
+        ${byKat[k].sort().map(n => `<div class="print-vare">${n}</div>`).join('')}
+      </div>
+    `).join('');
+  }
+
   const el = document.getElementById('print-liste');
-  el.innerHTML = sorted.map(k => `
-    <div class="print-kategori">
-      <div class="print-kat-navn">${k}</div>
-      ${byKat[k].sort().map(n => `<div class="print-vare">${n}</div>`).join('')}
-    </div>
-  `).join('');
+  el.innerHTML = `<table><tr>
+    <td>${renderKol(cols[0])}</td>
+    <td>${renderKol(cols[1])}</td>
+    <td>${renderKol(cols[2])}</td>
+  </tr></table>`;
 }
 
 document.querySelector('button[onclick="window.print()"]').addEventListener('click', e => {
