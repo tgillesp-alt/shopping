@@ -114,11 +114,37 @@ header { background: var(--dark); color: #fff; padding: 0.9rem 1.25rem; padding-
 .btn-avbryt { background: var(--bg); color: var(--dark); border: 1px solid var(--border) !important; }
 
 @media print {
-  header, .tabs, .filter-row, .add-form, .check-wrap, .vare-actions, .badge { display: none !important; }
-  body { background: #fff; }
-  .vare-card { box-shadow: none; border: 0.5px solid #ccc; break-inside: avoid; margin-bottom: 0.5rem; }
-  .vare-navn { font-size: 1rem; font-weight: 600; }
-  #tab-mottatt, #tab-historikk { display: none !important; }
+  header, .tabs, .filter-row, .add-form, .check-wrap, .vare-actions, .badge,
+  .vare-meta, .vare-pris, .vare-dato { display: none !important; }
+  body { background: #fff; margin: 0; }
+  #print-liste { display: block !important; }
+  #app { display: none !important; }
+}
+#print-liste {
+  display: none;
+  padding: 1cm;
+  font-family: -apple-system, sans-serif;
+  column-count: 3;
+  column-gap: 1.5rem;
+}
+.print-kategori {
+  break-inside: avoid;
+  margin-bottom: 0.75rem;
+}
+.print-kat-navn {
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #888;
+  border-bottom: 0.5px solid #ccc;
+  margin-bottom: 0.3rem;
+  padding-bottom: 0.15rem;
+}
+.print-vare {
+  font-size: 0.8rem;
+  padding: 0.1rem 0;
+  color: #1a1a1a;
 }
 </style>
 </head>
@@ -466,6 +492,37 @@ function renderHistorikk() {
       </div>`).join('')}
   `).join('');
 }
+</script>
+
+<div id="print-liste"></div>
+<script>
+function byggPrintListe() {
+  const alle = varer || [];
+  const aktive = alle.filter(v => !v.bestilt && !v.mottatt);
+  if (!aktive.length) return;
+
+  const byKat = {};
+  aktive.forEach(v => {
+    const k = v.kategori || 'Annet';
+    if (!byKat[k]) byKat[k] = [];
+    byKat[k].push(v.navn);
+  });
+
+  const sorted = Object.keys(byKat).sort();
+  const el = document.getElementById('print-liste');
+  el.innerHTML = sorted.map(k => `
+    <div class="print-kategori">
+      <div class="print-kat-navn">${k}</div>
+      ${byKat[k].sort().map(n => `<div class="print-vare">${n}</div>`).join('')}
+    </div>
+  `).join('');
+}
+
+document.querySelector('button[onclick="window.print()"]').addEventListener('click', e => {
+  e.preventDefault();
+  byggPrintListe();
+  window.print();
+});
 </script>
 </body>
 </html>
