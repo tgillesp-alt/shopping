@@ -109,7 +109,7 @@ header { background: #1a1a1a; padding: 1rem 1.25rem; padding-top: calc(1rem + en
       <option>DESSERTER</option>
       <option>ANNET</option>
     </select>
-    <select id="modal-seksjon">
+    <select id="modal-seksjon" onchange="oppdaterSeksjonInput()">
       <option value="">Rett (valgfritt)</option>
       <option>ASPERGES BLANCHE</option>
       <option>FOIE GRAS</option>
@@ -123,8 +123,10 @@ header { background: #1a1a1a; padding: 1rem 1.25rem; padding-top: calc(1rem + en
       <option>CRÊPE SUZETTE</option>
       <option>CREMEUSE AU CHOCOLAT</option>
       <option>COLONEL AU CITRON</option>
+      <option value="__NY__">+ Ny rett / endre navn...</option>
       <option>ANNET</option>
     </select>
+    <input type="text" id="modal-seksjon-ny" placeholder="Rettnavn (skriv inn)" autocorrect="off" autocapitalize="characters" style="display:none">
     <input type="text" id="modal-tekst" placeholder="Beskrivelse *" autocorrect="off">
     <div class="modal-btns">
       <button class="btn-avbryt" onclick="lukkModal()">Avbryt</button>
@@ -261,6 +263,8 @@ function apneNy() {
   editId = null;
   document.getElementById('modal-tittel').textContent = 'Legg til punkt';
   document.getElementById('modal-seksjon').value = '';
+  document.getElementById('modal-seksjon-ny').style.display = 'none';
+  document.getElementById('modal-seksjon-ny').value = '';
   document.getElementById('modal-kategori').value = '';
   document.getElementById('modal-tekst').value = '';
   document.getElementById('modal').style.display = 'flex';
@@ -273,7 +277,19 @@ function apneRediger(id) {
   editId = id;
   document.getElementById('modal-tittel').textContent = 'Rediger punkt';
   document.getElementById('modal-kategori').value = item.kategori || '';
-  document.getElementById('modal-seksjon').value = item.seksjon || '';
+  const seksjonSelect = document.getElementById('modal-seksjon');
+  const seksjonNy = document.getElementById('modal-seksjon-ny');
+  const seksjonVerdi = item.seksjon || '';
+  const finnesIDropdown = Array.from(seksjonSelect.options).some(o => o.value === seksjonVerdi || o.text === seksjonVerdi);
+  if (seksjonVerdi && !finnesIDropdown) {
+    seksjonSelect.value = '__NY__';
+    seksjonNy.style.display = '';
+    seksjonNy.value = seksjonVerdi;
+  } else {
+    seksjonSelect.value = seksjonVerdi;
+    seksjonNy.style.display = 'none';
+    seksjonNy.value = '';
+  }
   document.getElementById('modal-tekst').value = item.tekst;
   document.getElementById('modal').style.display = 'flex';
   setTimeout(() => document.getElementById('modal-tekst').focus(), 100);
@@ -282,10 +298,24 @@ function apneRediger(id) {
 async function lagreItem() {
   const tekst = document.getElementById('modal-tekst').value.trim();
   const kategori = document.getElementById('modal-kategori').value || null;
-  const seksjon = document.getElementById('modal-seksjon').value || null;
+  const seksjonRaw = document.getElementById('modal-seksjon').value;
+  const seksjonNyVerdi = document.getElementById('modal-seksjon-ny').value.trim().toUpperCase();
+  const seksjon = seksjonRaw === '__NY__' ? (seksjonNyVerdi || null) : (seksjonRaw || null);
   if (!tekst) { alert('Skriv inn beskrivelse'); return; }
   if (editId) {
+    const gammeltItem = items.find(i => i.id === editId);
+    const gammelSeksjon = gammeltItem?.seksjon;
+    // Oppdater selve punktet
     await api('PATCH', `prepp?id=eq.${editId}`, { tekst, kategori, seksjon });
+    // Hvis seksjonsnavnet er endret, oppdater alle andre punkter i samme seksjon
+    if (gammelSeksjon && seksjon && gammelSeksjon !== seksjon) {
+      const andreIds = items
+        .filter(i => i.id !== editId && i.seksjon === gammelSeksjon && i.tidspunkt === TIDSPUNKT)
+        .map(i => i.id);
+      for (const id of andreIds) {
+        await api('PATCH', `prepp?id=eq.${id}`, { seksjon });
+      }
+    }
   } else {
     await api('POST', 'prepp', { side: SIDE, tidspunkt: TIDSPUNKT, kategori, seksjon, tekst, ferdig: false });
   }
@@ -293,6 +323,17 @@ async function lagreItem() {
   hent();
 }
 
+function oppdaterSeksjonInput() {
+  const val = document.getElementById('modal-seksjon').value;
+  const nyInput = document.getElementById('modal-seksjon-ny');
+  if (val === '__NY__') {
+    nyInput.style.display = '';
+    setTimeout(() => nyInput.focus(), 50);
+  } else {
+    nyInput.style.display = 'none';
+    nyInput.value = '';
+  }
+}
 function lukkModal() { document.getElementById('modal').style.display = 'none'; editId = null; }
 function lukkModalOverlay(e) { if (e.target === document.getElementById('modal')) lukkModal(); }
 
