@@ -450,6 +450,33 @@
 </div>
 
 <script>
+
+  const STORAGE_KEY = 'fager_lunsj_inputs';
+  const INPUT_IDS = ['dagerPrUke','ukerPrAar','pax','sniMat','sniDrikke','tipsPct','varekostPct','fohTimer','fohLon','kokkTimer','kokkLon'];
+
+  function saveInputs() {
+    const data = {};
+    INPUT_IDS.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) data[id] = el.value;
+    });
+    data['scenario'] = currentScenario;
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch(e) {}
+  }
+
+  function loadInputs() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return;
+      const data = JSON.parse(raw);
+      INPUT_IDS.forEach(id => {
+        const el = document.getElementById(id);
+        if (el && data[id] !== undefined) el.value = data[id];
+      });
+      if (data.scenario) currentScenario = data.scenario;
+    } catch(e) {}
+  }
+
   const ids = [
     'dagerPrUke','ukerPrAar','aga','pax','sniMat','sniDrikke',
     'tipsPct','varekostPct','fohTimer','fohLon','kokkTimer','kokkLon'
@@ -487,6 +514,7 @@
     document.getElementById('kpiDispLonLabel').textContent = showA ? 'Resultat (fullt år)' : 'Disponibelt til lønn (fullt år)';
 
     calc();
+    saveInputs();
   }
 
   function calc() {
@@ -599,10 +627,11 @@
 
   ids.forEach(id => {
     const el = document.getElementById(id);
-    if (el) el.addEventListener('input', calc);
+    if (el) el.addEventListener('input', () => { calc(); saveInputs(); });
   });
 
-  setScenario('A');
+  loadInputs();
+  setScenario(currentScenario);
 </script>
 </body>
 </html>
