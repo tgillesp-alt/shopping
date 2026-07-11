@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<link rel="manifest" href="manifest.json">
+<title>Fager Bistro – Kjøkkenprosent</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif; background: #f7f6f3; color: #1a1a1a; min-height: 100vh; }
+
+header { background: #1a1a1a; padding: 1rem 1.25rem; padding-top: calc(1rem + env(safe-area-inset-top)); display: flex; align-items: center; gap: 0.75rem; position: sticky; top: 0; z-index: 100; }
+.back-btn { color: rgba(255,255,255,0.6); text-decoration: none; font-size: 0.85rem; display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
+.header-title { font-size: 0.95rem; font-weight: 600; flex: 1; color: #fff; }
+.header-actions { display: flex; gap: 0.5rem; }
+.btn-sm { padding: 0.4rem 0.75rem; border-radius: 8px; font-size: 0.78rem; font-weight: 600; cursor: pointer; border: none; background: rgba(255,255,255,0.12); color: rgba(255,255,255,0.85); }
+
+.tabs { display: flex; gap: 6px; padding: 1rem 1.25rem 0; max-width: 600px; margin: 0 auto; }
+.tab { flex: 1; text-align: center; padding: 0.65rem; border-radius: 10px; font-size: 0.85rem; font-weight: 600; background: #fff; border: 0.5px solid #e5e2da; color: #8a8782; cursor: pointer; }
+.tab.active { background: #1a1a1a; color: #fff; border-color: #1a1a1a; }
+
+.main { padding: 1.25rem; padding-bottom: calc(3rem + env(safe-area-inset-bottom)); max-width: 600px; margin: 0 auto; }
+.view { display: none; }
+.view.active { display: block; }
+
+.section-label { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: #a8a59d; margin: 1.5rem 0 0.6rem; }
+.section-label:first-child { margin-top: 0; }
+
+.rett-card { background: #fff; border: 0.5px solid #e5e2da; border-radius: 10px; padding: 0.8rem 0.95rem; margin-bottom: 8px; cursor: pointer; }
+.rett-card:active { background: #f2f0ea; }
+.rett-top { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.rett-navn { font-weight: 700; font-size: 0.9rem; color: #1a1a1a; }
+.rett-pris { font-size: 0.8rem; color: #6b6862; flex-shrink: 0; }
+.rett-bottom { display: flex; justify-content: space-between; align-items: center; margin-top: 6px; }
+.rett-kost { font-size: 0.72rem; color: #a8a59d; }
+.kp-badge { font-size: 0.72rem; font-weight: 700; padding: 3px 9px; border-radius: 20px; }
+.kp-green { background: #E1F5EE; color: #0F6E56; }
+.kp-amber { background: #FAEEDA; color: #854F0B; }
+.kp-red { background: #FAECE7; color: #993C1D; }
+.kp-empty { background: #F1EFE8; color: #8a8782; }
+
+.field-group { margin-bottom: 1.1rem; }
+label { font-size: 0.8rem; color: #8a8782; display: block; margin-bottom: 6px; }
+input[type=number], input[type=text], select { width: 100%; padding: 0.7rem 0.85rem; border: 0.5px solid #e5e2da; border-radius: 10px; font-size: 1rem; background: #fff; color: #1a1a1a; outline: none; font-family: inherit; }
+
+.btn-primary { width: 100%; padding: 0.85rem; background: #1a1a1a; color: #fff; border: none; border-radius: 10px; font-size: 0.95rem; font-weight: 600; cursor: pointer; margin-top: 0.5rem; }
+.btn-secondary { width: 100%; padding: 0.7rem; background: #fff; color: #1a1a1a; border: 0.5px solid #e5e2da; border-radius: 10px; font-size: 0.88rem; font-weight: 600; cursor: pointer; margin-top: 0.5rem; }
+
+.empty { text-align: center; color: #b8b4ab; font-size: 0.9rem; padding: 2rem 0; }
+
+/* Bunn-modal for én rett */
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 200; display: flex; align-items: flex-end; justify-content: center; backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); }
+.modal { background: #fff; border-radius: 20px 20px 0 0; padding: 1.5rem 1.25rem; padding-bottom: calc(1.5rem + env(safe-area-inset-bottom)); width: 100%; max-width: 500px; display: flex; flex-direction: column; gap: 0.6rem; max-height: 88vh; overflow-y: auto; }
+.modal-handle { width: 36px; height: 4px; background: #e5e2da; border-radius: 2px; margin: 0 auto 0.5rem; }
+.modal h3 { font-size: 1.05rem; font-weight: 700; }
+.modal .rett-utpris { font-size: 0.78rem; color: #8a8782; margin-bottom: 0.5rem; }
+
+.sum-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 0.75rem 0 1rem; }
+.sum-card { background: #f7f6f3; border-radius: 10px; padding: 0.6rem 0.7rem; }
+.sum-label { font-size: 0.62rem; color: #a8a59d; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 2px; }
+.sum-value { font-size: 0.95rem; font-weight: 700; color: #1a1a1a; }
+
+.ingr-row { background: #fff; border: 0.5px solid #e5e2da; border-radius: 10px; padding: 0.6rem 0.8rem; margin-bottom: 6px; display: flex; align-items: center; gap: 8px; }
+.ingr-row:active { background: #f7f6f3; }
+.ingr-navn { font-size: 0.85rem; font-weight: 600; flex: 1; }
+.ingr-detalj { font-size: 0.68rem; color: #a8a59d; margin-top: 1px; }
+.ingr-kost { font-size: 0.8rem; font-weight: 600; color: #1a1a1a; }
+.ingr-warn { color: #C0392B; font-size: 0.65rem; margin-top: 1px; }
+.btn-icon { background: none; border: none; color: #c4c0b6; font-size: 0.85rem; cursor: pointer; padding: 0.25rem; flex-shrink: 0; }
+
+.add-form { background: #f7f6f3; border-radius: 12px; padding: 0.9rem; margin-top: 0.5rem; display: none; }
+.add-form.open { display: block; }
+.add-form .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; }
+.add-form input, .add-form select { margin-bottom: 8px; background: #fff; }
+.add-form-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.add-form-btns button { padding: 0.7rem; border-radius: 10px; font-size: 0.88rem; font-weight: 600; cursor: pointer; border: none; }
+.btn-lagre { background: #1a1a1a; color: #fff; }
+.btn-avbryt { background: #fff; color: #1a1a1a; border: 0.5px solid #e5e2da !important; }
+
+.add-toggle-btn { width: 100%; padding: 0.75rem; background: #fff; border: 1px dashed #c4c0b6; border-radius: 10px; font-size: 0.85rem; font-weight: 600; color: #8a8782; cursor: pointer; margin-top: 0.75rem; }
+.close-btn { width: 100%; padding: 0.8rem; background: #f7f6f3; color: #1a1a1a; border: none; border-radius: 10px; font-size: 0.95rem; font-weight: 600; cursor: pointer; margin-top: 0.5rem; }
+
+.hjelp { font-size: 0.68rem; color: #a8a59d; line-height: 1.5; margin-top: -0.3rem; margin-bottom: 1rem; }
+</style>
+</head>
+<body>
+<header>
+  <a href="https://tgillesp-alt.github.io/shopping/portal.html" class="back-btn">‹ Portal</a>
+  <div class="header-title">Kjøkkenprosent</div>
+  <div class="header-actions">
+    <button class="btn-sm" onclick="hentAlt()">↻ Oppdater</button>
+  </div>
+</header>
+
+<div class="tabs">
+  <button class="tab active" id="tab-middag" onclick="visTab('middag')">Middag</button>
+  <button class="tab" id="tab-lunsj" onclick="visTab('lunsj')">Lunsj</button>
+  <button class="tab" id="tab-innstillinger" onclick="visTab('innstillinger')">Innstillinger</button>
+</div>
+
+<div class="main">
+
+  <div class="view active" id="view-middag">
+    <div id="liste-middag"></div>
+  </div>
+
+  <div class="view" id="view-lunsj">
+    <div id="liste-lunsj"></div>
+  </div>
+
+  <div class="view" id="view-innstillinger">
+    <div class="field-group">
+      <label>MVA-sats (restaurantservering)</label>
+      <input type="number" id="inn-mva" placeholder="25" step="0.1">
+      <div class="hjelp">Skrives i prosent, f.eks. 25 for 25 %. Brukes til å regne om menyprisen (inkl. mva) til eks. mva.</div>
+    </div>
+    <div class="field-group">
+      <label>Buffer / sikkerhetsmargin på råvarekost</label>
+      <input type="number" id="inn-buffer" placeholder="5" step="0.1">
+      <div class="hjelp">Legges oveni ren råvarekost for å ta høyde for prisøkninger og unøyaktig svinn-estimat. Sett til 0 for å se ren råvarekost.</div>
+    </div>
+    <button class="btn-primary" onclick="lagreInnstillinger()">Lagre innstillinger</button>
+  </div>
+
+</div>
+
+<!-- Rett-modal -->
+<div class="modal-overlay" id="rett-modal" style="display:none" onclick="lukkModalOverlay(event)">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <h3 id="rm-navn"></h3>
+    <div class="rett-utpris" id="rm-utpris"></div>
+
+    <div class="sum-grid">
+      <div class="sum-card">
+        <div class="sum-label">Sum ingredienskost</div>
+        <div class="sum-value" id="rm-sum">0 kr</div>
+      </div>
+      <div class="sum-card">
+        <div class="sum-label">Kjøkkenprosent</div>
+        <div class="sum-value" id="rm-kp">0 %</div>
+      </div>
+      <div class="sum-card">
+        <div class="sum-label">Kost inkl. buffer</div>
+        <div class="sum-value" id="rm-kostbuffer">0 kr</div>
+      </div>
+      <div class="sum-card">
+        <div class="sum-label">Dekningsgrad</div>
+        <div class="sum-value" id="rm-dg">0 %</div>
+      </div>
+    </div>
+
+    <div id="rm-ingredienser"></div>
+
+    <button class="add-toggle-btn" onclick="visLeggTilForm()">+ Legg til ingrediens</button>
+
+    <div class="add-form" id="add-form">
+      <input type="text" id="af-produkt" placeholder="Produkt / ingrediens">
+      <div class="row2">
+        <input type="number" id="af-mengde" placeholder="Mengde i oppskrift" step="0.01">
+        <select id="af-enhet">
+          <option value="g">g</option>
+          <option value="kg">kg</option>
+          <option value="ml">ml</option>
+          <option value="l">l</option>
+          <option value="cl">cl</option>
+          <option value="ss">ss</option>
+          <option value="ts">ts</option>
+          <option value="stk">stk</option>
+        </select>
+      </div>
+      <div class="row2">
+        <input type="number" id="af-innkjopspris" placeholder="Innkjøpspris (kr)" step="0.01">
+        <select id="af-innkjopsenhet">
+          <option value="kg">kg</option>
+          <option value="g">g</option>
+          <option value="l">l</option>
+          <option value="ml">ml</option>
+          <option value="cl">cl</option>
+          <option value="ss">ss</option>
+          <option value="ts">ts</option>
+          <option value="stk">stk</option>
+        </select>
+      </div>
+      <input type="number" id="af-svinn" placeholder="Svinn % (f.eks. 5)" step="0.1">
+      <div class="add-form-btns">
+        <button class="btn-avbryt" onclick="skjulLeggTilForm()">Avbryt</button>
+        <button class="btn-lagre" onclick="lagreLinje()">Lagre</button>
+      </div>
+    </div>
+
+    <button class="close-btn" onclick="lukkRettModal()">Lukk</button>
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL = 'https://izdclsyuplghwznsjnom.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml6ZGNsc3l1cGxnaHd6bnNqbm9tIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE1MjY5MjksImV4cCI6MjA5NzEwMjkyOX0.GkjxcToCHZrLAm1pVGsBkcLapIOj7uSYd6IcDC0Lyzk';
+
+const ENHET_FAKTOR = { g: 1, kg: 1000, ml: 1, l: 1000, cl: 10, ss: 15, ts: 5, stk: 1 };
+const ENHET_FAMILIE = { g: 'vekt', kg: 'vekt', ml: 'volum', l: 'volum', cl: 'volum', ss: 'volum', ts: 'volum', stk: 'stk' };
+
+let retter = [];
+let ingredienser = {}; // rett_id -> [linjer]
+let innstillinger = { mva_sats: 0.25, buffer_prosent: 0.05 };
+let aktivRettId = null;
+let redigerLinjeId = null;
+
+async function api(method, path, body) {
+  const opts = { method, headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY, 'Content-Type': 'application/json', 'Prefer': method === 'POST' ? 'return=representation' : (method === 'PATCH' ? 'return=representation' : '') } };
+  if (body) opts.body = JSON.stringify(body);
+  const res = await fetch(SUPABASE_URL + '/rest/v1/' + path, opts);
+  if (res.status === 204) return [];
+  return res.json();
+}
+
+function fmtKr(n) { return (Math.round(n * 100) / 100).toLocaleString('nb-NO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' kr'; }
+function fmtPct(n) { return (Math.round(n * 1000) / 10).toLocaleString('nb-NO') + ' %'; }
+
+async function hentAlt() {
+  const [r, i, s] = await Promise.all([
+    api('GET', 'meny_retter?order=meny.asc,kategori.asc,sort_order.asc&select=*'),
+    api('GET', 'kalkyle_ingredienser?order=sort_order.asc,created_at.asc&select=*'),
+    api('GET', 'kalkyle_innstillinger?id=eq.1&select=*'),
+  ]);
+  retter = r;
+  ingredienser = {};
+  i.forEach(linje => {
+    if (!ingredienser[linje.rett_id]) ingredienser[linje.rett_id] = [];
+    ingredienser[linje.rett_id].push(linje);
+  });
+  if (s && s.length) innstillinger = s[0];
+  document.getElementById('inn-mva').value = Math.round(innstillinger.mva_sats * 1000) / 10;
+  document.getElementById('inn-buffer').value = Math.round(innstillinger.buffer_prosent * 1000) / 10;
+  renderListe('middag');
+  renderListe('lunsj');
+  if (aktivRettId) renderRettModal();
+}
+
+function visTab(tab) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById('tab-' + tab).classList.add('active');
+  document.getElementById('view-' + tab).classList.add('active');
+}
+
+function beregnLinjeKost(l) {
+  const fEnhet = ENHET_FAKTOR[l.enhet] || 1;
+  const fInnkjop = ENHET_FAKTOR[l.innkjopsenhet] || 1;
+  const svinnFaktor = 1 - (parseFloat(l.svinn) || 0);
+  if (svinnFaktor <= 0) return 0;
+  return (parseFloat(l.mengde) || 0) * fEnhet / fInnkjop * (parseFloat(l.innkjopspris) || 0) / svinnFaktor;
+}
+
+function beregnRett(rett) {
+  const linjer = ingredienser[rett.id] || [];
+  const sumKost = linjer.reduce((sum, l) => sum + beregnLinjeKost(l), 0);
+  const utprisEks = rett.pris / (1 + innstillinger.mva_sats);
+  const kostBuffer = sumKost * (1 + innstillinger.buffer_prosent);
+  const kpRen = utprisEks > 0 ? sumKost / utprisEks : 0;
+  const kpBuffer = utprisEks > 0 ? kostBuffer / utprisEks : 0;
+  const dekningsgrad = utprisEks > 0 ? (utprisEks - kostBuffer) / utprisEks : 0;
+  return { sumKost, utprisEks, kostBuffer, kpRen, kpBuffer, dekningsgrad, harLinjer: linjer.length > 0 };
+}
+
+function kpFarge(kp, harLinjer) {
+  if (!harLinjer) return 'kp-empty';
+  if (kp <= 0.30) return 'kp-green';
+  if (kp <= 0.40) return 'kp-amber';
+  return 'kp-red';
+}
+
+const KAT_REKKEFOLGE = ['Huîtres', 'Huîtres – Østers', 'Østers', 'Entrées', 'Entrées – Forretter', 'Forretter', 'Plats', 'Plats – Hovedretter', 'Hovedretter', 'Fromage', 'Fromage – Ost', 'Ost', 'Desserts', 'Desserts – Desserter', 'Desserter', 'Extras', 'Extra', 'Tillegg'];
+
+function renderListe(meny) {
+  const liste = retter.filter(r => r.meny === meny);
+  const container = document.getElementById('liste-' + meny);
+  if (!liste.length) { container.innerHTML = '<div class="empty">Ingen retter funnet i menyen. Legg dem inn på Meny-fanen først.</div>'; return; }
+
+  const kategorier = [...new Set(liste.map(r => r.kategori))].sort((a, b) => {
+    const ai = KAT_REKKEFOLGE.findIndex(k => (a || '').toLowerCase().includes(k.toLowerCase()));
+    const bi = KAT_REKKEFOLGE.findIndex(k => (b || '').toLowerCase().includes(k.toLowerCase()));
+    return (ai === -1 ? 999 : ai) - (bi === -1 ? 999 : bi);
+  });
+
+  container.innerHTML = kategorier.map(kat => `
+    <div class="section-label">${kat || 'Uten kategori'}</div>
+    ${liste.filter(r => r.kategori === kat).map(r => {
+      const b = beregnRett(r);
+      return `
+        <div class="rett-card" onclick="apneRett('${r.id}')">
+          <div class="rett-top">
+            <div class="rett-navn">${r.navn}</div>
+            <div class="rett-pris">${r.pris} kr</div>
+          </div>
+          <div class="rett-bottom">
+            <div class="rett-kost">${b.harLinjer ? 'Kost: ' + fmtKr(b.sumKost) + ' eks. mva' : 'Ingen ingredienser lagt inn'}</div>
+            <div class="kp-badge ${kpFarge(b.kpRen, b.harLinjer)}">${b.harLinjer ? fmtPct(b.kpRen) : '–'}</div>
+          </div>
+        </div>
+      `;
+    }).join('')}
+  `).join('');
+}
+
+function apneRett(id) {
+  aktivRettId = id;
+  redigerLinjeId = null;
+  document.getElementById('add-form').classList.remove('open');
+  renderRettModal();
+  document.getElementById('rett-modal').style.display = 'flex';
+}
+
+function lukkRettModal() {
+  document.getElementById('rett-modal').style.display = 'none';
+  aktivRettId = null;
+  redigerLinjeId = null;
+}
+function lukkModalOverlay(e) { if (e.target === document.getElementById('rett-modal')) lukkRettModal(); }
+
+function renderRettModal() {
+  const rett = retter.find(r => r.id === aktivRettId);
+  if (!rett) return;
+  const b = beregnRett(rett);
+  document.getElementById('rm-navn').textContent = rett.navn;
+  document.getElementById('rm-utpris').textContent = `Utpris i meny: ${fmtKr(b.utprisEks)} eks. mva  (${rett.pris} kr inkl. mva)`;
+  document.getElementById('rm-sum').textContent = fmtKr(b.sumKost);
+  document.getElementById('rm-kp').textContent = fmtPct(b.kpRen);
+  document.getElementById('rm-kostbuffer').textContent = fmtKr(b.kostBuffer);
+  document.getElementById('rm-dg').textContent = fmtPct(b.dekningsgrad);
+
+  const linjer = ingredienser[rett.id] || [];
+  const container = document.getElementById('rm-ingredienser');
+  if (!linjer.length) {
+    container.innerHTML = '<div class="empty">Ingen ingredienser lagt inn ennå</div>';
+    return;
+  }
+  container.innerHTML = linjer.map(l => {
+    const kost = beregnLinjeKost(l);
+    const mismatch = ENHET_FAMILIE[l.enhet] !== ENHET_FAMILIE[l.innkjopsenhet];
+    return `
+      <div class="ingr-row" onclick="apneRedigerLinje('${l.id}')">
+        <div style="flex:1;">
+          <div class="ingr-navn">${l.produkt}</div>
+          <div class="ingr-detalj">${l.mengde} ${l.enhet} · ${l.innkjopspris} kr/${l.innkjopsenhet} · svinn ${Math.round(l.svinn * 100)}%</div>
+          ${mismatch ? '<div class="ingr-warn">⚠ Enhet og innkjøpsenhet er ikke samme type (vekt/volum/stk)</div>' : ''}
+        </div>
+        <div class="ingr-kost">${fmtKr(kost)}</div>
+        <button class="btn-icon" onclick="event.stopPropagation(); slettLinje('${l.id}')">✕</button>
+      </div>
+    `;
+  }).join('');
+}
+
+function visLeggTilForm() {
+  redigerLinjeId = null;
+  document.getElementById('af-produkt').value = '';
+  document.getElementById('af-mengde').value = '';
+  document.getElementById('af-enhet').value = 'g';
+  document.getElementById('af-innkjopspris').value = '';
+  document.getElementById('af-innkjopsenhet').value = 'kg';
+  document.getElementById('af-svinn').value = '';
+  document.getElementById('add-form').classList.add('open');
+}
+function skjulLeggTilForm() {
+  document.getElementById('add-form').classList.remove('open');
+  redigerLinjeId = null;
+}
+
+function apneRedigerLinje(id) {
+  const linjer = ingredienser[aktivRettId] || [];
+  const l = linjer.find(x => x.id === id);
+  if (!l) return;
+  redigerLinjeId = id;
+  document.getElementById('af-produkt').value = l.produkt;
+  document.getElementById('af-mengde').value = l.mengde;
+  document.getElementById('af-enhet').value = l.enhet;
+  document.getElementById('af-innkjopspris').value = l.innkjopspris;
+  document.getElementById('af-innkjopsenhet').value = l.innkjopsenhet;
+  document.getElementById('af-svinn').value = Math.round(l.svinn * 1000) / 10;
+  document.getElementById('add-form').classList.add('open');
+}
+
+async function lagreLinje() {
+  const produkt = document.getElementById('af-produkt').value.trim();
+  const mengde = parseFloat(document.getElementById('af-mengde').value) || 0;
+  const enhet = document.getElementById('af-enhet').value;
+  const innkjopspris = parseFloat(document.getElementById('af-innkjopspris').value) || 0;
+  const innkjopsenhet = document.getElementById('af-innkjopsenhet').value;
+  const svinn = (parseFloat(document.getElementById('af-svinn').value) || 0) / 100;
+  if (!produkt) { alert('Skriv inn produktnavn'); return; }
+
+  const body = { rett_id: aktivRettId, produkt, mengde, enhet, innkjopspris, innkjopsenhet, svinn };
+  if (redigerLinjeId) {
+    await api('PATCH', `kalkyle_ingredienser?id=eq.${redigerLinjeId}`, body);
+  } else {
+    body.sort_order = (ingredienser[aktivRettId] || []).length;
+    await api('POST', 'kalkyle_ingredienser', body);
+  }
+  skjulLeggTilForm();
+  await hentAlt();
+}
+
+async function slettLinje(id) {
+  if (!confirm('Slett denne ingrediensen?')) return;
+  await api('DELETE', `kalkyle_ingredienser?id=eq.${id}`);
+  await hentAlt();
+}
+
+async function lagreInnstillinger() {
+  const mva = (parseFloat(document.getElementById('inn-mva').value) || 25) / 100;
+  const buffer = (parseFloat(document.getElementById('inn-buffer').value) || 0) / 100;
+  const eksisterende = await api('GET', 'kalkyle_innstillinger?id=eq.1&select=id');
+  if (eksisterende && eksisterende.length) {
+    await api('PATCH', 'kalkyle_innstillinger?id=eq.1', { mva_sats: mva, buffer_prosent: buffer });
+  } else {
+    await api('POST', 'kalkyle_innstillinger', { id: 1, mva_sats: mva, buffer_prosent: buffer });
+  }
+  innstillinger = { mva_sats: mva, buffer_prosent: buffer };
+  renderListe('middag');
+  renderListe('lunsj');
+  alert('Lagret');
+}
+
+hentAlt();
+</script>
+</body>
+</html>
