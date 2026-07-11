@@ -235,6 +235,42 @@ function renderMeny(meny) {
     return av - bv;
   });
 
+  // For lunsj: map kategori to Norwegian display name and group
+  function lunsKatNavn(kat) {
+    const k = (kat || '').toLowerCase();
+    if (k.includes('huît') || k.includes('oster') || k.includes('øster')) return 'FORRETT';
+    if (k.includes('entr')) return 'FORRETT';
+    if (k.includes('forrett')) return 'FORRETT';
+    if (k.includes('plat') || k.includes('hoved')) return 'HOVEDRETT';
+    if (k.includes('fromage') || k.includes('ost')) return 'DESSERT';
+    if (k.includes('dessert')) return 'DESSERT';
+    if (k.includes('extra') || k.includes('tillegg')) return 'EXTRAS';
+    return 'HOVEDRETT';
+  }
+
+  if (meny === 'lunsj') {
+    // Group all lunsj dishes under mapped category names, preserving sort order
+    const gruppert = {};
+    const katRekkefølgeLunsj = ['FORRETT', 'HOVEDRETT', 'DESSERT', 'EXTRAS'];
+    for (const r of liste) {
+      const k = lunsKatNavn(r.kategori);
+      if (!gruppert[k]) gruppert[k] = [];
+      gruppert[k].push(r);
+    }
+    container.innerHTML = katRekkefølgeLunsj
+      .filter(k => gruppert[k] && gruppert[k].length)
+      .map(k => `
+        <div class="section-title">${k}</div>
+        ${gruppert[k].map(r => `
+          <div class="dish">
+            <div class="dish-head"><span class="dish-name">${(r.navn||'').toUpperCase()}</span><span class="dish-price">${r.pris != null ? r.pris : ''}</span></div>
+            ${r.allergener ? `<div class="dish-allergens">${r.allergener}</div>` : ''}
+            ${r.beskrivelse ? `<div class="dish-desc">${r.beskrivelse}</div>` : ''}
+            ${redigeringPa ? `<div class="dish-edit-actions"><button onclick="apneRedigerRett('${r.id}')">Rediger</button><button onclick="slettRett('${r.id}')">Slett</button></div>` : ''}
+          </div>
+        `).join('')}
+      `).join('');
+  } else {
   container.innerHTML = kategorier.map(kat => `
     <div class="section-title">${kat}</div>
     ${liste.filter(r => r.kategori === kat).map(r => `
@@ -246,6 +282,7 @@ function renderMeny(meny) {
       </div>
     `).join('')}
   `).join('');
+  }
 }
 
 function delMedGjest() {
