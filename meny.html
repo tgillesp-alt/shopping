@@ -249,27 +249,31 @@ function renderMeny(meny) {
   }
 
   if (meny === 'lunsj') {
-    // Group all lunsj dishes under mapped category names, preserving sort order
-    const gruppert = {};
-    const katRekkefølgeLunsj = ['FORRETT', 'HOVEDRETT', 'DESSERT', 'EXTRAS'];
-    for (const r of liste) {
-      const k = lunsKatNavn(r.kategori);
-      if (!gruppert[k]) gruppert[k] = [];
-      gruppert[k].push(r);
+    // Flat list sorted by category order, no section headers except EXTRAS
+    const katOrder = ['FORRETT','HOVEDRETT','DESSERT','EXTRAS'];
+    const sorted = [...liste].sort((a, b) => {
+      const ak = katOrder.indexOf(lunsKatNavn(a.kategori));
+      const bk = katOrder.indexOf(lunsKatNavn(b.kategori));
+      if (ak !== bk) return ak - bk;
+      return (a.sort_order || 0) - (b.sort_order || 0);
+    });
+    let html = '';
+    let extrasShown = false;
+    for (const r of sorted) {
+      const isExtras = lunsKatNavn(r.kategori) === 'EXTRAS';
+      if (isExtras && !extrasShown) {
+        html += `<div class="section-title">EXTRAS</div>`;
+        extrasShown = true;
+      }
+      html += `
+        <div class="dish">
+          <div class="dish-head"><span class="dish-name">${(r.navn||'').toUpperCase()}</span><span class="dish-price">${r.pris != null ? r.pris : ''}</span></div>
+          ${r.allergener ? `<div class="dish-allergens">${r.allergener}</div>` : ''}
+          ${r.beskrivelse ? `<div class="dish-desc">${r.beskrivelse}</div>` : ''}
+          ${redigeringPa ? `<div class="dish-edit-actions"><button onclick="apneRedigerRett('${r.id}')">Rediger</button><button onclick="slettRett('${r.id}')">Slett</button></div>` : ''}
+        </div>`;
     }
-    container.innerHTML = katRekkefølgeLunsj
-      .filter(k => gruppert[k] && gruppert[k].length)
-      .map(k => `
-        <div class="section-title">${k}</div>
-        ${gruppert[k].map(r => `
-          <div class="dish">
-            <div class="dish-head"><span class="dish-name">${(r.navn||'').toUpperCase()}</span><span class="dish-price">${r.pris != null ? r.pris : ''}</span></div>
-            ${r.allergener ? `<div class="dish-allergens">${r.allergener}</div>` : ''}
-            ${r.beskrivelse ? `<div class="dish-desc">${r.beskrivelse}</div>` : ''}
-            ${redigeringPa ? `<div class="dish-edit-actions"><button onclick="apneRedigerRett('${r.id}')">Rediger</button><button onclick="slettRett('${r.id}')">Slett</button></div>` : ''}
-          </div>
-        `).join('')}
-      `).join('');
+    container.innerHTML = html;
   } else {
   container.innerHTML = kategorier.map(kat => `
     <div class="section-title">${kat}</div>
