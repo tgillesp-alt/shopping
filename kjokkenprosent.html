@@ -71,11 +71,13 @@ input[type=number], input[type=text], select { width: 100%; padding: 0.7rem 0.85
 .ingr-detalj { font-size: 0.68rem; color: #a8a59d; margin-top: 1px; }
 .ingr-kost { font-size: 0.8rem; font-weight: 600; color: #1a1a1a; }
 .ingr-warn { color: #C0392B; font-size: 0.65rem; margin-top: 1px; }
+.lenke-badge { font-size: 0.62rem; font-weight: 600; color: #0F6E56; background: #E1F5EE; padding: 1px 7px; border-radius: 10px; margin-left: 4px; }
 .btn-icon { background: none; border: none; color: #c4c0b6; font-size: 0.85rem; cursor: pointer; padding: 0.25rem; flex-shrink: 0; }
 
 .add-form { background: #f7f6f3; border-radius: 12px; padding: 0.9rem; margin-top: 0.5rem; display: none; }
 .add-form.open { display: block; }
-.add-form .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; }
+.row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.add-form .row2 { margin-bottom: 8px; }
 .add-form input, .add-form select { margin-bottom: 8px; background: #fff; }
 .add-form-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .add-form-btns button { padding: 0.7rem; border-radius: 10px; font-size: 0.88rem; font-weight: 600; cursor: pointer; border: none; }
@@ -90,6 +92,27 @@ input[type=number], input[type=text], select { width: 100%; padding: 0.7rem 0.85
 .close-btn { width: 100%; padding: 0.8rem; background: #f7f6f3; color: #1a1a1a; border: none; border-radius: 10px; font-size: 0.95rem; font-weight: 600; cursor: pointer; margin-top: 0.5rem; }
 
 .hjelp { font-size: 0.68rem; color: #a8a59d; line-height: 1.5; margin-top: -0.3rem; margin-bottom: 1rem; }
+
+.vare-row { background: #fff; border: 0.5px solid #e5e2da; border-radius: 10px; padding: 0.7rem 0.9rem; margin-bottom: 6px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.vare-row:active { background: #f2f0ea; }
+.vare-navn { font-weight: 700; font-size: 0.87rem; }
+.vare-kategori { font-size: 0.68rem; color: #a8a59d; margin-top: 1px; }
+.vare-pris { font-size: 0.8rem; color: #6b6862; font-weight: 600; flex-shrink: 0; text-align: right; }
+
+.produkt-wrap { position: relative; }
+.produkt-forslag { display: none; position: relative; background: #fff; border: 0.5px solid #e5e2da; border-radius: 10px; margin: -4px 0 8px; overflow: hidden; box-shadow: 0 4px 14px rgba(0,0,0,0.08); }
+.produkt-forslag.open { display: block; }
+.produkt-forslag-row { padding: 0.6rem 0.8rem; display: flex; justify-content: space-between; align-items: center; gap: 8px; border-bottom: 0.5px solid #f0eee8; cursor: pointer; }
+.produkt-forslag-row:last-child { border-bottom: none; }
+.produkt-forslag-row:active { background: #f7f6f3; }
+.produkt-forslag-navn { font-size: 0.85rem; font-weight: 600; }
+.produkt-forslag-pris { font-size: 0.72rem; color: #a8a59d; }
+
+.import-panel { display: none; background: #f7f6f3; border-radius: 12px; padding: 0.9rem; margin-top: 0.5rem; }
+.import-panel.open { display: block; }
+textarea { width: 100%; padding: 0.7rem 0.85rem; border: 0.5px solid #e5e2da; border-radius: 10px; font-size: 0.82rem; font-family: ui-monospace, monospace; background: #fff; color: #1a1a1a; outline: none; resize: vertical; margin-bottom: 8px; }
+.import-checkbox { display: flex; align-items: center; gap: 6px; font-size: 0.8rem; color: #8a8782; margin-bottom: 8px; }
+.import-checkbox input { width: auto; }
 </style>
 </head>
 <body>
@@ -104,6 +127,7 @@ input[type=number], input[type=text], select { width: 100%; padding: 0.7rem 0.85
 <div class="tabs">
   <button class="tab active" id="tab-middag" onclick="visTab('middag')">Middag</button>
   <button class="tab" id="tab-lunsj" onclick="visTab('lunsj')">Lunsj</button>
+  <button class="tab" id="tab-priser" onclick="visTab('priser')">Priser</button>
   <button class="tab" id="tab-innstillinger" onclick="visTab('innstillinger')">Innstillinger</button>
 </div>
 
@@ -131,6 +155,82 @@ input[type=number], input[type=text], select { width: 100%; padding: 0.7rem 0.85
     <button class="btn-primary" onclick="lagreInnstillinger()">Lagre innstillinger</button>
   </div>
 
+  <div class="view" id="view-priser">
+    <div class="hjelp" style="margin-top:0;">Legg inn faste priser på varer du bruker ofte (melk, fløte, smør, indrefilet, kveite osv.). Når du legger en ingrediens til en rett, kan du søke opp varen her i stedet for å skrive prisen på nytt hver gang.</div>
+    <div id="liste-priser"></div>
+    <button class="add-toggle-btn" onclick="apneNyVare()">+ Legg til vare i prislisten</button>
+    <button class="add-toggle-btn" onclick="visImport()">⇪ Importer flere varer fra Excel</button>
+
+    <div class="import-panel" id="import-panel">
+      <div class="hjelp" style="margin-top:0;">Lag 5 kolonner i Excel i denne rekkefølgen: <b>Navn, Kategori, Innkjøpspris, Innkjøpsenhet, Standard enhet</b> (Kategori og Standard enhet kan stå tomme). Merk cellene, kopier (Ctrl/Cmd+C), og lim inn her under (Ctrl/Cmd+V).</div>
+      <textarea id="import-tekst" rows="8" placeholder="Melk	Meieri	18	l	ml
+Fløte	Meieri	42	l	ml
+Smør	Meieri	65	kg	g"></textarea>
+      <label class="import-checkbox">
+        <input type="checkbox" id="import-header" checked> Første linje er overskrifter (hoppes over)
+      </label>
+      <button class="btn-secondary" onclick="forhandsvisImport()">Forhåndsvis</button>
+      <div id="import-forhandsvisning"></div>
+      <div class="add-form-btns" id="import-btns" style="display:none;">
+        <button class="btn-avbryt" onclick="avbrytImport()">Avbryt</button>
+        <button class="btn-lagre" onclick="bekreftImport()">Importer alle</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Vare-modal (prisliste) -->
+<div class="modal-overlay" id="vare-modal" style="display:none" onclick="lukkVareModalOverlay(event)">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <h3 id="vm-tittel">Ny vare</h3>
+    <div class="field-group">
+      <label>Varenavn</label>
+      <input type="text" id="vm-navn" placeholder="F.eks. Indrefilet">
+    </div>
+    <div class="field-group">
+      <label>Kategori (valgfritt)</label>
+      <input type="text" id="vm-kategori" placeholder="F.eks. Kjøtt, Meieri, Fisk">
+    </div>
+    <div class="row2">
+      <div class="field-group">
+        <label>Innkjøpspris (kr)</label>
+        <input type="number" id="vm-innkjopspris" placeholder="0" step="0.01">
+      </div>
+      <div class="field-group">
+        <label>Innkjøpsenhet</label>
+        <select id="vm-innkjopsenhet">
+          <option value="kg">kg</option>
+          <option value="g">g</option>
+          <option value="l">l</option>
+          <option value="ml">ml</option>
+          <option value="cl">cl</option>
+          <option value="ss">ss</option>
+          <option value="ts">ts</option>
+          <option value="stk">stk</option>
+        </select>
+      </div>
+    </div>
+    <div class="field-group">
+      <label>Standard enhet i oppskrift (valgfritt)</label>
+      <select id="vm-standard-enhet">
+        <option value="">– ingen forvalgt –</option>
+        <option value="g">g</option>
+        <option value="kg">kg</option>
+        <option value="ml">ml</option>
+        <option value="l">l</option>
+        <option value="cl">cl</option>
+        <option value="ss">ss</option>
+        <option value="ts">ts</option>
+        <option value="stk">stk</option>
+      </select>
+      <div class="hjelp">Fylles automatisk inn som "Enhet (oppskrift)" når du velger varen — nyttig hvis du nesten alltid bruker den i samme enhet, f.eks. gram.</div>
+    </div>
+    <button class="btn-primary" onclick="lagreVare()">Lagre</button>
+    <button class="btn-secondary" id="vm-slett-btn" onclick="slettVare()" style="display:none;color:#993C1D;">Slett vare</button>
+    <button class="close-btn" onclick="lukkVareModal()">Avbryt</button>
+  </div>
 </div>
 
 <!-- Rett-modal -->
@@ -177,7 +277,10 @@ input[type=number], input[type=text], select { width: 100%; padding: 0.7rem 0.85
     <button class="add-toggle-btn" onclick="visLeggTilForm()">+ Legg til ingrediens</button>
 
     <div class="add-form" id="add-form">
-      <input type="text" id="af-produkt" placeholder="Produkt / ingrediens">
+      <div class="produkt-wrap">
+        <input type="text" id="af-produkt" placeholder="Produkt / ingrediens" oninput="visProduktForslag()" onfocus="visProduktForslag()">
+        <div class="produkt-forslag" id="produkt-forslag"></div>
+      </div>
       <div class="row2">
         <input type="number" id="af-mengde" placeholder="Mengde i oppskrift" step="0.01">
         <select id="af-enhet">
@@ -192,8 +295,8 @@ input[type=number], input[type=text], select { width: 100%; padding: 0.7rem 0.85
         </select>
       </div>
       <div class="row2">
-        <input type="number" id="af-innkjopspris" placeholder="Innkjøpspris (kr)" step="0.01">
-        <select id="af-innkjopsenhet">
+        <input type="number" id="af-innkjopspris" placeholder="Innkjøpspris (kr)" step="0.01" oninput="losneFraPrisliste()">
+        <select id="af-innkjopsenhet" onchange="losneFraPrisliste()">
           <option value="kg">kg</option>
           <option value="g">g</option>
           <option value="l">l</option>
@@ -204,6 +307,7 @@ input[type=number], input[type=text], select { width: 100%; padding: 0.7rem 0.85
           <option value="stk">stk</option>
         </select>
       </div>
+      <div class="hjelp" id="af-lenke-status" style="margin:-6px 0 8px;"></div>
       <div class="stykkpris-lenke" onclick="visStykkprisHjelper()">Kjøpt i pakke/kartong? Regn ut pris pr. enhet →</div>
       <div class="stykkpris-hjelper" id="stykkpris-hjelper">
         <div class="row2">
@@ -233,8 +337,12 @@ const ENHET_FAMILIE = { g: 'vekt', kg: 'vekt', ml: 'volum', l: 'volum', cl: 'vol
 let retter = [];
 let ingredienser = {}; // rett_id -> [linjer]
 let innstillinger = { mva_sats: 0.25, buffer_prosent: 0.05 };
+let masterVarer = [];
 let aktivRettId = null;
 let redigerLinjeId = null;
+let valgtVareId = null;
+let redigerVareId = null;
+let importRader = [];
 
 async function api(method, path, body) {
   const opts = { method, headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY, 'Content-Type': 'application/json', 'Prefer': method === 'POST' ? 'return=representation' : (method === 'PATCH' ? 'return=representation' : '') } };
@@ -249,10 +357,11 @@ function fmtPct(n) { return (Math.round(n * 1000) / 10).toLocaleString('nb-NO') 
 function fmtFaktor(n) { return (Math.round(n * 10) / 10).toLocaleString('nb-NO') + 'x'; }
 
 async function hentAlt() {
-  const [r, i, s] = await Promise.all([
+  const [r, i, s, v] = await Promise.all([
     api('GET', 'meny_retter?order=meny.asc,kategori.asc,sort_order.asc&select=*'),
     api('GET', 'kalkyle_ingredienser?order=sort_order.asc,created_at.asc&select=*'),
     api('GET', 'kalkyle_innstillinger?id=eq.1&select=*'),
+    api('GET', 'kalkyle_varer?order=kategori.asc,navn.asc&select=*'),
   ]);
   retter = r;
   ingredienser = {};
@@ -261,10 +370,12 @@ async function hentAlt() {
     ingredienser[linje.rett_id].push(linje);
   });
   if (s && s.length) innstillinger = s[0];
+  masterVarer = v || [];
   document.getElementById('inn-mva').value = Math.round(innstillinger.mva_sats * 1000) / 10;
   document.getElementById('inn-buffer').value = Math.round(innstillinger.buffer_prosent * 1000) / 10;
   renderListe('middag');
   renderListe('lunsj');
+  renderPriser();
   if (aktivRettId) renderRettModal();
 }
 
@@ -275,12 +386,21 @@ function visTab(tab) {
   document.getElementById('view-' + tab).classList.add('active');
 }
 
+function hentEffektivPris(l) {
+  if (l.vare_id) {
+    const v = masterVarer.find(x => x.id === l.vare_id);
+    if (v) return { pris: v.innkjopspris, enhet: v.innkjopsenhet, live: true };
+  }
+  return { pris: l.innkjopspris, enhet: l.innkjopsenhet, live: false };
+}
+
 function beregnLinjeKost(l) {
+  const eff = hentEffektivPris(l);
   const fEnhet = ENHET_FAKTOR[l.enhet] || 1;
-  const fInnkjop = ENHET_FAKTOR[l.innkjopsenhet] || 1;
+  const fInnkjop = ENHET_FAKTOR[eff.enhet] || 1;
   const svinnFaktor = 1 - (parseFloat(l.svinn) || 0);
   if (svinnFaktor <= 0) return 0;
-  return (parseFloat(l.mengde) || 0) * fEnhet / fInnkjop * (parseFloat(l.innkjopspris) || 0) / svinnFaktor;
+  return (parseFloat(l.mengde) || 0) * fEnhet / fInnkjop * (parseFloat(eff.pris) || 0) / svinnFaktor;
 }
 
 function beregnRett(rett) {
@@ -372,13 +492,14 @@ function renderRettModal() {
     return;
   }
   container.innerHTML = linjer.map(l => {
+    const eff = hentEffektivPris(l);
     const kost = beregnLinjeKost(l);
-    const mismatch = ENHET_FAMILIE[l.enhet] !== ENHET_FAMILIE[l.innkjopsenhet];
+    const mismatch = ENHET_FAMILIE[l.enhet] !== ENHET_FAMILIE[eff.enhet];
     return `
       <div class="ingr-row" onclick="apneRedigerLinje('${l.id}')">
         <div style="flex:1;">
-          <div class="ingr-navn">${l.produkt}</div>
-          <div class="ingr-detalj">${l.mengde} ${l.enhet} · ${l.innkjopspris} kr/${l.innkjopsenhet} · svinn ${Math.round(l.svinn * 100)}%</div>
+          <div class="ingr-navn">${l.produkt} ${eff.live ? '<span class="lenke-badge">🔗 fra prisliste</span>' : ''}</div>
+          <div class="ingr-detalj">${l.mengde} ${l.enhet} · ${eff.pris} kr/${eff.enhet} · svinn ${Math.round(l.svinn * 100)}%</div>
           ${mismatch ? '<div class="ingr-warn">⚠ Enhet og innkjøpsenhet er ikke samme type (vekt/volum/stk)</div>' : ''}
         </div>
         <div class="ingr-kost">${fmtKr(kost)}</div>
@@ -390,6 +511,7 @@ function renderRettModal() {
 
 function visLeggTilForm() {
   redigerLinjeId = null;
+  valgtVareId = null;
   document.getElementById('af-produkt').value = '';
   document.getElementById('af-mengde').value = '';
   document.getElementById('af-enhet').value = 'g';
@@ -398,11 +520,15 @@ function visLeggTilForm() {
   document.getElementById('af-svinn').value = '';
   document.getElementById('add-form').classList.add('open');
   skjulStykkprisHjelper();
+  skjulProduktForslag();
+  oppdaterLenkeStatus();
 }
 function skjulLeggTilForm() {
   document.getElementById('add-form').classList.remove('open');
   redigerLinjeId = null;
+  valgtVareId = null;
   skjulStykkprisHjelper();
+  skjulProduktForslag();
 }
 
 function visStykkprisHjelper() {
@@ -418,22 +544,72 @@ function brukStykkpris() {
   const antall = parseFloat(document.getElementById('sp-antall').value) || 0;
   if (antall <= 0) { alert('Antall enheter må være større enn 0'); return; }
   document.getElementById('af-innkjopspris').value = Math.round((totalpris / antall) * 100) / 100;
+  losneFraPrisliste();
   skjulStykkprisHjelper();
+}
+
+function visProduktForslag() {
+  const q = document.getElementById('af-produkt').value.trim().toLowerCase();
+  const box = document.getElementById('produkt-forslag');
+  if (!q) { box.classList.remove('open'); box.innerHTML = ''; return; }
+  const treff = masterVarer.filter(v => v.navn.toLowerCase().includes(q)).slice(0, 6);
+  if (!treff.length) { box.classList.remove('open'); box.innerHTML = ''; return; }
+  box.innerHTML = treff.map(v => `
+    <div class="produkt-forslag-row" onmousedown="event.preventDefault(); velgProdukt('${v.id}')">
+      <div>
+        <div class="produkt-forslag-navn">${v.navn}</div>
+        ${v.kategori ? `<div class="produkt-forslag-pris">${v.kategori}</div>` : ''}
+      </div>
+      <div class="produkt-forslag-pris">${v.innkjopspris} kr/${v.innkjopsenhet}</div>
+    </div>
+  `).join('');
+  box.classList.add('open');
+}
+function skjulProduktForslag() {
+  const box = document.getElementById('produkt-forslag');
+  box.classList.remove('open');
+  box.innerHTML = '';
+}
+function velgProdukt(id) {
+  const v = masterVarer.find(x => x.id === id);
+  if (!v) return;
+  document.getElementById('af-produkt').value = v.navn;
+  document.getElementById('af-innkjopspris').value = v.innkjopspris;
+  document.getElementById('af-innkjopsenhet').value = v.innkjopsenhet;
+  if (v.standard_enhet) document.getElementById('af-enhet').value = v.standard_enhet;
+  valgtVareId = v.id;
+  oppdaterLenkeStatus();
+  skjulProduktForslag();
+}
+function losneFraPrisliste() {
+  if (valgtVareId) {
+    valgtVareId = null;
+    oppdaterLenkeStatus();
+  }
+}
+function oppdaterLenkeStatus() {
+  const el = document.getElementById('af-lenke-status');
+  if (!el) return;
+  el.textContent = valgtVareId ? '🔗 Koblet til prisliste — prisen oppdateres automatisk om du endrer den i Priser-fanen' : '';
 }
 
 function apneRedigerLinje(id) {
   const linjer = ingredienser[aktivRettId] || [];
   const l = linjer.find(x => x.id === id);
   if (!l) return;
+  const eff = hentEffektivPris(l);
   redigerLinjeId = id;
+  valgtVareId = l.vare_id || null;
   document.getElementById('af-produkt').value = l.produkt;
   document.getElementById('af-mengde').value = l.mengde;
   document.getElementById('af-enhet').value = l.enhet;
-  document.getElementById('af-innkjopspris').value = l.innkjopspris;
-  document.getElementById('af-innkjopsenhet').value = l.innkjopsenhet;
+  document.getElementById('af-innkjopspris').value = eff.pris;
+  document.getElementById('af-innkjopsenhet').value = eff.enhet;
   document.getElementById('af-svinn').value = Math.round(l.svinn * 1000) / 10;
   document.getElementById('add-form').classList.add('open');
   skjulStykkprisHjelper();
+  skjulProduktForslag();
+  oppdaterLenkeStatus();
 }
 
 async function lagreLinje() {
@@ -445,7 +621,7 @@ async function lagreLinje() {
   const svinn = (parseFloat(document.getElementById('af-svinn').value) || 0) / 100;
   if (!produkt) { alert('Skriv inn produktnavn'); return; }
 
-  const body = { rett_id: aktivRettId, produkt, mengde, enhet, innkjopspris, innkjopsenhet, svinn };
+  const body = { rett_id: aktivRettId, produkt, mengde, enhet, innkjopspris, innkjopsenhet, svinn, vare_id: valgtVareId };
   if (redigerLinjeId) {
     await api('PATCH', `kalkyle_ingredienser?id=eq.${redigerLinjeId}`, body);
   } else {
@@ -477,7 +653,143 @@ async function lagreInnstillinger() {
   alert('Lagret');
 }
 
+function renderPriser() {
+  const container = document.getElementById('liste-priser');
+  if (!masterVarer.length) { container.innerHTML = '<div class="empty">Ingen varer i prislisten ennå</div>'; return; }
+  const kategorier = [...new Set(masterVarer.map(v => v.kategori || 'Annet'))].sort();
+  container.innerHTML = kategorier.map(kat => `
+    <div class="section-label">${kat}</div>
+    ${masterVarer.filter(v => (v.kategori || 'Annet') === kat).map(v => `
+      <div class="vare-row" onclick="apneRedigerVare('${v.id}')">
+        <div>
+          <div class="vare-navn">${v.navn}</div>
+          ${v.standard_enhet ? `<div class="vare-kategori">Standard enhet: ${v.standard_enhet}</div>` : ''}
+        </div>
+        <div class="vare-pris">${v.innkjopspris} kr/${v.innkjopsenhet}</div>
+      </div>
+    `).join('')}
+  `).join('');
+}
+
+function apneNyVare() {
+  redigerVareId = null;
+  document.getElementById('vm-tittel').textContent = 'Ny vare';
+  document.getElementById('vm-navn').value = '';
+  document.getElementById('vm-kategori').value = '';
+  document.getElementById('vm-innkjopspris').value = '';
+  document.getElementById('vm-innkjopsenhet').value = 'kg';
+  document.getElementById('vm-standard-enhet').value = '';
+  document.getElementById('vm-slett-btn').style.display = 'none';
+  document.getElementById('vare-modal').style.display = 'flex';
+}
+
+function apneRedigerVare(id) {
+  const v = masterVarer.find(x => x.id === id);
+  if (!v) return;
+  redigerVareId = id;
+  document.getElementById('vm-tittel').textContent = 'Rediger vare';
+  document.getElementById('vm-navn').value = v.navn;
+  document.getElementById('vm-kategori').value = v.kategori || '';
+  document.getElementById('vm-innkjopspris').value = v.innkjopspris;
+  document.getElementById('vm-innkjopsenhet').value = v.innkjopsenhet;
+  document.getElementById('vm-standard-enhet').value = v.standard_enhet || '';
+  document.getElementById('vm-slett-btn').style.display = 'block';
+  document.getElementById('vare-modal').style.display = 'flex';
+}
+
+function lukkVareModal() {
+  document.getElementById('vare-modal').style.display = 'none';
+  redigerVareId = null;
+}
+function lukkVareModalOverlay(e) { if (e.target === document.getElementById('vare-modal')) lukkVareModal(); }
+
+async function lagreVare() {
+  const navn = document.getElementById('vm-navn').value.trim();
+  if (!navn) { alert('Skriv inn varenavn'); return; }
+  const body = {
+    navn,
+    kategori: document.getElementById('vm-kategori').value.trim() || null,
+    innkjopspris: parseFloat(document.getElementById('vm-innkjopspris').value) || 0,
+    innkjopsenhet: document.getElementById('vm-innkjopsenhet').value,
+    standard_enhet: document.getElementById('vm-standard-enhet').value || null,
+  };
+  if (redigerVareId) {
+    await api('PATCH', `kalkyle_varer?id=eq.${redigerVareId}`, body);
+  } else {
+    await api('POST', 'kalkyle_varer', body);
+  }
+  lukkVareModal();
+  await hentAlt();
+}
+
+async function slettVare() {
+  if (!redigerVareId) return;
+  if (!confirm('Slett denne varen fra prislisten? Dette påvirker ikke ingredienser som allerede er lagt inn på retter.')) return;
+  await api('DELETE', `kalkyle_varer?id=eq.${redigerVareId}`);
+  lukkVareModal();
+  await hentAlt();
+}
+
+function visImport() {
+  document.getElementById('import-panel').classList.toggle('open');
+}
+
+function forhandsvisImport() {
+  const tekst = document.getElementById('import-tekst').value.trim();
+  const hoppOverForste = document.getElementById('import-header').checked;
+  const box = document.getElementById('import-forhandsvisning');
+  if (!tekst) { alert('Lim inn data fra Excel først'); return; }
+
+  let linjer = tekst.split('\n').map(l => l.trim()).filter(l => l);
+  if (hoppOverForste) linjer = linjer.slice(1);
+
+  importRader = linjer.map(linje => {
+    const kol = linje.split('\t').map(c => c.trim());
+    return {
+      navn: kol[0] || '',
+      kategori: kol[1] || null,
+      innkjopspris: parseFloat((kol[2] || '0').replace(',', '.')) || 0,
+      innkjopsenhet: (kol[3] || 'kg').toLowerCase(),
+      standard_enhet: (kol[4] || '').toLowerCase() || null,
+    };
+  }).filter(r => r.navn);
+
+  if (!importRader.length) {
+    box.innerHTML = '<div class="empty">Fant ingen gyldige rader. Sjekk at kolonnene er skilt med tab (limt rett inn fra Excel) og at Navn-kolonnen ikke er tom.</div>';
+    document.getElementById('import-btns').style.display = 'none';
+    return;
+  }
+  box.innerHTML = `<div class="hjelp" style="margin-top:8px;">${importRader.length} varer klare til import — sjekk at det ser riktig ut:</div>` +
+    importRader.map(r => `
+      <div class="vare-row" style="cursor:default;">
+        <div>
+          <div class="vare-navn">${r.navn}</div>
+          <div class="vare-kategori">${r.kategori || '–'}${r.standard_enhet ? ' · standard enhet: ' + r.standard_enhet : ''}</div>
+        </div>
+        <div class="vare-pris">${r.innkjopspris} kr/${r.innkjopsenhet}</div>
+      </div>
+    `).join('');
+  document.getElementById('import-btns').style.display = 'grid';
+}
+
+function avbrytImport() {
+  document.getElementById('import-tekst').value = '';
+  document.getElementById('import-forhandsvisning').innerHTML = '';
+  document.getElementById('import-btns').style.display = 'none';
+  importRader = [];
+}
+
+async function bekreftImport() {
+  if (!importRader.length) return;
+  await api('POST', 'kalkyle_varer', importRader);
+  avbrytImport();
+  document.getElementById('import-panel').classList.remove('open');
+  await hentAlt();
+  alert('Importerte ' + importRader.length + ' varer');
+}
+
 hentAlt();
 </script>
 </body>
+
 </html>
