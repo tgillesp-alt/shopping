@@ -150,11 +150,19 @@ input[type=number], input[type=text], select { width: 100%; padding: 0.7rem 0.85
         <div class="sum-value" id="rm-dg">0 %</div>
       </div>
       <div class="sum-card">
-        <div class="sum-label">Sum ingredienskost</div>
+        <div class="sum-label">Kjøkkenprosent (inkl. buffer)</div>
+        <div class="sum-value" id="rm-kp-buffer">0 %</div>
+      </div>
+      <div class="sum-card">
+        <div class="sum-label">Faktor (inkl. buffer)</div>
+        <div class="sum-value" id="rm-faktor">0x</div>
+      </div>
+      <div class="sum-card">
+        <div class="sum-label">Sum ingredienskost (ren)</div>
         <div class="sum-value" id="rm-sum">0 kr</div>
       </div>
       <div class="sum-card">
-        <div class="sum-label">Kjøkkenprosent</div>
+        <div class="sum-label">Kjøkkenprosent (ren varekost)</div>
         <div class="sum-value" id="rm-kp">0 %</div>
       </div>
       <div class="sum-card">
@@ -162,6 +170,7 @@ input[type=number], input[type=text], select { width: 100%; padding: 0.7rem 0.85
         <div class="sum-value" id="rm-kostbuffer">0 kr</div>
       </div>
     </div>
+    <div class="hjelp">Dekningsgrad + Kjøkkenprosent (inkl. buffer) = 100 %. De to "ren varekost"-tallene bruker kost uten buffer, så de hører ikke sammen med Dekningsgrad.</div>
 
     <div id="rm-ingredienser"></div>
 
@@ -237,6 +246,7 @@ async function api(method, path, body) {
 
 function fmtKr(n) { return (Math.round(n * 100) / 100).toLocaleString('nb-NO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' kr'; }
 function fmtPct(n) { return (Math.round(n * 1000) / 10).toLocaleString('nb-NO') + ' %'; }
+function fmtFaktor(n) { return (Math.round(n * 10) / 10).toLocaleString('nb-NO') + 'x'; }
 
 async function hentAlt() {
   const [r, i, s] = await Promise.all([
@@ -282,7 +292,8 @@ function beregnRett(rett) {
   const kpBuffer = utprisEks > 0 ? kostBuffer / utprisEks : 0;
   const fortjeneste = utprisEks - kostBuffer;
   const dekningsgrad = utprisEks > 0 ? fortjeneste / utprisEks : 0;
-  return { sumKost, utprisEks, kostBuffer, kpRen, kpBuffer, fortjeneste, dekningsgrad, harLinjer: linjer.length > 0 };
+  const faktor = kostBuffer > 0 ? utprisEks / kostBuffer : 0;
+  return { sumKost, utprisEks, kostBuffer, kpRen, kpBuffer, fortjeneste, dekningsgrad, faktor, harLinjer: linjer.length > 0 };
 }
 
 function kpFarge(kp, harLinjer) {
@@ -317,7 +328,7 @@ function renderListe(meny) {
           </div>
           <div class="rett-bottom">
             <div class="rett-kost">${b.harLinjer ? 'Fortjeneste: ' + fmtKr(b.fortjeneste) : 'Ingen ingredienser lagt inn'}</div>
-            <div class="kp-badge ${kpFarge(b.kpRen, b.harLinjer)}">${b.harLinjer ? fmtPct(b.kpRen) : '–'}</div>
+            <div class="kp-badge ${kpFarge(b.kpBuffer, b.harLinjer)}">${b.harLinjer ? fmtPct(b.kpBuffer) : '–'}</div>
           </div>
         </div>
       `;
@@ -351,6 +362,8 @@ function renderRettModal() {
   document.getElementById('rm-kostbuffer').textContent = fmtKr(b.kostBuffer);
   document.getElementById('rm-dg').textContent = fmtPct(b.dekningsgrad);
   document.getElementById('rm-fortjeneste').textContent = fmtKr(b.fortjeneste);
+  document.getElementById('rm-kp-buffer').textContent = fmtPct(b.kpBuffer);
+  document.getElementById('rm-faktor').textContent = fmtFaktor(b.faktor);
 
   const linjer = ingredienser[rett.id] || [];
   const container = document.getElementById('rm-ingredienser');
