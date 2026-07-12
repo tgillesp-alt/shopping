@@ -72,6 +72,7 @@ input[type=number], input[type=text], select { width: 100%; padding: 0.7rem 0.85
 .ingr-kost { font-size: 0.8rem; font-weight: 600; color: #1a1a1a; }
 .ingr-warn { color: #C0392B; font-size: 0.65rem; margin-top: 1px; }
 .lenke-badge { font-size: 0.62rem; font-weight: 600; color: #0F6E56; background: #E1F5EE; padding: 1px 7px; border-radius: 10px; margin-left: 4px; }
+.batch-badge { color: #7E3FA3; background: #F1E7F7; }
 .btn-icon { background: none; border: none; color: #c4c0b6; font-size: 0.85rem; cursor: pointer; padding: 0.25rem; flex-shrink: 0; }
 
 .add-form { background: #f7f6f3; border-radius: 12px; padding: 0.9rem; margin-top: 0.5rem; display: none; }
@@ -128,6 +129,7 @@ textarea { width: 100%; padding: 0.7rem 0.85rem; border: 0.5px solid #e5e2da; bo
   <button class="tab active" id="tab-middag" onclick="visTab('middag')">Middag</button>
   <button class="tab" id="tab-lunsj" onclick="visTab('lunsj')">Lunsj</button>
   <button class="tab" id="tab-priser" onclick="visTab('priser')">Priser</button>
+  <button class="tab" id="tab-batcher" onclick="visTab('batcher')">Batcher</button>
   <button class="tab" id="tab-innstillinger" onclick="visTab('innstillinger')">Innstillinger</button>
 </div>
 
@@ -176,6 +178,12 @@ Smør	Meieri	65	kg	g"></textarea>
         <button class="btn-lagre" onclick="bekreftImport()">Importer alle</button>
       </div>
     </div>
+  </div>
+
+  <div class="view" id="view-batcher">
+    <div class="hjelp" style="margin-top:0;">Lag ferdige delvarer (sauser, fond, reduksjoner, dressinger) satt sammen av råvarer fra prislisten. Bruk deretter batchen som en vanlig ingrediens i en rett — f.eks. "0,2 l Bearnaise" — så hentes kostnaden automatisk.</div>
+    <div id="liste-batcher"></div>
+    <button class="add-toggle-btn" onclick="apneNyBatch()">+ Ny batch</button>
   </div>
 
 </div>
@@ -230,6 +238,130 @@ Smør	Meieri	65	kg	g"></textarea>
     <button class="btn-primary" onclick="lagreVare()">Lagre</button>
     <button class="btn-secondary" id="vm-slett-btn" onclick="slettVare()" style="display:none;color:#993C1D;">Slett vare</button>
     <button class="close-btn" onclick="lukkVareModal()">Avbryt</button>
+  </div>
+</div>
+
+<!-- Batch-meta-modal (navn/yield/kategori) -->
+<div class="modal-overlay" id="batch-meta-modal" style="display:none" onclick="lukkBatchMetaModalOverlay(event)">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <h3 id="bm-tittel">Ny batch</h3>
+    <div class="field-group">
+      <label>Navn</label>
+      <input type="text" id="bm-navn" placeholder="F.eks. Bearnaise">
+    </div>
+    <div class="field-group">
+      <label>Kategori (valgfritt)</label>
+      <input type="text" id="bm-kategori" placeholder="F.eks. Sauser, Fond, Dressing">
+    </div>
+    <div class="row2">
+      <div class="field-group">
+        <label>Batchen gir (mengde)</label>
+        <input type="number" id="bm-yield-mengde" placeholder="1" step="0.01">
+      </div>
+      <div class="field-group">
+        <label>Enhet</label>
+        <select id="bm-yield-enhet">
+          <option value="l">l</option>
+          <option value="kg">kg</option>
+          <option value="g">g</option>
+          <option value="ml">ml</option>
+          <option value="cl">cl</option>
+          <option value="ss">ss</option>
+          <option value="ts">ts</option>
+          <option value="stk">stk</option>
+        </select>
+      </div>
+    </div>
+    <div class="hjelp">F.eks. "1 l" hvis oppskriften gir én liter ferdig bearnaise. Kostprisen pr. enhet regnes automatisk ut fra ingrediensene du legger til etterpå.</div>
+    <button class="btn-primary" onclick="lagreBatchMeta()">Lagre</button>
+    <button class="btn-secondary" id="bm-slett-btn" onclick="slettBatch()" style="display:none;color:#993C1D;">Slett batch</button>
+    <button class="close-btn" onclick="lukkBatchMetaModal()">Avbryt</button>
+  </div>
+</div>
+
+<!-- Batch-modal (ingredienser i batchen) -->
+<div class="modal-overlay" id="batch-modal" style="display:none" onclick="lukkBatchModalOverlay(event)">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <h3 id="bam-navn"></h3>
+    <div class="rett-utpris" id="bam-yield"></div>
+
+    <div class="sum-grid">
+      <div class="sum-card sum-card-highlight">
+        <div class="sum-label">Kostpris pr. enhet</div>
+        <div class="sum-value" id="bam-kost-per-enhet">0 kr</div>
+      </div>
+      <div class="sum-card">
+        <div class="sum-label">Sum ingredienskost (batch)</div>
+        <div class="sum-value" id="bam-sum">0 kr</div>
+      </div>
+    </div>
+
+    <div class="stykkpris-lenke" onclick="visBatchSkalering()">📐 Skaler batchen til en annen mengde →</div>
+    <div class="stykkpris-hjelper" id="batch-skalering">
+      <div class="row2">
+        <input type="number" id="sk-mengde" placeholder="Ønsket mengde" step="0.01">
+        <select id="sk-enhet">
+          <option value="g">g</option>
+          <option value="kg">kg</option>
+          <option value="ml">ml</option>
+          <option value="l">l</option>
+          <option value="cl">cl</option>
+          <option value="ss">ss</option>
+          <option value="ts">ts</option>
+          <option value="stk">stk</option>
+        </select>
+      </div>
+      <button class="btn-secondary" onclick="beregnSkalering()" style="margin-top:0">Beregn</button>
+      <div id="sk-resultat"></div>
+    </div>
+
+    <div id="bam-ingredienser"></div>
+
+    <button class="add-toggle-btn" onclick="visBatchLeggTilForm()">+ Legg til ingrediens</button>
+
+    <div class="add-form" id="batch-add-form">
+      <div class="produkt-wrap">
+        <input type="text" id="bf-produkt" placeholder="Produkt / ingrediens" oninput="visBatchProduktForslag()" onfocus="visBatchProduktForslag()">
+        <div class="produkt-forslag" id="batch-produkt-forslag"></div>
+      </div>
+      <div class="row2">
+        <input type="number" id="bf-mengde" placeholder="Mengde i oppskrift" step="0.01">
+        <select id="bf-enhet">
+          <option value="g">g</option>
+          <option value="kg">kg</option>
+          <option value="ml">ml</option>
+          <option value="l">l</option>
+          <option value="cl">cl</option>
+          <option value="ss">ss</option>
+          <option value="ts">ts</option>
+          <option value="stk">stk</option>
+        </select>
+      </div>
+      <div class="row2">
+        <input type="number" id="bf-innkjopspris" placeholder="Innkjøpspris (kr)" step="0.01" oninput="losneBatchFraPrisliste()">
+        <select id="bf-innkjopsenhet" onchange="losneBatchFraPrisliste()">
+          <option value="kg">kg</option>
+          <option value="g">g</option>
+          <option value="l">l</option>
+          <option value="ml">ml</option>
+          <option value="cl">cl</option>
+          <option value="ss">ss</option>
+          <option value="ts">ts</option>
+          <option value="stk">stk</option>
+        </select>
+      </div>
+      <div class="hjelp" id="bf-lenke-status" style="margin:-6px 0 8px;"></div>
+      <input type="number" id="bf-svinn" placeholder="Svinn % (f.eks. 5)" step="0.1">
+      <div class="add-form-btns">
+        <button class="btn-avbryt" onclick="skjulBatchLeggTilForm()">Avbryt</button>
+        <button class="btn-lagre" onclick="lagreBatchLinje()">Lagre</button>
+      </div>
+    </div>
+
+    <button class="btn-secondary" onclick="apneRedigerBatchMeta()">✎ Rediger navn / mengde / kategori</button>
+    <button class="close-btn" onclick="lukkBatchModal()">Lukk</button>
   </div>
 </div>
 
@@ -338,10 +470,16 @@ let retter = [];
 let ingredienser = {}; // rett_id -> [linjer]
 let innstillinger = { mva_sats: 0.25, buffer_prosent: 0.05 };
 let masterVarer = [];
+let batcher = [];
+let batchIngredienser = {}; // batch_id -> [linjer]
 let aktivRettId = null;
+let aktivBatchId = null;
 let redigerLinjeId = null;
+let redigerBatchLinjeId = null;
 let valgtVareId = null;
+let valgtBatchId = null;
 let redigerVareId = null;
+let redigerBatchId = null;
 let importRader = [];
 
 async function api(method, path, body) {
@@ -357,11 +495,13 @@ function fmtPct(n) { return (Math.round(n * 1000) / 10).toLocaleString('nb-NO') 
 function fmtFaktor(n) { return (Math.round(n * 10) / 10).toLocaleString('nb-NO') + 'x'; }
 
 async function hentAlt() {
-  const [r, i, s, v] = await Promise.all([
+  const [r, i, s, v, b, bi] = await Promise.all([
     api('GET', 'meny_retter?order=meny.asc,kategori.asc,sort_order.asc&select=*'),
     api('GET', 'kalkyle_ingredienser?order=sort_order.asc,created_at.asc&select=*'),
     api('GET', 'kalkyle_innstillinger?id=eq.1&select=*'),
     api('GET', 'kalkyle_varer?order=kategori.asc,navn.asc&select=*'),
+    api('GET', 'kalkyle_batcher?order=kategori.asc,navn.asc&select=*'),
+    api('GET', 'kalkyle_batch_ingredienser?order=sort_order.asc,created_at.asc&select=*'),
   ]);
   retter = r;
   ingredienser = {};
@@ -371,11 +511,19 @@ async function hentAlt() {
   });
   if (s && s.length) innstillinger = s[0];
   masterVarer = v || [];
+  batcher = b || [];
+  batchIngredienser = {};
+  (bi || []).forEach(linje => {
+    if (!batchIngredienser[linje.batch_id]) batchIngredienser[linje.batch_id] = [];
+    batchIngredienser[linje.batch_id].push(linje);
+  });
   document.getElementById('inn-mva').value = Math.round(innstillinger.mva_sats * 1000) / 10;
   document.getElementById('inn-buffer').value = Math.round(innstillinger.buffer_prosent * 1000) / 10;
   renderListe('middag');
   renderListe('lunsj');
   renderPriser();
+  renderBatcher();
+  if (aktivBatchId) renderBatchModal();
   if (aktivRettId) renderRettModal();
 }
 
@@ -386,12 +534,26 @@ function visTab(tab) {
   document.getElementById('view-' + tab).classList.add('active');
 }
 
+function beregnBatch(batch) {
+  const linjer = batchIngredienser[batch.id] || [];
+  const sumKost = linjer.reduce((sum, l) => sum + beregnLinjeKost(l), 0);
+  const kostPerEnhet = batch.yield_mengde > 0 ? sumKost / batch.yield_mengde : 0;
+  return { sumKost, kostPerEnhet };
+}
+
 function hentEffektivPris(l) {
   if (l.vare_id) {
     const v = masterVarer.find(x => x.id === l.vare_id);
-    if (v) return { pris: v.innkjopspris, enhet: v.innkjopsenhet, live: true };
+    if (v) return { pris: v.innkjopspris, enhet: v.innkjopsenhet, live: true, kilde: 'vare' };
   }
-  return { pris: l.innkjopspris, enhet: l.innkjopsenhet, live: false };
+  if (l.batch_id) {
+    const b = batcher.find(x => x.id === l.batch_id);
+    if (b) {
+      const beregnet = beregnBatch(b);
+      return { pris: beregnet.kostPerEnhet, enhet: b.yield_enhet, live: true, kilde: 'batch', batchNavn: b.navn };
+    }
+  }
+  return { pris: l.innkjopspris, enhet: l.innkjopsenhet, live: false, kilde: null };
 }
 
 function beregnLinjeKost(l) {
@@ -498,7 +660,7 @@ function renderRettModal() {
     return `
       <div class="ingr-row" onclick="apneRedigerLinje('${l.id}')">
         <div style="flex:1;">
-          <div class="ingr-navn">${l.produkt} ${eff.live ? '<span class="lenke-badge">🔗 fra prisliste</span>' : ''}</div>
+          <div class="ingr-navn">${l.produkt} ${eff.kilde === 'vare' ? '<span class="lenke-badge">🔗 fra prisliste</span>' : ''}${eff.kilde === 'batch' ? '<span class="lenke-badge batch-badge">🧪 batch: ' + eff.batchNavn + '</span>' : ''}</div>
           <div class="ingr-detalj">${l.mengde} ${l.enhet} · ${eff.pris} kr/${eff.enhet} · svinn ${Math.round(l.svinn * 100)}%</div>
           ${mismatch ? '<div class="ingr-warn">⚠ Enhet og innkjøpsenhet er ikke samme type (vekt/volum/stk)</div>' : ''}
         </div>
@@ -512,6 +674,7 @@ function renderRettModal() {
 function visLeggTilForm() {
   redigerLinjeId = null;
   valgtVareId = null;
+  valgtBatchId = null;
   document.getElementById('af-produkt').value = '';
   document.getElementById('af-mengde').value = '';
   document.getElementById('af-enhet').value = 'g';
@@ -527,6 +690,7 @@ function skjulLeggTilForm() {
   document.getElementById('add-form').classList.remove('open');
   redigerLinjeId = null;
   valgtVareId = null;
+  valgtBatchId = null;
   skjulStykkprisHjelper();
   skjulProduktForslag();
 }
@@ -552,17 +716,31 @@ function visProduktForslag() {
   const q = document.getElementById('af-produkt').value.trim().toLowerCase();
   const box = document.getElementById('produkt-forslag');
   if (!q) { box.classList.remove('open'); box.innerHTML = ''; return; }
-  const treff = masterVarer.filter(v => v.navn.toLowerCase().includes(q)).slice(0, 6);
-  if (!treff.length) { box.classList.remove('open'); box.innerHTML = ''; return; }
-  box.innerHTML = treff.map(v => `
-    <div class="produkt-forslag-row" onmousedown="event.preventDefault(); velgProdukt('${v.id}')">
-      <div>
-        <div class="produkt-forslag-navn">${v.navn}</div>
-        ${v.kategori ? `<div class="produkt-forslag-pris">${v.kategori}</div>` : ''}
+  const vareTreff = masterVarer.filter(v => v.navn.toLowerCase().includes(q)).slice(0, 5);
+  const batchTreff = batcher.filter(b => b.navn.toLowerCase().includes(q)).slice(0, 3);
+  if (!vareTreff.length && !batchTreff.length) { box.classList.remove('open'); box.innerHTML = ''; return; }
+  box.innerHTML =
+    batchTreff.map(b => {
+      const ber = beregnBatch(b);
+      return `
+        <div class="produkt-forslag-row" onmousedown="event.preventDefault(); velgProduktBatch('${b.id}')">
+          <div>
+            <div class="produkt-forslag-navn">🧪 ${b.navn}</div>
+            <div class="produkt-forslag-pris">batch${b.kategori ? ' · ' + b.kategori : ''}</div>
+          </div>
+          <div class="produkt-forslag-pris">${fmtKr(ber.kostPerEnhet)}/${b.yield_enhet}</div>
+        </div>
+      `;
+    }).join('') +
+    vareTreff.map(v => `
+      <div class="produkt-forslag-row" onmousedown="event.preventDefault(); velgProdukt('${v.id}')">
+        <div>
+          <div class="produkt-forslag-navn">${v.navn}</div>
+          ${v.kategori ? `<div class="produkt-forslag-pris">${v.kategori}</div>` : ''}
+        </div>
+        <div class="produkt-forslag-pris">${v.innkjopspris} kr/${v.innkjopsenhet}</div>
       </div>
-      <div class="produkt-forslag-pris">${v.innkjopspris} kr/${v.innkjopsenhet}</div>
-    </div>
-  `).join('');
+    `).join('');
   box.classList.add('open');
 }
 function skjulProduktForslag() {
@@ -578,19 +756,36 @@ function velgProdukt(id) {
   document.getElementById('af-innkjopsenhet').value = v.innkjopsenhet;
   if (v.standard_enhet) document.getElementById('af-enhet').value = v.standard_enhet;
   valgtVareId = v.id;
+  valgtBatchId = null;
+  oppdaterLenkeStatus();
+  skjulProduktForslag();
+}
+function velgProduktBatch(id) {
+  const b = batcher.find(x => x.id === id);
+  if (!b) return;
+  const ber = beregnBatch(b);
+  document.getElementById('af-produkt').value = b.navn;
+  document.getElementById('af-innkjopspris').value = Math.round(ber.kostPerEnhet * 100) / 100;
+  document.getElementById('af-innkjopsenhet').value = b.yield_enhet;
+  document.getElementById('af-enhet').value = b.yield_enhet;
+  valgtBatchId = b.id;
+  valgtVareId = null;
   oppdaterLenkeStatus();
   skjulProduktForslag();
 }
 function losneFraPrisliste() {
-  if (valgtVareId) {
+  if (valgtVareId || valgtBatchId) {
     valgtVareId = null;
+    valgtBatchId = null;
     oppdaterLenkeStatus();
   }
 }
 function oppdaterLenkeStatus() {
   const el = document.getElementById('af-lenke-status');
   if (!el) return;
-  el.textContent = valgtVareId ? '🔗 Koblet til prisliste — prisen oppdateres automatisk om du endrer den i Priser-fanen' : '';
+  if (valgtBatchId) el.textContent = '🧪 Koblet til batch — prisen oppdateres automatisk om batchen endres';
+  else if (valgtVareId) el.textContent = '🔗 Koblet til prisliste — prisen oppdateres automatisk om du endrer den i Priser-fanen';
+  else el.textContent = '';
 }
 
 function apneRedigerLinje(id) {
@@ -600,6 +795,7 @@ function apneRedigerLinje(id) {
   const eff = hentEffektivPris(l);
   redigerLinjeId = id;
   valgtVareId = l.vare_id || null;
+  valgtBatchId = l.batch_id || null;
   document.getElementById('af-produkt').value = l.produkt;
   document.getElementById('af-mengde').value = l.mengde;
   document.getElementById('af-enhet').value = l.enhet;
@@ -621,7 +817,7 @@ async function lagreLinje() {
   const svinn = (parseFloat(document.getElementById('af-svinn').value) || 0) / 100;
   if (!produkt) { alert('Skriv inn produktnavn'); return; }
 
-  const body = { rett_id: aktivRettId, produkt, mengde, enhet, innkjopspris, innkjopsenhet, svinn, vare_id: valgtVareId };
+  const body = { rett_id: aktivRettId, produkt, mengde, enhet, innkjopspris, innkjopsenhet, svinn, vare_id: valgtVareId, batch_id: valgtBatchId };
   if (redigerLinjeId) {
     await api('PATCH', `kalkyle_ingredienser?id=eq.${redigerLinjeId}`, body);
   } else {
@@ -786,6 +982,294 @@ async function bekreftImport() {
   document.getElementById('import-panel').classList.remove('open');
   await hentAlt();
   alert('Importerte ' + importRader.length + ' varer');
+}
+
+// ============ BATCHER ============
+
+function renderBatcher() {
+  const container = document.getElementById('liste-batcher');
+  if (!batcher.length) { container.innerHTML = '<div class="empty">Ingen batcher opprettet ennå</div>'; return; }
+  const kategorier = [...new Set(batcher.map(b => b.kategori || 'Annet'))].sort();
+  container.innerHTML = kategorier.map(kat => `
+    <div class="section-label">${kat}</div>
+    ${batcher.filter(b => (b.kategori || 'Annet') === kat).map(b => {
+      const ber = beregnBatch(b);
+      return `
+        <div class="rett-card" onclick="apneBatch('${b.id}')">
+          <div class="rett-top">
+            <div class="rett-navn">${b.navn}</div>
+            <div class="rett-pris">${b.yield_mengde} ${b.yield_enhet}</div>
+          </div>
+          <div class="rett-bottom">
+            <div class="rett-kost">Sum: ${fmtKr(ber.sumKost)}</div>
+            <div class="kp-badge kp-green">${fmtKr(ber.kostPerEnhet)}/${b.yield_enhet}</div>
+          </div>
+        </div>
+      `;
+    }).join('')}
+  `).join('');
+}
+
+function apneBatch(id) {
+  aktivBatchId = id;
+  redigerBatchLinjeId = null;
+  document.getElementById('batch-add-form').classList.remove('open');
+  document.getElementById('batch-skalering').classList.remove('open');
+  document.getElementById('sk-resultat').innerHTML = '';
+  renderBatchModal();
+  document.getElementById('batch-modal').style.display = 'flex';
+}
+function lukkBatchModal() {
+  document.getElementById('batch-modal').style.display = 'none';
+  aktivBatchId = null;
+  redigerBatchLinjeId = null;
+}
+function lukkBatchModalOverlay(e) { if (e.target === document.getElementById('batch-modal')) lukkBatchModal(); }
+
+function visBatchSkalering() {
+  const batch = batcher.find(b => b.id === aktivBatchId);
+  if (!batch) return;
+  document.getElementById('sk-mengde').value = '';
+  document.getElementById('sk-enhet').value = batch.yield_enhet;
+  document.getElementById('sk-resultat').innerHTML = '';
+  document.getElementById('batch-skalering').classList.toggle('open');
+}
+
+function beregnSkalering() {
+  const batch = batcher.find(b => b.id === aktivBatchId);
+  if (!batch) return;
+  const mengde = parseFloat(document.getElementById('sk-mengde').value) || 0;
+  const enhet = document.getElementById('sk-enhet').value;
+  const resultat = document.getElementById('sk-resultat');
+  if (mengde <= 0) { alert('Skriv inn ønsket mengde'); return; }
+  if (ENHET_FAMILIE[enhet] !== ENHET_FAMILIE[batch.yield_enhet]) {
+    resultat.innerHTML = `<div class="ingr-warn">⚠ Enheten må være samme type (vekt/volum/stk) som batchens egen enhet (${batch.yield_enhet})</div>`;
+    return;
+  }
+  const fMaal = ENHET_FAKTOR[enhet] || 1;
+  const fYield = ENHET_FAKTOR[batch.yield_enhet] || 1;
+  const malIYieldEnhet = mengde * fMaal / fYield;
+  const faktor = batch.yield_mengde > 0 ? malIYieldEnhet / batch.yield_mengde : 0;
+  const linjer = batchIngredienser[batch.id] || [];
+  const ber = beregnBatch(batch);
+
+  let html = `<div class="hjelp" style="margin-top:8px;">For å lage ${mengde} ${enhet} (${fmtFaktor(faktor)} av oppskriften):</div>`;
+  html += linjer.map(l => {
+    const skalert = (parseFloat(l.mengde) || 0) * faktor;
+    return `
+      <div class="vare-row" style="cursor:default;">
+        <div class="vare-navn">${l.produkt}</div>
+        <div class="vare-pris">${Math.round(skalert * 100) / 100} ${l.enhet}</div>
+      </div>
+    `;
+  }).join('');
+  html += `
+    <div class="sum-card" style="margin-top:8px;">
+      <div class="sum-label">Total kost for denne mengden</div>
+      <div class="sum-value">${fmtKr(ber.sumKost * faktor)}</div>
+    </div>
+  `;
+  resultat.innerHTML = html;
+}
+
+function renderBatchModal() {
+  const batch = batcher.find(b => b.id === aktivBatchId);
+  if (!batch) return;
+  const ber = beregnBatch(batch);
+  document.getElementById('bam-navn').textContent = batch.navn;
+  document.getElementById('bam-yield').textContent = `Batchen gir: ${batch.yield_mengde} ${batch.yield_enhet}`;
+  document.getElementById('bam-sum').textContent = fmtKr(ber.sumKost);
+  document.getElementById('bam-kost-per-enhet').textContent = fmtKr(ber.kostPerEnhet) + '/' + batch.yield_enhet;
+
+  const linjer = batchIngredienser[batch.id] || [];
+  const container = document.getElementById('bam-ingredienser');
+  if (!linjer.length) {
+    container.innerHTML = '<div class="empty">Ingen ingredienser lagt inn ennå</div>';
+    return;
+  }
+  container.innerHTML = linjer.map(l => {
+    const eff = hentEffektivPris(l);
+    const kost = beregnLinjeKost(l);
+    const mismatch = ENHET_FAMILIE[l.enhet] !== ENHET_FAMILIE[eff.enhet];
+    return `
+      <div class="ingr-row" onclick="apneRedigerBatchLinje('${l.id}')">
+        <div style="flex:1;">
+          <div class="ingr-navn">${l.produkt} ${eff.kilde === 'vare' ? '<span class="lenke-badge">🔗 fra prisliste</span>' : ''}</div>
+          <div class="ingr-detalj">${l.mengde} ${l.enhet} · ${eff.pris} kr/${eff.enhet} · svinn ${Math.round(l.svinn * 100)}%</div>
+          ${mismatch ? '<div class="ingr-warn">⚠ Enhet og innkjøpsenhet er ikke samme type (vekt/volum/stk)</div>' : ''}
+        </div>
+        <div class="ingr-kost">${fmtKr(kost)}</div>
+        <button class="btn-icon" onclick="event.stopPropagation(); slettBatchLinje('${l.id}')">✕</button>
+      </div>
+    `;
+  }).join('');
+}
+
+function visBatchLeggTilForm() {
+  redigerBatchLinjeId = null;
+  valgtVareId = null;
+  document.getElementById('bf-produkt').value = '';
+  document.getElementById('bf-mengde').value = '';
+  document.getElementById('bf-enhet').value = 'g';
+  document.getElementById('bf-innkjopspris').value = '';
+  document.getElementById('bf-innkjopsenhet').value = 'kg';
+  document.getElementById('bf-svinn').value = '';
+  document.getElementById('batch-add-form').classList.add('open');
+  skjulBatchProduktForslag();
+  oppdaterBatchLenkeStatus();
+}
+function skjulBatchLeggTilForm() {
+  document.getElementById('batch-add-form').classList.remove('open');
+  redigerBatchLinjeId = null;
+  valgtVareId = null;
+  skjulBatchProduktForslag();
+}
+
+function visBatchProduktForslag() {
+  const q = document.getElementById('bf-produkt').value.trim().toLowerCase();
+  const box = document.getElementById('batch-produkt-forslag');
+  if (!q) { box.classList.remove('open'); box.innerHTML = ''; return; }
+  const treff = masterVarer.filter(v => v.navn.toLowerCase().includes(q)).slice(0, 6);
+  if (!treff.length) { box.classList.remove('open'); box.innerHTML = ''; return; }
+  box.innerHTML = treff.map(v => `
+    <div class="produkt-forslag-row" onmousedown="event.preventDefault(); velgBatchProdukt('${v.id}')">
+      <div>
+        <div class="produkt-forslag-navn">${v.navn}</div>
+        ${v.kategori ? `<div class="produkt-forslag-pris">${v.kategori}</div>` : ''}
+      </div>
+      <div class="produkt-forslag-pris">${v.innkjopspris} kr/${v.innkjopsenhet}</div>
+    </div>
+  `).join('');
+  box.classList.add('open');
+}
+function skjulBatchProduktForslag() {
+  const box = document.getElementById('batch-produkt-forslag');
+  box.classList.remove('open');
+  box.innerHTML = '';
+}
+function velgBatchProdukt(id) {
+  const v = masterVarer.find(x => x.id === id);
+  if (!v) return;
+  document.getElementById('bf-produkt').value = v.navn;
+  document.getElementById('bf-innkjopspris').value = v.innkjopspris;
+  document.getElementById('bf-innkjopsenhet').value = v.innkjopsenhet;
+  if (v.standard_enhet) document.getElementById('bf-enhet').value = v.standard_enhet;
+  valgtVareId = v.id;
+  oppdaterBatchLenkeStatus();
+  skjulBatchProduktForslag();
+}
+function losneBatchFraPrisliste() {
+  if (valgtVareId) {
+    valgtVareId = null;
+    oppdaterBatchLenkeStatus();
+  }
+}
+function oppdaterBatchLenkeStatus() {
+  const el = document.getElementById('bf-lenke-status');
+  if (!el) return;
+  el.textContent = valgtVareId ? '🔗 Koblet til prisliste — prisen oppdateres automatisk om du endrer den i Priser-fanen' : '';
+}
+
+function apneRedigerBatchLinje(id) {
+  const linjer = batchIngredienser[aktivBatchId] || [];
+  const l = linjer.find(x => x.id === id);
+  if (!l) return;
+  const eff = hentEffektivPris(l);
+  redigerBatchLinjeId = id;
+  valgtVareId = l.vare_id || null;
+  document.getElementById('bf-produkt').value = l.produkt;
+  document.getElementById('bf-mengde').value = l.mengde;
+  document.getElementById('bf-enhet').value = l.enhet;
+  document.getElementById('bf-innkjopspris').value = eff.pris;
+  document.getElementById('bf-innkjopsenhet').value = eff.enhet;
+  document.getElementById('bf-svinn').value = Math.round(l.svinn * 1000) / 10;
+  document.getElementById('batch-add-form').classList.add('open');
+  skjulBatchProduktForslag();
+  oppdaterBatchLenkeStatus();
+}
+
+async function lagreBatchLinje() {
+  const produkt = document.getElementById('bf-produkt').value.trim();
+  const mengde = parseFloat(document.getElementById('bf-mengde').value) || 0;
+  const enhet = document.getElementById('bf-enhet').value;
+  const innkjopspris = parseFloat(document.getElementById('bf-innkjopspris').value) || 0;
+  const innkjopsenhet = document.getElementById('bf-innkjopsenhet').value;
+  const svinn = (parseFloat(document.getElementById('bf-svinn').value) || 0) / 100;
+  if (!produkt) { alert('Skriv inn produktnavn'); return; }
+
+  const body = { batch_id: aktivBatchId, produkt, mengde, enhet, innkjopspris, innkjopsenhet, svinn, vare_id: valgtVareId };
+  if (redigerBatchLinjeId) {
+    await api('PATCH', `kalkyle_batch_ingredienser?id=eq.${redigerBatchLinjeId}`, body);
+  } else {
+    body.sort_order = (batchIngredienser[aktivBatchId] || []).length;
+    await api('POST', 'kalkyle_batch_ingredienser', body);
+  }
+  skjulBatchLeggTilForm();
+  await hentAlt();
+}
+
+async function slettBatchLinje(id) {
+  if (!confirm('Slett denne ingrediensen fra batchen?')) return;
+  await api('DELETE', `kalkyle_batch_ingredienser?id=eq.${id}`);
+  await hentAlt();
+}
+
+function apneNyBatch() {
+  redigerBatchId = null;
+  document.getElementById('bm-tittel').textContent = 'Ny batch';
+  document.getElementById('bm-navn').value = '';
+  document.getElementById('bm-kategori').value = '';
+  document.getElementById('bm-yield-mengde').value = '1';
+  document.getElementById('bm-yield-enhet').value = 'l';
+  document.getElementById('bm-slett-btn').style.display = 'none';
+  document.getElementById('batch-meta-modal').style.display = 'flex';
+}
+function apneRedigerBatchMeta() {
+  const b = batcher.find(x => x.id === aktivBatchId);
+  if (!b) return;
+  redigerBatchId = b.id;
+  document.getElementById('bm-tittel').textContent = 'Rediger batch';
+  document.getElementById('bm-navn').value = b.navn;
+  document.getElementById('bm-kategori').value = b.kategori || '';
+  document.getElementById('bm-yield-mengde').value = b.yield_mengde;
+  document.getElementById('bm-yield-enhet').value = b.yield_enhet;
+  document.getElementById('bm-slett-btn').style.display = 'block';
+  document.getElementById('batch-meta-modal').style.display = 'flex';
+}
+function lukkBatchMetaModal() {
+  document.getElementById('batch-meta-modal').style.display = 'none';
+  if (!redigerBatchId) redigerBatchId = null;
+}
+function lukkBatchMetaModalOverlay(e) { if (e.target === document.getElementById('batch-meta-modal')) lukkBatchMetaModal(); }
+
+async function lagreBatchMeta() {
+  const navn = document.getElementById('bm-navn').value.trim();
+  if (!navn) { alert('Skriv inn navn på batchen'); return; }
+  const body = {
+    navn,
+    kategori: document.getElementById('bm-kategori').value.trim() || null,
+    yield_mengde: parseFloat(document.getElementById('bm-yield-mengde').value) || 1,
+    yield_enhet: document.getElementById('bm-yield-enhet').value,
+  };
+  let nyId = redigerBatchId;
+  if (redigerBatchId) {
+    await api('PATCH', `kalkyle_batcher?id=eq.${redigerBatchId}`, body);
+  } else {
+    const res = await api('POST', 'kalkyle_batcher', body);
+    if (res && res.length) nyId = res[0].id;
+  }
+  document.getElementById('batch-meta-modal').style.display = 'none';
+  await hentAlt();
+  if (nyId) apneBatch(nyId);
+}
+
+async function slettBatch() {
+  if (!redigerBatchId) return;
+  if (!confirm('Slett hele batchen? Retter som bruker den mister koblingen og beholder sist kjente pris.')) return;
+  await api('DELETE', `kalkyle_batcher?id=eq.${redigerBatchId}`);
+  document.getElementById('batch-meta-modal').style.display = 'none';
+  lukkBatchModal();
+  await hentAlt();
 }
 
 hentAlt();
