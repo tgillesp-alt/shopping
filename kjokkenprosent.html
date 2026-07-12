@@ -565,17 +565,18 @@ function visTab(tab) {
 
 function beregnBatch(batch) {
   const linjer = batchIngredienser[batch.id] || [];
-  const sumKost = linjer.reduce((sum, l) => sum + beregnLinjeKost(l), 0);
+  const sumKost = linjer.reduce((sum, l) => sum + beregnLinjeKost(l, false), 0);
   const kostPerEnhet = batch.yield_mengde > 0 ? sumKost / batch.yield_mengde : 0;
   return { sumKost, kostPerEnhet };
 }
 
-function hentEffektivPris(l) {
+function hentEffektivPris(l, tillatBatch) {
+  if (tillatBatch === undefined) tillatBatch = true;
   if (l.vare_id) {
     const v = masterVarer.find(x => x.id === l.vare_id);
     if (v) return { pris: v.innkjopspris, enhet: v.innkjopsenhet, live: true, kilde: 'vare' };
   }
-  if (l.batch_id) {
+  if (tillatBatch && l.batch_id) {
     const b = batcher.find(x => x.id === l.batch_id);
     if (b) {
       const beregnet = beregnBatch(b);
@@ -585,8 +586,8 @@ function hentEffektivPris(l) {
   return { pris: l.innkjopspris, enhet: l.innkjopsenhet, live: false, kilde: null };
 }
 
-function beregnLinjeKost(l) {
-  const eff = hentEffektivPris(l);
+function beregnLinjeKost(l, tillatBatch) {
+  const eff = hentEffektivPris(l, tillatBatch);
   const fEnhet = ENHET_FAKTOR[l.enhet] || 1;
   const fInnkjop = ENHET_FAKTOR[eff.enhet] || 1;
   const svinnFaktor = 1 - (parseFloat(l.svinn) || 0);
@@ -1117,8 +1118,8 @@ function renderBatchModal() {
     return;
   }
   container.innerHTML = linjer.map(l => {
-    const eff = hentEffektivPris(l);
-    const kost = beregnLinjeKost(l);
+    const eff = hentEffektivPris(l, false);
+    const kost = beregnLinjeKost(l, false);
     const mismatch = ENHET_FAMILIE[l.enhet] !== ENHET_FAMILIE[eff.enhet];
     return `
       <div class="ingr-row" onclick="apneRedigerBatchLinje('${l.id}')">
@@ -1203,7 +1204,7 @@ function apneRedigerBatchLinje(id) {
   const linjer = batchIngredienser[aktivBatchId] || [];
   const l = linjer.find(x => x.id === id);
   if (!l) return;
-  const eff = hentEffektivPris(l);
+  const eff = hentEffektivPris(l, false);
   redigerBatchLinjeId = id;
   valgtVareId = l.vare_id || null;
   document.getElementById('bf-produkt').value = l.produkt;
