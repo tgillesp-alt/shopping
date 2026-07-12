@@ -495,36 +495,65 @@ function fmtPct(n) { return (Math.round(n * 1000) / 10).toLocaleString('nb-NO') 
 function fmtFaktor(n) { return (Math.round(n * 10) / 10).toLocaleString('nb-NO') + 'x'; }
 
 async function hentAlt() {
-  const [r, i, s, v, b, bi] = await Promise.all([
-    api('GET', 'meny_retter?order=meny.asc,kategori.asc,sort_order.asc&select=*'),
-    api('GET', 'kalkyle_ingredienser?order=sort_order.asc,created_at.asc&select=*'),
-    api('GET', 'kalkyle_innstillinger?id=eq.1&select=*'),
-    api('GET', 'kalkyle_varer?order=kategori.asc,navn.asc&select=*'),
-    api('GET', 'kalkyle_batcher?order=kategori.asc,navn.asc&select=*'),
-    api('GET', 'kalkyle_batch_ingredienser?order=sort_order.asc,created_at.asc&select=*'),
-  ]);
-  retter = r;
-  ingredienser = {};
-  i.forEach(linje => {
-    if (!ingredienser[linje.rett_id]) ingredienser[linje.rett_id] = [];
-    ingredienser[linje.rett_id].push(linje);
-  });
-  if (s && s.length) innstillinger = s[0];
-  masterVarer = v || [];
-  batcher = b || [];
-  batchIngredienser = {};
-  (bi || []).forEach(linje => {
-    if (!batchIngredienser[linje.batch_id]) batchIngredienser[linje.batch_id] = [];
-    batchIngredienser[linje.batch_id].push(linje);
-  });
-  document.getElementById('inn-mva').value = Math.round(innstillinger.mva_sats * 1000) / 10;
-  document.getElementById('inn-buffer').value = Math.round(innstillinger.buffer_prosent * 1000) / 10;
-  renderListe('middag');
-  renderListe('lunsj');
-  renderPriser();
-  renderBatcher();
-  if (aktivBatchId) renderBatchModal();
-  if (aktivRettId) renderRettModal();
+  try {
+    const [r, i, s, v, b, bi] = await Promise.all([
+      api('GET', 'meny_retter?order=meny.asc,kategori.asc,sort_order.asc&select=*'),
+      api('GET', 'kalkyle_ingredienser?order=sort_order.asc,created_at.asc&select=*'),
+      api('GET', 'kalkyle_innstillinger?id=eq.1&select=*'),
+      api('GET', 'kalkyle_varer?order=kategori.asc,navn.asc&select=*'),
+      api('GET', 'kalkyle_batcher?order=kategori.asc,navn.asc&select=*'),
+      api('GET', 'kalkyle_batch_ingredienser?order=sort_order.asc,created_at.asc&select=*'),
+    ]);
+    const arr = x => Array.isArray(x) ? x : [];
+
+    retter = arr(r);
+    ingredienser = {};
+    arr(i).forEach(linje => {
+      if (!ingredienser[linje.rett_id]) ingredienser[linje.rett_id] = [];
+      ingredienser[linje.rett_id].push(linje);
+    });
+    const sArr = arr(s);
+    if (sArr.length) innstillinger = sArr[0];
+    masterVarer = arr(v);
+    batcher = arr(b);
+    batchIngredienser = {};
+    arr(bi).forEach(linje => {
+      if (!batchIngredienser[linje.batch_id]) batchIngredienser[linje.batch_id] = [];
+      batchIngredienser[linje.batch_id].push(linje);
+    });
+
+    const feil = [];
+    if (!Array.isArray(r)) feil.push('meny_retter');
+    if (!Array.isArray(i)) feil.push('kalkyle_ingredienser');
+    if (!Array.isArray(v)) feil.push('kalkyle_varer');
+    if (!Array.isArray(b)) feil.push('kalkyle_batcher (kjørte du kalkyle_batcher_setup.sql?)');
+    if (!Array.isArray(bi)) feil.push('kalkyle_batch_ingredienser (kjørte du kalkyle_batcher_setup.sql?)');
+    visFeilbanner(feil);
+
+    document.getElementById('inn-mva').value = Math.round(innstillinger.mva_sats * 1000) / 10;
+    document.getElementById('inn-buffer').value = Math.round(innstillinger.buffer_prosent * 1000) / 10;
+    renderListe('middag');
+    renderListe('lunsj');
+    renderPriser();
+    renderBatcher();
+    if (aktivBatchId) renderBatchModal();
+    if (aktivRettId) renderRettModal();
+  } catch (err) {
+    visFeilbanner(['Uventet feil: ' + err.message]);
+    console.error(err);
+  }
+}
+
+function visFeilbanner(feilListe) {
+  let el = document.getElementById('feil-banner');
+  if (!feilListe.length) { if (el) el.remove(); return; }
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'feil-banner';
+    el.style.cssText = 'background:#FAECE7;color:#993C1D;padding:0.8rem 1.25rem;font-size:0.8rem;line-height:1.5;';
+    document.querySelector('.tabs').insertAdjacentElement('afterend', el);
+  }
+  el.innerHTML = '⚠ Klarte ikke hente: ' + feilListe.join(', ') + '. Resten av siden fungerer, men disse dataene mangler.';
 }
 
 function visTab(tab) {
