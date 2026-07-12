@@ -701,6 +701,13 @@ function renderRettModal() {
   }).join('');
 }
 
+function skrollTilSkjema(id) {
+  setTimeout(() => {
+    const el = document.getElementById(id);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }, 50);
+}
+
 function visLeggTilForm() {
   redigerLinjeId = null;
   valgtVareId = null;
@@ -715,6 +722,7 @@ function visLeggTilForm() {
   skjulStykkprisHjelper();
   skjulProduktForslag();
   oppdaterLenkeStatus();
+  skrollTilSkjema('add-form');
 }
 function skjulLeggTilForm() {
   document.getElementById('add-form').classList.remove('open');
@@ -836,6 +844,7 @@ function apneRedigerLinje(id) {
   skjulStykkprisHjelper();
   skjulProduktForslag();
   oppdaterLenkeStatus();
+  skrollTilSkjema('add-form');
 }
 
 async function lagreLinje() {
@@ -1147,6 +1156,7 @@ function visBatchLeggTilForm() {
   document.getElementById('batch-add-form').classList.add('open');
   skjulBatchProduktForslag();
   oppdaterBatchLenkeStatus();
+  skrollTilSkjema('batch-add-form');
 }
 function skjulBatchLeggTilForm() {
   document.getElementById('batch-add-form').classList.remove('open');
@@ -1216,6 +1226,7 @@ function apneRedigerBatchLinje(id) {
   document.getElementById('batch-add-form').classList.add('open');
   skjulBatchProduktForslag();
   oppdaterBatchLenkeStatus();
+  skrollTilSkjema('batch-add-form');
 }
 
 async function lagreBatchLinje() {
