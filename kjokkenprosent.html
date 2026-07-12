@@ -59,6 +59,9 @@ input[type=number], input[type=text], select { width: 100%; padding: 0.7rem 0.85
 
 .sum-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 0.75rem 0 1rem; }
 .sum-card { background: #f7f6f3; border-radius: 10px; padding: 0.6rem 0.7rem; }
+.sum-card-highlight { background: #E1F5EE; grid-column: span 2; }
+.sum-card-highlight .sum-value { font-size: 1.15rem; color: #0F6E56; }
+.sum-card-highlight .sum-label { color: #0F6E56; }
 .sum-label { font-size: 0.62rem; color: #a8a59d; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 2px; }
 .sum-value { font-size: 0.95rem; font-weight: 700; color: #1a1a1a; }
 
@@ -80,6 +83,10 @@ input[type=number], input[type=text], select { width: 100%; padding: 0.7rem 0.85
 .btn-avbryt { background: #fff; color: #1a1a1a; border: 0.5px solid #e5e2da !important; }
 
 .add-toggle-btn { width: 100%; padding: 0.75rem; background: #fff; border: 1px dashed #c4c0b6; border-radius: 10px; font-size: 0.85rem; font-weight: 600; color: #8a8782; cursor: pointer; margin-top: 0.75rem; }
+.stykkpris-lenke { font-size: 0.72rem; color: #6b6862; text-decoration: underline; cursor: pointer; margin: -4px 0 8px; }
+.stykkpris-hjelper { display: none; background: #fff; border: 0.5px dashed #c4c0b6; border-radius: 10px; padding: 0.7rem; margin-bottom: 8px; }
+.stykkpris-hjelper.open { display: block; }
+.stykkpris-hjelper input { background: #f7f6f3; }
 .close-btn { width: 100%; padding: 0.8rem; background: #f7f6f3; color: #1a1a1a; border: none; border-radius: 10px; font-size: 0.95rem; font-weight: 600; cursor: pointer; margin-top: 0.5rem; }
 
 .hjelp { font-size: 0.68rem; color: #a8a59d; line-height: 1.5; margin-top: -0.3rem; margin-bottom: 1rem; }
@@ -134,6 +141,14 @@ input[type=number], input[type=text], select { width: 100%; padding: 0.7rem 0.85
     <div class="rett-utpris" id="rm-utpris"></div>
 
     <div class="sum-grid">
+      <div class="sum-card sum-card-highlight">
+        <div class="sum-label">Fortjeneste pr. porsjon</div>
+        <div class="sum-value" id="rm-fortjeneste">0 kr</div>
+      </div>
+      <div class="sum-card">
+        <div class="sum-label">Dekningsgrad</div>
+        <div class="sum-value" id="rm-dg">0 %</div>
+      </div>
       <div class="sum-card">
         <div class="sum-label">Sum ingredienskost</div>
         <div class="sum-value" id="rm-sum">0 kr</div>
@@ -145,10 +160,6 @@ input[type=number], input[type=text], select { width: 100%; padding: 0.7rem 0.85
       <div class="sum-card">
         <div class="sum-label">Kost inkl. buffer</div>
         <div class="sum-value" id="rm-kostbuffer">0 kr</div>
-      </div>
-      <div class="sum-card">
-        <div class="sum-label">Dekningsgrad</div>
-        <div class="sum-value" id="rm-dg">0 %</div>
       </div>
     </div>
 
@@ -183,6 +194,14 @@ input[type=number], input[type=text], select { width: 100%; padding: 0.7rem 0.85
           <option value="ts">ts</option>
           <option value="stk">stk</option>
         </select>
+      </div>
+      <div class="stykkpris-lenke" onclick="visStykkprisHjelper()">Kjøpt i pakke/kartong? Regn ut pris pr. enhet →</div>
+      <div class="stykkpris-hjelper" id="stykkpris-hjelper">
+        <div class="row2">
+          <input type="number" id="sp-totalpris" placeholder="Totalpris for innkjøpet (kr)" step="0.01">
+          <input type="number" id="sp-antall" placeholder="Antall enheter (f.eks. 30 stk)" step="0.01">
+        </div>
+        <button class="btn-secondary" onclick="brukStykkpris()" style="margin-top:0">Bruk som innkjøpspris</button>
       </div>
       <input type="number" id="af-svinn" placeholder="Svinn % (f.eks. 5)" step="0.1">
       <div class="add-form-btns">
@@ -261,8 +280,9 @@ function beregnRett(rett) {
   const kostBuffer = sumKost * (1 + innstillinger.buffer_prosent);
   const kpRen = utprisEks > 0 ? sumKost / utprisEks : 0;
   const kpBuffer = utprisEks > 0 ? kostBuffer / utprisEks : 0;
-  const dekningsgrad = utprisEks > 0 ? (utprisEks - kostBuffer) / utprisEks : 0;
-  return { sumKost, utprisEks, kostBuffer, kpRen, kpBuffer, dekningsgrad, harLinjer: linjer.length > 0 };
+  const fortjeneste = utprisEks - kostBuffer;
+  const dekningsgrad = utprisEks > 0 ? fortjeneste / utprisEks : 0;
+  return { sumKost, utprisEks, kostBuffer, kpRen, kpBuffer, fortjeneste, dekningsgrad, harLinjer: linjer.length > 0 };
 }
 
 function kpFarge(kp, harLinjer) {
@@ -296,7 +316,7 @@ function renderListe(meny) {
             <div class="rett-pris">${r.pris} kr</div>
           </div>
           <div class="rett-bottom">
-            <div class="rett-kost">${b.harLinjer ? 'Kost: ' + fmtKr(b.sumKost) + ' eks. mva' : 'Ingen ingredienser lagt inn'}</div>
+            <div class="rett-kost">${b.harLinjer ? 'Fortjeneste: ' + fmtKr(b.fortjeneste) : 'Ingen ingredienser lagt inn'}</div>
             <div class="kp-badge ${kpFarge(b.kpRen, b.harLinjer)}">${b.harLinjer ? fmtPct(b.kpRen) : '–'}</div>
           </div>
         </div>
@@ -330,6 +350,7 @@ function renderRettModal() {
   document.getElementById('rm-kp').textContent = fmtPct(b.kpRen);
   document.getElementById('rm-kostbuffer').textContent = fmtKr(b.kostBuffer);
   document.getElementById('rm-dg').textContent = fmtPct(b.dekningsgrad);
+  document.getElementById('rm-fortjeneste').textContent = fmtKr(b.fortjeneste);
 
   const linjer = ingredienser[rett.id] || [];
   const container = document.getElementById('rm-ingredienser');
@@ -363,10 +384,28 @@ function visLeggTilForm() {
   document.getElementById('af-innkjopsenhet').value = 'kg';
   document.getElementById('af-svinn').value = '';
   document.getElementById('add-form').classList.add('open');
+  skjulStykkprisHjelper();
 }
 function skjulLeggTilForm() {
   document.getElementById('add-form').classList.remove('open');
   redigerLinjeId = null;
+  skjulStykkprisHjelper();
+}
+
+function visStykkprisHjelper() {
+  document.getElementById('sp-totalpris').value = '';
+  document.getElementById('sp-antall').value = '';
+  document.getElementById('stykkpris-hjelper').classList.add('open');
+}
+function skjulStykkprisHjelper() {
+  document.getElementById('stykkpris-hjelper').classList.remove('open');
+}
+function brukStykkpris() {
+  const totalpris = parseFloat(document.getElementById('sp-totalpris').value) || 0;
+  const antall = parseFloat(document.getElementById('sp-antall').value) || 0;
+  if (antall <= 0) { alert('Antall enheter må være større enn 0'); return; }
+  document.getElementById('af-innkjopspris').value = Math.round((totalpris / antall) * 100) / 100;
+  skjulStykkprisHjelper();
 }
 
 function apneRedigerLinje(id) {
@@ -381,6 +420,7 @@ function apneRedigerLinje(id) {
   document.getElementById('af-innkjopsenhet').value = l.innkjopsenhet;
   document.getElementById('af-svinn').value = Math.round(l.svinn * 1000) / 10;
   document.getElementById('add-form').classList.add('open');
+  skjulStykkprisHjelper();
 }
 
 async function lagreLinje() {
