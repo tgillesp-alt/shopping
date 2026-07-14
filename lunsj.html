@@ -16,6 +16,7 @@
       min-height: 100vh;
     }
 
+    /* ── Scenario toggle ── */
     .scenario-toggle {
       display: flex;
       background: #fff;
@@ -44,6 +45,7 @@
     .scenario-btn span { display: block; font-size: 11px; font-weight: 400; color: #aaa; margin-top: 2px; }
     .scenario-btn.active span { color: #777; }
 
+    /* ── Top bar ── */
     .topbar {
       background: #1a1a1a;
       color: #fff;
@@ -68,6 +70,7 @@
       letter-spacing: 0.02em;
     }
 
+    /* ── Page ── */
     .page { max-width: 680px; margin: 0 auto; padding: 24px 16px 60px; }
 
     .page-title {
@@ -79,6 +82,7 @@
       margin-bottom: 20px;
     }
 
+    /* ── Cards / sections ── */
     .card {
       background: #fff;
       border-radius: 10px;
@@ -97,6 +101,7 @@
       padding: 9px 14px;
     }
 
+    /* ── Rows ── */
     .row {
       display: flex;
       align-items: center;
@@ -122,6 +127,7 @@
     }
     .row-value.computed { color: #555; font-weight: 500; }
 
+    /* ── Inputs ── */
     .inp {
       border: 1.5px solid #f0c040;
       background: #fffde7;
@@ -139,6 +145,7 @@
     .inp::-webkit-inner-spin-button { -webkit-appearance: none; }
     .inp:focus { border-color: #e6a800; background: #fff9d6; }
 
+    /* ── Two-col input row ── */
     .row-2inp {
       display: flex;
       align-items: center;
@@ -153,6 +160,7 @@
     .row-2inp .pair-label { font-size: 12px; color: #888; white-space: nowrap; }
     .inp.sm { width: 66px; }
 
+    /* ── Columns header ── */
     .col-header {
       display: flex;
       padding: 8px 14px;
@@ -171,6 +179,7 @@
     }
     .col-header span:first-child { flex: 1; text-align: left; }
 
+    /* ── Three-column result rows ── */
     .row3 {
       display: flex;
       align-items: center;
@@ -189,6 +198,7 @@
     }
     .row3 .val.bold { font-weight: 700; color: #1a1a1a; }
 
+    /* ── Nøkkeltall ── */
     .kpi-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -204,11 +214,11 @@
     }
     .kpi-label { font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: 0.06em; }
     .kpi-value { font-size: 22px; font-weight: 700; color: #1a1a1a; }
-    .kpi-sub { font-size: 11px; font-style: italic; color: #999; margin-top: -2px; }
     .kpi-value.pos { color: #2e7d32; }
     .kpi-value.neg { color: #c62828; }
     .kpi-value.warn { color: #e65100; }
 
+    /* ── Breakeven banner ── */
     .be-banner {
       margin: 14px 0 0;
       border-radius: 10px;
@@ -223,6 +233,7 @@
     .be-banner.neutral { background: #f5f5f5; color: #555; }
     .be-sub { font-size: 13px; font-weight: 400; margin-top: 4px; color: inherit; opacity: .8; }
 
+    /* ── Subheader inside card ── */
     .sub-header {
       background: #f0f4ff;
       padding: 8px 14px;
@@ -234,6 +245,7 @@
       color: #4a5fa0;
     }
 
+    /* ── Legend ── */
     .legend {
       display: flex;
       gap: 14px;
@@ -264,6 +276,7 @@
 
 <div class="page">
 
+  <!-- SCENARIO TOGGLE -->
   <div class="scenario-toggle">
     <button class="scenario-btn active" id="btnA" onclick="setScenario('A')">
       Scenario A
@@ -277,6 +290,7 @@
 
   <div class="page-title">Fager Bistro — 2026</div>
 
+  <!-- FORUTSETNINGER -->
   <div class="card">
     <div class="card-header">Forutsetninger</div>
     <div class="row">
@@ -290,6 +304,7 @@
     <input type="hidden" id="aga" value="14.1">
   </div>
 
+  <!-- OMSETNING -->
   <div class="card">
     <div class="card-header">Omsetning</div>
     <div class="row">
@@ -318,6 +333,7 @@
     </div>
   </div>
 
+  <!-- KOSTNADER -->
   <div class="card">
     <div class="card-header">Kostnader</div>
     <div class="row">
@@ -325,6 +341,7 @@
       <input class="inp" id="varekostPct" type="number" value="32" min="0" max="80" step="0.5">
     </div>
 
+    <!-- Lønn — kun Scenario A -->
     <div id="lon-section">
       <div class="sub-header">Lønnskostnader</div>
       <div class="row-2inp">
@@ -356,8 +373,236 @@
     </div>
   </div>
 
+  <!-- RESULTAT -->
   <div class="card">
     <div class="card-header">Resultat</div>
     <div class="col-header">
       <span></span>
       <span>Pr dag</span>
+      <span>Pr mnd</span>
+      <span>Fullt år</span>
+    </div>
+    <div class="row3">
+      <span class="lbl">Omsetning eks mva</span>
+      <span class="val" id="omsDag">–</span>
+      <span class="val" id="omsMnd">–</span>
+      <span class="val" id="omsAar">–</span>
+    </div>
+    <div class="row3">
+      <span class="lbl">Varekost</span>
+      <span class="val" id="vkDag">–</span>
+      <span class="val" id="vkMnd">–</span>
+      <span class="val" id="vkAar">–</span>
+    </div>
+    <div class="row3">
+      <span class="lbl bold">Gross Profit (GP)</span>
+      <span class="val bold" id="gpDag">–</span>
+      <span class="val bold" id="gpMnd">–</span>
+      <span class="val bold" id="gpAar">–</span>
+    </div>
+    <div class="row3" id="lonResultRow">
+      <span class="lbl">Lønnskost inkl sos.avg</span>
+      <span class="val" id="lonDag">–</span>
+      <span class="val" id="lonMnd">–</span>
+      <span class="val" id="lonAar">–</span>
+    </div>
+    <div class="row3">
+      <span class="lbl bold" id="nettoLabel">Resultat</span>
+      <span class="val bold" id="nettoDag">–</span>
+      <span class="val bold" id="nettoMnd">–</span>
+      <span class="val bold" id="nettoAar">–</span>
+    </div>
+  </div>
+
+  <!-- NØKKELTALL -->
+  <div class="card">
+    <div class="card-header">Nøkkeltall</div>
+    <div class="kpi-grid">
+      <div class="kpi">
+        <span class="kpi-label">GP %</span>
+        <span class="kpi-value" id="kpiGp">–</span>
+      </div>
+      <div class="kpi">
+        <span class="kpi-label">Varekost %</span>
+        <span class="kpi-value" id="kpiVk">–</span>
+      </div>
+      <div class="kpi" id="kpiBeContainer">
+        <span class="kpi-label">Breakeven PAX pr dag</span>
+        <span class="kpi-value" id="kpiBe">–</span>
+      </div>
+      <div class="kpi">
+        <span class="kpi-label" id="kpiDispLonLabel">Disponibelt til lønn (12 mnd)</span>
+        <span class="kpi-value" id="kpiDispLon">–</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- BREAKEVEN BANNER — kun Scenario A -->
+  <div class="be-banner neutral" id="beBanner">
+    Juster tallene for å se status
+  </div>
+
+  <!-- LEGEND -->
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot yellow"></div>Inputfelt — endre fritt</div>
+    <div class="legend-item"><div class="legend-dot grey"></div>Beregnet av modellen</div>
+  </div>
+</div>
+
+<script>
+  const ids = [
+    'dagerPrUke','ukerPrAar','aga','pax','sniMat','sniDrikke',
+    'tipsPct','varekostPct','fohTimer','fohLon','kokkTimer','kokkLon'
+  ];
+
+  function nok(v) {
+    if (!isFinite(v)) return '–';
+    const neg = v < 0;
+    const abs = Math.abs(Math.round(v));
+    const s = abs.toLocaleString('nb-NO') + ' kr';
+    return neg ? '(' + s + ')' : s;
+  }
+  function pct(v) {
+    if (!isFinite(v)) return '–';
+    return (v * 100).toFixed(1) + '%';
+  }
+  function color(el, v) {
+    el.className = 'kpi-value ' + (v > 0 ? 'pos' : v < 0 ? 'neg' : '');
+  }
+
+  let currentScenario = 'A';
+
+  function setScenario(s) {
+    currentScenario = s;
+    document.getElementById('btnA').className = 'scenario-btn' + (s === 'A' ? ' active' : '');
+    document.getElementById('btnB').className = 'scenario-btn' + (s === 'B' ? ' active' : '');
+
+    const showA = s === 'A';
+    document.getElementById('lon-section').style.display = showA ? '' : 'none';
+    document.getElementById('lonResultRow').style.display = showA ? '' : 'none';
+    document.getElementById('kpiBeContainer').style.display = showA ? '' : 'none';
+    document.getElementById('beBanner').style.display = showA ? '' : 'none';
+
+    document.getElementById('nettoLabel').textContent = showA ? 'Resultat etter lønn' : 'Disponibelt til lønn (GP netto sos.avg)';
+    document.getElementById('kpiDispLonLabel').textContent = showA ? 'Resultat (fullt år)' : 'Disponibelt til lønn (fullt år)';
+
+    calc();
+  }
+
+  function calc() {
+    const dpw   = +document.getElementById('dagerPrUke').value  || 0;
+    const wpy   = +document.getElementById('ukerPrAar').value   || 0;
+    const aga   = +document.getElementById('aga').value / 100   || 0;
+    const pax   = +document.getElementById('pax').value         || 0;
+    const mat   = (+document.getElementById('sniMat').value     || 0) / 1.25;
+    const drikk = (+document.getElementById('sniDrikke').value  || 0) / 1.25;
+    const tpct  = +document.getElementById('tipsPct').value / 100 || 0;
+    const vpct  = +document.getElementById('varekostPct').value / 100 || 0;
+    const fTim  = +document.getElementById('fohTimer').value    || 0;
+    const fLon  = +document.getElementById('fohLon').value      || 0;
+    const kTim  = +document.getElementById('kokkTimer').value   || 0;
+    const kLon  = +document.getElementById('kokkLon').value     || 0;
+
+    const snittEks     = mat + drikk;                        // eks mva pr kuvert
+    const snittInklMva = snittEks * 1.25;
+    const tipsKr       = snittInklMva * pax * tpct;         // tips av inkl mva
+    const omsEksMva    = snittEks * pax;                     // omsetning eks mva, eks tips
+
+    const vkDag  = omsEksMva * vpct;
+    const gpDag  = omsEksMva - vkDag + tipsKr;              // GP = (oms - vk) + tips
+
+    const lonBase = fTim * fLon + kTim * kLon;              // brutto lønn pr dag
+    const lonInklAga = lonBase * (1 + aga);                  // inkl AGA
+
+    let nettoDag;
+    if (currentScenario === 'A') {
+      nettoDag = gpDag - lonInklAga;
+    } else {
+      // Scenario B: Thomas & Christine tar alt etter varekost og AGA på tips
+      // GP / (1 + AGA%) = maks uttakbart
+      nettoDag = gpDag / (1 + aga);
+    }
+
+    const nettoMnd = nettoDag * dpw * 4;
+    const nettoAar = nettoDag * dpw * wpy;
+    const gpMnd    = gpDag * dpw * 4;
+    const gpAar    = gpDag * dpw * wpy;
+    const omsMnd   = omsEksMva * dpw * 4;
+    const omsAar   = omsEksMva * dpw * wpy;
+    const vkMnd    = vkDag * dpw * 4;
+    const vkAar    = vkDag * dpw * wpy;
+    const lonMnd   = lonInklAga * dpw * 4;
+    const lonAar   = lonInklAga * dpw * wpy;
+
+    // Breakeven (Scenario A): PAX der GP = lønnskost
+    // gpPerPax = snittEks*(1-vpct) + snittInklMva*tpct
+    const gpPerPax = snittEks * (1 - vpct) + snittInklMva * tpct;
+    const be = gpPerPax > 0 ? Math.ceil(lonInklAga / gpPerPax) : null;
+
+    // ── Write ──
+    document.getElementById('sniTotal').textContent  = nok(snittEks);
+    document.getElementById('tipsKr').textContent    = nok(tipsKr);
+    document.getElementById('lonTotal').textContent  = nok(lonInklAga);
+
+    document.getElementById('omsDag').textContent  = nok(omsEksMva);
+    document.getElementById('omsMnd').textContent  = nok(omsMnd);
+    document.getElementById('omsAar').textContent  = nok(omsAar);
+    document.getElementById('vkDag').textContent   = nok(vkDag);
+    document.getElementById('vkMnd').textContent   = nok(vkMnd);
+    document.getElementById('vkAar').textContent   = nok(vkAar);
+    document.getElementById('gpDag').textContent   = nok(gpDag);
+    document.getElementById('gpMnd').textContent   = nok(gpMnd);
+    document.getElementById('gpAar').textContent   = nok(gpAar);
+    document.getElementById('lonDag').textContent  = nok(lonInklAga);
+    document.getElementById('lonMnd').textContent  = nok(lonMnd);
+    document.getElementById('lonAar').textContent  = nok(lonAar);
+    document.getElementById('nettoDag').textContent = nok(nettoDag);
+    document.getElementById('nettoMnd').textContent = nok(nettoMnd);
+    document.getElementById('nettoAar').textContent = nok(nettoAar);
+
+    // KPI
+    const gpPct = omsEksMva > 0 ? gpDag / omsEksMva : 0;
+    const gpEl = document.getElementById('kpiGp');
+    gpEl.textContent = pct(gpPct);
+    color(gpEl, gpPct);
+
+    const vkEl = document.getElementById('kpiVk');
+    vkEl.textContent = pct(vpct);
+    vkEl.className = 'kpi-value ' + (vpct > 0.38 ? 'neg' : vpct > 0.32 ? 'warn' : 'pos');
+
+    const beEl = document.getElementById('kpiBe');
+    beEl.textContent = be !== null ? be : '–';
+    beEl.className = 'kpi-value ' + (be !== null && pax >= be ? 'pos' : 'neg');
+
+    const dispEl = document.getElementById('kpiDispLon');
+    const dispVal = currentScenario === 'A' ? nettoAar : nettoDag * dpw * wpy;
+    dispEl.textContent = nok(dispVal);
+    color(dispEl, dispVal);
+
+    // Banner (kun Scenario A)
+    if (currentScenario === 'A') {
+      const banner = document.getElementById('beBanner');
+      if (be === null || pax === 0) {
+        banner.className = 'be-banner neutral';
+        banner.innerHTML = 'Fyll inn tall for å beregne breakeven';
+      } else if (pax >= be) {
+        const over = pax - be;
+        banner.className = 'be-banner pos';
+        banner.innerHTML = `✓ LØNNSOMT — Scenario A<div class="be-sub">${over} kuvert${over === 1 ? '' : 'er'} over breakeven (BE = ${be} PAX)</div>`;
+      } else {
+        const under = be - pax;
+        banner.className = 'be-banner neg';
+        banner.innerHTML = `✗ UNDER BREAK EVEN — Scenario A<div class="be-sub">${under} kuvert${under === 1 ? '' : 'er'} mangler (BE = ${be} PAX)</div>`;
+      }
+    }
+  }
+
+  ids.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('input', calc);
+  });
+
+  setScenario('A');
+</script>
+</body>
+</html>
