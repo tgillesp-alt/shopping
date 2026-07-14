@@ -68,6 +68,12 @@ header { background: #1a1a1a; padding: 1rem 1.25rem; padding-top: calc(1rem + en
 .snapshot-del { background: none; border: none; color: #c4c0b6; font-size: 0.8rem; cursor: pointer; float: right; }
 
 .snap-dish { background: #fff; border: 0.5px solid #e5e2da; border-radius: 10px; padding: 0.85rem 1rem; margin-bottom: 6px; }
+.kategori-wrap { position: relative; }
+.kategori-forslag { display: none; position: relative; background: #fff; border: 0.5px solid #e5e2da; border-radius: 10px; margin-top: -0.35rem; overflow-y: auto; max-height: 180px; box-shadow: 0 4px 14px rgba(0,0,0,0.08); }
+.kategori-forslag.open { display: block; }
+.kategori-forslag-row { padding: 0.6rem 0.85rem; font-size: 0.88rem; cursor: pointer; border-bottom: 0.5px solid #f0eee8; }
+.kategori-forslag-row:last-child { border-bottom: none; }
+.kategori-forslag-row:active { background: #f7f6f3; }
 .snap-dish-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
 .snap-dish-name { font-weight: 700; font-size: 0.9rem; color: #1a1a1a; }
 .snap-dish-price { font-weight: 700; font-size: 0.9rem; color: #1a1a1a; flex-shrink: 0; }
@@ -165,7 +171,10 @@ header { background: #1a1a1a; padding: 1rem 1.25rem; padding-top: calc(1rem + en
   <div class="modal">
     <div class="modal-handle"></div>
     <h3 id="modal-tittel">Ny rett</h3>
-    <input type="text" id="m-kategori" placeholder="Kategori (f.eks. Entrées – Forretter) *">
+    <div class="kategori-wrap">
+      <input type="text" id="m-kategori" placeholder="Kategori (f.eks. Entrées – Forretter) *" oninput="visKategoriForslag()" onfocus="visKategoriForslag()">
+      <div class="kategori-forslag" id="kategori-forslag"></div>
+    </div>
     <input type="text" id="m-navn" placeholder="Navn på rett *">
     <input type="number" id="m-pris" placeholder="Pris (kr)">
     <input type="text" id="m-allergener" placeholder="Allergener (f.eks. H, L, E)">
@@ -323,6 +332,7 @@ function apneNyRett(meny) {
   document.getElementById('m-allergener').value = '';
   document.getElementById('m-beskrivelse').value = '';
   document.getElementById('modal').style.display = 'flex';
+  skjulKategoriForslag();
 }
 
 function apneRedigerRett(id) {
@@ -337,6 +347,7 @@ function apneRedigerRett(id) {
   document.getElementById('m-allergener').value = r.allergener || '';
   document.getElementById('m-beskrivelse').value = r.beskrivelse || '';
   document.getElementById('modal').style.display = 'flex';
+  skjulKategoriForslag();
 }
 
 async function lagreRett() {
@@ -354,6 +365,25 @@ async function lagreRett() {
   }
   lukkModal();
   await hentRetter();
+}
+
+function visKategoriForslag() {
+  const q = document.getElementById('m-kategori').value.trim().toLowerCase();
+  const box = document.getElementById('kategori-forslag');
+  const alle = [...new Set(retter.map(r => r.kategori).filter(Boolean))].sort();
+  const treff = (q ? alle.filter(k => k.toLowerCase().includes(q)) : alle).slice(0, 8);
+  if (!treff.length) { box.classList.remove('open'); box.innerHTML = ''; return; }
+  box.innerHTML = treff.map(k => `<div class="kategori-forslag-row" onmousedown="event.preventDefault(); velgKategoriForslag('${k.replace(/'/g, "\\'")}')">${k}</div>`).join('');
+  box.classList.add('open');
+}
+function skjulKategoriForslag() {
+  const box = document.getElementById('kategori-forslag');
+  box.classList.remove('open');
+  box.innerHTML = '';
+}
+function velgKategoriForslag(kat) {
+  document.getElementById('m-kategori').value = kat;
+  skjulKategoriForslag();
 }
 
 async function slettRett(id) {
