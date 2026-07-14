@@ -344,6 +344,21 @@
         <span class="row-label sub">Sum månedslønn inkl sos.avg</span>
         <span class="row-value computed" id="lonMndTotal">–</span>
       </div>
+      <div class="row-2inp">
+        <span class="lbl">Marcus (middag prepp)</span>
+        <div class="pair">
+          <span class="pair-label">Timer/uke</span>
+          <input class="inp sm" id="marcusTimerUke" type="number" value="16" min="0">
+        </div>
+        <div class="pair">
+          <span class="pair-label">Timelønn</span>
+          <input class="inp sm" id="marcusTimelonn" type="number" value="250" min="0">
+        </div>
+      </div>
+      <div class="row">
+        <span class="row-label sub">Marcus inkl sos.avg (pr uke)</span>
+        <span class="row-value computed" id="marcusUkeTotal">–</span>
+      </div>
       <div class="row">
         <span class="row-label" style="font-weight:700;">Lønnskost fast ansatte inkl sos.avg (pr dag)</span>
         <span class="row-value" id="lonTotal">–</span>
@@ -508,7 +523,7 @@
 <script>
 
   const STORAGE_KEY = 'fager_middag_inputs';
-  const INPUT_IDS = ['dagerPrUke','ukerPrAar','pax','sniMat','sniDrikke','tipsPct','varekostPct','joakimMnd','benjaminMnd','adkHusleie','adkStrom','adkRenhold','adkDiverse'];
+  const INPUT_IDS = ['dagerPrUke','ukerPrAar','pax','sniMat','sniDrikke','tipsPct','varekostPct','joakimMnd','benjaminMnd','marcusTimerUke','marcusTimelonn','adkHusleie','adkStrom','adkRenhold','adkDiverse'];
 
   function saveInputs() {
     const data = {};
@@ -533,7 +548,7 @@
 
   const ids = [
     'dagerPrUke','ukerPrAar','aga','pax','sniMat','sniDrikke',
-    'tipsPct','varekostPct','joakimMnd','benjaminMnd',
+    'tipsPct','varekostPct','joakimMnd','benjaminMnd','marcusTimerUke','marcusTimelonn',
     'adkHusleie','adkStrom','adkRenhold','adkDiverse'
   ];
 
@@ -577,6 +592,8 @@
     const vpct  = +document.getElementById('varekostPct').value / 100 || 0;
     const joakimMnd   = +document.getElementById('joakimMnd').value   || 0;
     const benjaminMnd = +document.getElementById('benjaminMnd').value || 0;
+    const marcusTimerUke  = +document.getElementById('marcusTimerUke').value  || 0;
+    const marcusTimelonn  = +document.getElementById('marcusTimelonn').value  || 0;
 
     const adkMndInput = (+document.getElementById('adkHusleie').value || 0)
                        + (+document.getElementById('adkStrom').value || 0)
@@ -593,7 +610,12 @@
     const gpDag  = omsEksMva - vkDag + tipsKr;              // GP = (oms - vk) + tips
 
     const lonMndTotal = (joakimMnd + benjaminMnd) * (1 + aga);  // inkl AGA
-    const lonInklAga  = dpw > 0 ? lonMndTotal / (dpw * 4) : 0;   // prorata til pr dag, samme konvensjon som ADK
+    const lonFastDag  = dpw > 0 ? lonMndTotal / (dpw * 4) : 0;   // prorata til pr dag, samme konvensjon som ADK
+
+    const marcusUkeTotal = marcusTimerUke * marcusTimelonn * (1 + aga);  // inkl AGA, pr uke
+    const marcusDag = dpw > 0 ? marcusUkeTotal / dpw : 0;                 // fordelt på driftsdager i uken
+
+    const lonInklAga = lonFastDag + marcusDag;  // total lønnskost fast ansatte, pr dag
 
     // Disponibelt til Thomas & Christine: det som er igjen etter innleid personale og ADK.
     // De tar ingen fast lønn selv i dag, så dette ER deres inntekt fra middagsdriften.
@@ -622,6 +644,7 @@
     document.getElementById('tipsKr').textContent    = nok(tipsKr);
     document.getElementById('lonTotal').textContent  = nok(lonInklAga);
     document.getElementById('lonMndTotal').textContent = nok(lonMndTotal);
+    document.getElementById('marcusUkeTotal').textContent = nok(marcusUkeTotal);
     document.getElementById('adkMndTotal').textContent = nok(adkMndInput);
     document.getElementById('adkDagTotal').textContent = nok(adkDag);
 
