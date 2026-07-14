@@ -98,6 +98,9 @@ input[type=number], input[type=text], select { width: 100%; padding: 0.7rem 0.85
 .vare-row:active { background: #f2f0ea; }
 .vare-navn { font-weight: 700; font-size: 0.87rem; }
 .vare-kategori { font-size: 0.68rem; color: #a8a59d; margin-top: 1px; }
+.oppdatert-tekst { font-size: 0.64rem; color: #b8b4ab; margin-top: 1px; }
+.oppdatert-middels { color: #B8860B; }
+.oppdatert-gammel { color: #C0392B; }
 .vare-pris { font-size: 0.8rem; color: #6b6862; font-weight: 600; flex-shrink: 0; text-align: right; }
 
 .produkt-wrap { position: relative; }
@@ -196,6 +199,7 @@ Smør	Meieri	65	kg	g"></textarea>
   <div class="modal">
     <div class="modal-handle"></div>
     <h3 id="vm-tittel">Ny vare</h3>
+    <div class="hjelp" id="vm-oppdatert" style="margin-top:-0.4rem;"></div>
     <div class="field-group">
       <label>Varenavn</label>
       <div class="produkt-wrap">
@@ -897,6 +901,17 @@ async function lagreInnstillinger() {
   alert('Lagret');
 }
 
+function fmtOppdatert(dato) {
+  if (!dato) return '';
+  const d = new Date(dato);
+  const dagerSiden = Math.floor((Date.now() - d.getTime()) / 86400000);
+  const datoTekst = d.toLocaleDateString('nb-NO', { day: '2-digit', month: '2-digit', year: '2-digit' });
+  let klasse = '';
+  if (dagerSiden > 180) klasse = 'oppdatert-gammel';
+  else if (dagerSiden > 90) klasse = 'oppdatert-middels';
+  return `<div class="oppdatert-tekst ${klasse}">Oppdatert ${datoTekst}</div>`;
+}
+
 function renderPriser() {
   const container = document.getElementById('liste-priser');
   const sokEl = document.getElementById('pris-sok');
@@ -916,6 +931,7 @@ function renderPriser() {
         <div>
           <div class="vare-navn">${v.navn}</div>
           ${v.standard_enhet ? `<div class="vare-kategori">Standard enhet: ${v.standard_enhet}</div>` : ''}
+          ${fmtOppdatert(v.updated_at || v.created_at)}
         </div>
         <div class="vare-pris">${v.innkjopspris} kr/${v.innkjopsenhet}</div>
       </div>
@@ -926,6 +942,7 @@ function renderPriser() {
 function apneNyVare() {
   redigerVareId = null;
   document.getElementById('vm-tittel').textContent = 'Ny vare';
+  document.getElementById('vm-oppdatert').textContent = '';
   document.getElementById('vm-navn').value = '';
   document.getElementById('vm-kategori').value = '';
   document.getElementById('vm-innkjopspris').value = '';
@@ -942,6 +959,10 @@ function apneRedigerVare(id) {
   if (!v) return;
   redigerVareId = id;
   document.getElementById('vm-tittel').textContent = 'Rediger vare';
+  const dato = v.updated_at || v.created_at;
+  document.getElementById('vm-oppdatert').textContent = dato
+    ? 'Sist oppdatert: ' + new Date(dato).toLocaleDateString('nb-NO', { day: '2-digit', month: '2-digit', year: 'numeric' })
+    : '';
   document.getElementById('vm-navn').value = v.navn;
   document.getElementById('vm-kategori').value = v.kategori || '';
   document.getElementById('vm-innkjopspris').value = v.innkjopspris;
