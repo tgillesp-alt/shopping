@@ -181,13 +181,14 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif
       <div class="menu-label">Kontakter</div>
     </button>
 
-    <a href="https://tgillesp-alt.github.io/shopping/lager.html" class="menu-btn c-amber">
+    <button class="menu-btn c-gray" onclick="visPage('diverse')">
       <div class="menu-btn-left">
-        <div class="menu-icon"><i class="ti ti-clipboard-list"></i></div>
-        <i class="ti ti-external-link menu-arrow"></i>
+        <div class="menu-icon"><i class="ti ti-dots"></i></div>
+        <i class="ti ti-chevron-right menu-arrow"></i>
       </div>
-      <div class="menu-label">Lagertelling</div>
-    </a>
+      <div class="menu-label">Diverse</div>
+    </button>
+
   <a href="https://tgillesp-alt.github.io/shopping/kjokkenprosent.html" class="menu-btn c-purple">
       <div class="menu-btn-left">
         <div class="menu-icon"><i class="ti ti-percentage"></i></div>
@@ -208,15 +209,6 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif
         <i class="ti ti-external-link menu-arrow"></i>
       </div>
       <div class="menu-label">Middagsimulering</div>
-    </a>
-
-
-    <a href="https://tgillesp-alt.github.io/shopping/tips.html" class="menu-btn c-gray">
-      <div class="menu-btn-left">
-        <div class="menu-icon"><i class="ti ti-coin"></i></div>
-        <i class="ti ti-external-link menu-arrow"></i>
-      </div>
-      <div class="menu-label">Tips</div>
     </a>
 
   </div>
@@ -279,6 +271,44 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif
         <a href="tel:22601995"><i class="ti ti-phone"></i>22 60 19 95</a>
       </div>
     </div>
+  </div>
+</div>
+
+<!-- DIVERSE -->
+<div id="diverse" class="page">
+  <div class="sub-header">
+    <button class="back-btn" onclick="visPage('home')"><i class="ti ti-chevron-left"></i> Portal</button>
+    <div class="sub-title">Diverse</div>
+  </div>
+  <div class="sub-content">
+    <a href="https://tgillesp-alt.github.io/shopping/lager.html" class="row">
+      <div class="row-left"><i class="ti ti-clipboard-list row-icon"></i><span class="row-name">Lagertelling</span></div>
+      <i class="ti ti-external-link row-ext"></i>
+    </a>
+    <a href="https://tgillesp-alt.github.io/shopping/tips.html" class="row">
+      <div class="row-left"><i class="ti ti-coin row-icon"></i><span class="row-name">Tips</span></div>
+      <i class="ti ti-external-link row-ext"></i>
+    </a>
+    <div class="row" onclick="visPage('dokumenter')" style="cursor:pointer;">
+      <div class="row-left"><i class="ti ti-file-text row-icon"></i><span class="row-name">Internkontroll</span></div>
+      <i class="ti ti-chevron-right row-ext"></i>
+    </div>
+    <a href="omsetning.html" class="row">
+      <div class="row-left"><i class="ti ti-report-analytics row-icon"></i><span class="row-name">Omsetningsoppgave</span></div>
+      <i class="ti ti-external-link row-ext"></i>
+    </a>
+    <a href="https://my.nets.eu/portal/" class="row" target="_blank" rel="noopener">
+      <div class="row-left"><i class="ti ti-credit-card row-icon"></i><span class="row-name">Nets</span></div>
+      <i class="ti ti-external-link row-ext"></i>
+    </a>
+    <div class="row" style="cursor:default;">
+      <div class="row-left"><i class="ti ti-calendar row-icon"></i><span class="row-name">Planday</span></div>
+      <span style="font-size:12px;color:#c0392b;">Bruk PlanDay app!</span>
+    </div>
+    <a href="https://open.spotify.com/playlist/1CztEn13CWRvhEe4zPRVTs?si=PSBKl494QGC4fItMBsG6dw&amp;pi=BT1l16HwSqWKo&amp;pt=a84a520ae66d1e5bf48ea03e1de6dffc" class="row" target="_blank" rel="noopener">
+      <div class="row-left"><i class="ti ti-brand-spotify row-icon"></i><span class="row-name">Spotify</span></div>
+      <i class="ti ti-external-link row-ext"></i>
+    </a>
   </div>
 </div>
 
