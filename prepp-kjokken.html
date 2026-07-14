@@ -165,12 +165,6 @@ function settPerson(p) {
 }
 
 function render() {
-  const totalt = items.length;
-  const ferdig = items.filter(i => i.ferdig).length;
-  const pct = totalt ? Math.round(ferdig / totalt * 100) : 0;
-  document.getElementById('progress-label').textContent = `${ferdig} / ${totalt} gjort`;
-  document.getElementById('progress-fill').style.width = pct + '%';
-
   // Seksjoner som skal tvangsplasseres i bestemt kategori
   const SEKSJON_KATEGORI_OVERRIDE = {
     'TARTE TATIN': 'DESSERTER',
@@ -178,15 +172,28 @@ function render() {
     'CREMEUSE AU CHOCOLAT': 'DESSERTER',
     'COLONEL AU CITRON': 'DESSERTER',
   };
+  const effektivKategori = i => SEKSJON_KATEGORI_OVERRIDE[i.seksjon || 'ANNET'] || i.kategori || 'ANNET';
+
+  // Progresstall skal kun telle punktene som faktisk hører til aktiv person
+  const personRelevante = aktivPerson === 'alle'
+    ? items
+    : items.filter(i => (PERSON_KATEGORIER[aktivPerson] || []).includes(effektivKategori(i)));
+
+  const totalt = personRelevante.length;
+  const ferdig = personRelevante.filter(i => i.ferdig).length;
+  const pct = totalt ? Math.round(ferdig / totalt * 100) : 0;
+  document.getElementById('progress-label').textContent = `${ferdig} / ${totalt} gjort`;
+  document.getElementById('progress-fill').style.width = pct + '%';
+
   // Seksjoner som alltid skal vises sist
   const SEKSJON_SIST = ['SMØR SAL'];
 
   // Group by kategori, then by seksjon within kategori
   const byKategori = {};
-  const visibleItems = aktivPerson !== 'alle' ? items.filter(i => !i.ferdig) : items;
+  const visibleItems = aktivPerson !== 'alle' ? personRelevante.filter(i => !i.ferdig) : personRelevante;
   visibleItems.forEach(i => {
     const sek = i.seksjon || 'ANNET';
-    const kat = SEKSJON_KATEGORI_OVERRIDE[sek] || i.kategori || 'ANNET';
+    const kat = effektivKategori(i);
     if (!byKategori[kat]) byKategori[kat] = {};
     if (!byKategori[kat][sek]) byKategori[kat][sek] = [];
     byKategori[kat][sek].push(i);
