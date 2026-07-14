@@ -627,28 +627,79 @@ async function lastNedPDF(btn, meny) {
         kategoriGrupperPDF[norm].retter.push(r);
       });
       const kategoriNoklerPDF = Object.keys(kategoriGrupperPDF).sort(katSortPDF);
+
+      // Behagelige, lesbare grunnstørrelser — det vi helst vil bruke.
+      const komfortabel = { headerFont: 13, headerGapFor: 14, headerGapEtter: 20, navnFont: 12, navnLinje: 14, beskrivelseFont: 9.5, beskrivelseLinje: 11.5, avstandEtterRett: 8 };
+
+      function malBeskrivelser(fontStr) {
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(fontStr);
+        const map = new Map();
+        kategoriNoklerPDF.forEach(nokkel => {
+          kategoriGrupperPDF[nokkel].retter.forEach(r => {
+            map.set(r, r.beskrivelse ? doc.splitTextToSize(r.beskrivelse, cW) : []);
+          });
+        });
+        return map;
+      }
+
+      function beregnTotalHoyde(fs, linjekart) {
+        let h = 0;
+        kategoriNoklerPDF.forEach(nokkel => {
+          h += fs.headerGapFor + fs.headerGapEtter;
+          kategoriGrupperPDF[nokkel].retter.forEach(r => {
+            const linjer = linjekart.get(r);
+            h += fs.navnLinje + linjer.length * fs.beskrivelseLinje + fs.avstandEtterRett;
+          });
+        });
+        return h;
+      }
+
+      const tilgjengelig = PAGE_BOTTOM - y - 30; // 30pt margin til allergenlinjen
+      let linjekart = malBeskrivelser(komfortabel.beskrivelseFont);
+      const totalKomfortabel = beregnTotalHoyde(komfortabel, linjekart);
+
+      let fs = komfortabel;
+      let ekstraPerKategori = 0;
+      if (totalKomfortabel <= tilgjengelig) {
+        // God plass — fordel det som er til overs som luft mellom seksjonene, i stedet for tomrom nederst
+        ekstraPerKategori = Math.min(30, (tilgjengelig - totalKomfortabel) / kategoriNoklerPDF.length);
+      } else {
+        // Trangt — skaler ned jevnt slik at alt fortsatt får plass på én side
+        const skala = Math.max(0.72, tilgjengelig / totalKomfortabel);
+        fs = {
+          headerFont: komfortabel.headerFont * skala,
+          headerGapFor: komfortabel.headerGapFor * skala,
+          headerGapEtter: komfortabel.headerGapEtter * skala,
+          navnFont: komfortabel.navnFont * skala,
+          navnLinje: komfortabel.navnLinje * skala,
+          beskrivelseFont: komfortabel.beskrivelseFont * skala,
+          beskrivelseLinje: komfortabel.beskrivelseLinje * skala,
+          avstandEtterRett: komfortabel.avstandEtterRett * skala,
+        };
+        linjekart = malBeskrivelser(fs.beskrivelseFont); // mål på nytt med riktig skriftstørrelse
+      }
+
       for (const nokkel of kategoriNoklerPDF) {
         const gruppe = kategoriGrupperPDF[nokkel];
-        trengNySide(6 + 17 + 36); // overskrift + plass til minst én rett, ellers ny side
-        y += 6;
+        trengNySide(ekstraPerKategori + fs.headerGapFor + fs.headerGapEtter + fs.navnLinje + fs.avstandEtterRett);
+        y += ekstraPerKategori + fs.headerGapFor;
         doc.setFont('helvetica', 'bold');
-        doc.setFontSize(11.5);
+        doc.setFontSize(fs.headerFont);
         doc.setTextColor(...burgunder);
         doc.text(gruppe.visning.toUpperCase(), mL, y);
-        y += 17;
+        y += fs.headerGapEtter;
 
         for (const r of gruppe.retter) {
           const navn = (r.navn || '').toUpperCase();
           const pris = r.pris != null ? String(r.pris) : '';
           const allerg = r.allergener ? '( ' + r.allergener + ' )' : '';
-          doc.setFont('helvetica', 'normal');
-          doc.setFontSize(8.5);
-          const beskrivelseLines = r.beskrivelse ? doc.splitTextToSize(r.beskrivelse, cW) : [];
-          const behov = 11.5 + (beskrivelseLines.length * 9.5) + 4;
+          const beskrivelseLines = linjekart.get(r);
+          const behov = fs.navnLinje + (beskrivelseLines.length * fs.beskrivelseLinje) + fs.avstandEtterRett;
           trengNySide(behov);
 
           doc.setFont('helvetica', 'bold');
-          doc.setFontSize(10.5);
+          doc.setFontSize(fs.navnFont);
           doc.setTextColor(26, 26, 26);
           doc.text(navn, mL, y);
           const navnW = doc.getTextWidth(navn);
@@ -658,26 +709,26 @@ async function lastNedPDF(btn, meny) {
             if (allerg) {
               const prisW = doc.getTextWidth(pris);
               doc.setFont('helvetica', 'normal');
-              doc.setFontSize(6.5);
+              doc.setFontSize(7);
               doc.setTextColor(120, 118, 115);
               doc.text(allerg, mL + navnW + 7 + prisW + 4, y);
             }
           } else if (allerg) {
             doc.setFont('helvetica', 'normal');
-            doc.setFontSize(6.5);
+            doc.setFontSize(7);
             doc.setTextColor(120, 118, 115);
             doc.text(allerg, mL + navnW + 7, y);
           }
-          y += 11.5;
+          y += fs.navnLinje;
 
           if (beskrivelseLines.length) {
             doc.setFont('helvetica', 'normal');
-            doc.setFontSize(8.5);
+            doc.setFontSize(fs.beskrivelseFont);
             doc.setTextColor(60, 58, 55);
             doc.text(beskrivelseLines, mL, y);
-            y += beskrivelseLines.length * 9.5;
+            y += beskrivelseLines.length * fs.beskrivelseLinje;
           }
-          y += 4;
+          y += fs.avstandEtterRett;
         }
       }
     }
