@@ -51,6 +51,12 @@ header { background: #1a1a1a; padding: 1rem 1.25rem; padding-top: calc(1rem + en
 .modal h3 { font-size: 1rem; font-weight: 600; margin-bottom: 0.25rem; color: #1a1a1a; }
 .modal input, .modal select { padding: 0.7rem 0.85rem; border: 0.5px solid #e5e2da; border-radius: 10px; font-size: 0.95rem; background: #f7f6f3; color: #1a1a1a; width: 100%; outline: none; }
 .modal select option { background: #fff; }
+.seksjon-wrap { position: relative; }
+.seksjon-forslag { display: none; position: relative; background: #fff; border: 0.5px solid #e5e2da; border-radius: 10px; margin-top: -0.4rem; overflow-y: auto; max-height: 180px; box-shadow: 0 4px 14px rgba(0,0,0,0.08); }
+.seksjon-forslag.open { display: block; }
+.seksjon-forslag-row { padding: 0.6rem 0.85rem; font-size: 0.88rem; cursor: pointer; border-bottom: 0.5px solid #f0eee8; }
+.seksjon-forslag-row:last-child { border-bottom: none; }
+.seksjon-forslag-row:active { background: #f7f6f3; }
 .modal-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; margin-top: 0.25rem; }
 .modal-btns button { padding: 0.8rem; border-radius: 10px; font-size: 0.95rem; font-weight: 600; cursor: pointer; border: none; }
 .btn-lagre { background: #1a1a1a; color: #fff; }
@@ -110,24 +116,10 @@ header { background: #1a1a1a; padding: 1rem 1.25rem; padding-top: calc(1rem + en
       <option>DIVERSE</option>
       <option>ANNET</option>
     </select>
-    <select id="modal-seksjon" onchange="oppdaterSeksjonInput()">
-      <option value="">Rett (valgfritt)</option>
-      <option>ASPERGES BLANCHE</option>
-      <option>FOIE GRAS</option>
-      <option>POULPE & MERGUEZ</option>
-      <option>ST. JACQUES</option>
-      <option>MOULES MARINIÈRE</option>
-      <option>MÉDAILLON DE LOTTE</option>
-      <option>CUISSE DE CANARD CONFIT</option>
-      <option>ENTRECÔTE</option>
-      <option>TARTE TATIN</option>
-      <option>CRÊPE SUZETTE</option>
-      <option>CREMEUSE AU CHOCOLAT</option>
-      <option>COLONEL AU CITRON</option>
-      <option value="__NY__">+ Ny rett / endre navn...</option>
-      <option>ANNET</option>
-    </select>
-    <input type="text" id="modal-seksjon-ny" placeholder="Rettnavn (skriv inn)" autocorrect="off" autocapitalize="characters" style="display:none">
+    <div class="seksjon-wrap">
+      <input type="text" id="modal-seksjon" placeholder="Rett (valgfritt) — skriv navn eller velg fra listen" autocorrect="off" autocapitalize="characters" oninput="visSeksjonForslag()" onfocus="visSeksjonForslag()">
+      <div class="seksjon-forslag" id="seksjon-forslag"></div>
+    </div>
     <input type="text" id="modal-tekst" placeholder="Beskrivelse *" autocorrect="off">
     <div class="modal-btns">
       <button class="btn-avbryt" onclick="lukkModal()">Avbryt</button>
@@ -264,8 +256,7 @@ function apneNy() {
   editId = null;
   document.getElementById('modal-tittel').textContent = 'Legg til punkt';
   document.getElementById('modal-seksjon').value = '';
-  document.getElementById('modal-seksjon-ny').style.display = 'none';
-  document.getElementById('modal-seksjon-ny').value = '';
+  skjulSeksjonForslag();
   document.getElementById('modal-kategori').value = '';
   document.getElementById('modal-tekst').value = '';
   document.getElementById('modal').style.display = 'flex';
@@ -278,19 +269,8 @@ function apneRediger(id) {
   editId = id;
   document.getElementById('modal-tittel').textContent = 'Rediger punkt';
   document.getElementById('modal-kategori').value = item.kategori || '';
-  const seksjonSelect = document.getElementById('modal-seksjon');
-  const seksjonNy = document.getElementById('modal-seksjon-ny');
-  const seksjonVerdi = item.seksjon || '';
-  const finnesIDropdown = Array.from(seksjonSelect.options).some(o => o.value === seksjonVerdi || o.text === seksjonVerdi);
-  if (seksjonVerdi && !finnesIDropdown) {
-    seksjonSelect.value = '__NY__';
-    seksjonNy.style.display = '';
-    seksjonNy.value = seksjonVerdi;
-  } else {
-    seksjonSelect.value = seksjonVerdi;
-    seksjonNy.style.display = 'none';
-    seksjonNy.value = '';
-  }
+  document.getElementById('modal-seksjon').value = item.seksjon || '';
+  skjulSeksjonForslag();
   document.getElementById('modal-tekst').value = item.tekst;
   document.getElementById('modal').style.display = 'flex';
   setTimeout(() => document.getElementById('modal-tekst').focus(), 100);
@@ -299,9 +279,7 @@ function apneRediger(id) {
 async function lagreItem() {
   const tekst = document.getElementById('modal-tekst').value.trim();
   const kategori = document.getElementById('modal-kategori').value || null;
-  const seksjonRaw = document.getElementById('modal-seksjon').value;
-  const seksjonNyVerdi = document.getElementById('modal-seksjon-ny').value.trim().toUpperCase();
-  const seksjon = seksjonRaw === '__NY__' ? (seksjonNyVerdi || null) : (seksjonRaw || null);
+  const seksjon = document.getElementById('modal-seksjon').value.trim().toUpperCase() || null;
   if (!tekst) { alert('Skriv inn beskrivelse'); return; }
   if (editId) {
     const gammeltItem = items.find(i => i.id === editId);
@@ -324,16 +302,23 @@ async function lagreItem() {
   hent();
 }
 
-function oppdaterSeksjonInput() {
-  const val = document.getElementById('modal-seksjon').value;
-  const nyInput = document.getElementById('modal-seksjon-ny');
-  if (val === '__NY__') {
-    nyInput.style.display = '';
-    setTimeout(() => nyInput.focus(), 50);
-  } else {
-    nyInput.style.display = 'none';
-    nyInput.value = '';
-  }
+function visSeksjonForslag() {
+  const q = document.getElementById('modal-seksjon').value.trim().toLowerCase();
+  const box = document.getElementById('seksjon-forslag');
+  const alleSeksjoner = [...new Set(items.map(i => i.seksjon).filter(Boolean))].sort();
+  const treff = (q ? alleSeksjoner.filter(s => s.toLowerCase().includes(q)) : alleSeksjoner).slice(0, 8);
+  if (!treff.length) { box.classList.remove('open'); box.innerHTML = ''; return; }
+  box.innerHTML = treff.map(s => `<div class="seksjon-forslag-row" onmousedown="event.preventDefault(); velgSeksjon('${s.replace(/'/g, "\\'")}')">${s}</div>`).join('');
+  box.classList.add('open');
+}
+function skjulSeksjonForslag() {
+  const box = document.getElementById('seksjon-forslag');
+  box.classList.remove('open');
+  box.innerHTML = '';
+}
+function velgSeksjon(navn) {
+  document.getElementById('modal-seksjon').value = navn;
+  skjulSeksjonForslag();
 }
 function lukkModal() { document.getElementById('modal').style.display = 'none'; editId = null; }
 function lukkModalOverlay(e) { if (e.target === document.getElementById('modal')) lukkModal(); }
