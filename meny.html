@@ -607,16 +607,28 @@ async function lastNedPDF(btn, meny) {
 
     } else {
       // MIDDAG: venstrejustert med burgunder seksjonstittler
-      const kategorier = [...new Set(retter.map(r => r.kategori))].sort(katSortPDF);
-      for (const kat of kategorier) {
+      const normaliserKategoriPDF = s => (s || '')
+        .trim()
+        .replace(/\s+/g, ' ')
+        .replace(/[\u2010\u2011\u2012\u2013\u2014\u2212]/g, '-')
+        .toLowerCase();
+      const kategoriGrupperPDF = {};
+      retter.forEach(r => {
+        const norm = normaliserKategoriPDF(r.kategori);
+        if (!kategoriGrupperPDF[norm]) kategoriGrupperPDF[norm] = { visning: (r.kategori || '').trim(), retter: [] };
+        kategoriGrupperPDF[norm].retter.push(r);
+      });
+      const kategoriNoklerPDF = Object.keys(kategoriGrupperPDF).sort(katSortPDF);
+      for (const nokkel of kategoriNoklerPDF) {
+        const gruppe = kategoriGrupperPDF[nokkel];
         y += 10;
         doc.setFont('helvetica', 'bold');
         doc.setFontSize(13);
         doc.setTextColor(...burgunder);
-        doc.text(kat.toUpperCase(), mL, y);
+        doc.text(gruppe.visning.toUpperCase(), mL, y);
         y += 22;
 
-        for (const r of retter.filter(r2 => r2.kategori === kat)) {
+        for (const r of gruppe.retter) {
           const navn = (r.navn || '').toUpperCase();
           const pris = r.pris != null ? String(r.pris) : '';
           const allerg = r.allergener ? '( ' + r.allergener + ' )' : '';
