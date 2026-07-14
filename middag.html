@@ -317,8 +317,11 @@
       <input class="inp" id="tipsPct" type="number" value="5" min="0" max="30" step="0.5">
     </div>
     <div class="row">
-      <span class="row-label sub">herav tips (kr pr dag)</span>
+      <span class="row-label sub">herav tips (kr pr dag) — går til ansatte, ikke inntekt</span>
       <span class="row-value computed" id="tipsKr">–</span>
+    </div>
+    <div class="row" style="font-size:12px;color:#888;line-height:1.4;padding-top:0;">
+      Tips holdes helt utenfor GP og Resultat under — det er de ansattes penger, ikke driftens.
     </div>
   </div>
 
@@ -631,11 +634,11 @@
 
     const snittEks     = mat + drikk;                        // eks mva pr kuvert
     const snittInklMva = snittEks * 1.25;
-    const tipsKr       = snittInklMva * pax * tpct;         // tips av inkl mva
+    const tipsKr       = snittInklMva * pax * tpct;         // tips av inkl mva — går til ansatte, IKKE inntekt for driften
     const omsEksMva    = snittEks * pax;                     // omsetning eks mva, eks tips
 
     const vkDag  = omsEksMva * vpct;
-    const gpDag  = omsEksMva - vkDag + tipsKr;              // GP = (oms - vk) + tips
+    const gpDag  = omsEksMva - vkDag;                       // GP = oms - vk (tips holdes helt utenfor)
 
     const lonMndTotal = (joakimMnd + benjaminMnd) * (1 + aga);  // inkl AGA
     const lonFastDag  = dpw > 0 ? lonMndTotal / (dpw * 4) : 0;   // prorata til pr dag, samme konvensjon som ADK
@@ -647,6 +650,7 @@
 
     // Disponibelt til Thomas & Christine: det som er igjen etter innleid personale og ADK.
     // De tar ingen fast lønn selv i dag, så dette ER deres inntekt fra middagsdriften.
+    // Tips er IKKE med her — det tilhører de ansatte, ikke driften.
     const nettoDag = gpDag - lonInklAga - adkDag;
 
     const nettoMnd = nettoDag * dpw * 4;
@@ -666,8 +670,8 @@
     const adkAar   = adkDag * dpw * wpy;
 
     // Breakeven (Scenario A): PAX der GP dekker BÅDE lønn og andre driftskostnader
-    // gpPerPax = snittEks*(1-vpct) + snittInklMva*tpct
-    const gpPerPax = snittEks * (1 - vpct) + snittInklMva * tpct;
+    // gpPerPax = snittEks*(1-vpct) — tips holdes utenfor, samme prinsipp som GP over
+    const gpPerPax = snittEks * (1 - vpct);
     const be = gpPerPax > 0 ? Math.ceil((lonInklAga + adkDag) / gpPerPax) : null;
 
     // ── Write ──
