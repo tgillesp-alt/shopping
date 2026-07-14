@@ -159,9 +159,12 @@ textarea { width: 100%; padding: 0.7rem 0.85rem; border: 0.5px solid #e5e2da; bo
 
   <div class="view" id="view-priser">
     <div class="hjelp" style="margin-top:0;">Legg inn faste priser på varer du bruker ofte (melk, fløte, smør, indrefilet, kveite osv.). Når du legger en ingrediens til en rett, kan du søke opp varen her i stedet for å skrive prisen på nytt hver gang.</div>
+    <input type="text" id="pris-sok" placeholder="🔍 Søk i prislisten (navn eller leverandør)..." oninput="renderPriser()" style="margin-bottom:0.75rem;">
+    <div class="add-form-btns" style="margin-bottom:1rem;">
+      <button class="btn-secondary" onclick="apneNyVare()" style="margin-top:0;">+ Legg til vare</button>
+      <button class="btn-secondary" onclick="visImport()" style="margin-top:0;">⇪ Importer fra Excel</button>
+    </div>
     <div id="liste-priser"></div>
-    <button class="add-toggle-btn" onclick="apneNyVare()">+ Legg til vare i prislisten</button>
-    <button class="add-toggle-btn" onclick="visImport()">⇪ Importer flere varer fra Excel</button>
 
     <div class="import-panel" id="import-panel">
       <div class="hjelp" style="margin-top:0;">Lag 5 kolonner i Excel i denne rekkefølgen: <b>Navn, Kategori, Innkjøpspris, Innkjøpsenhet, Standard enhet</b> (Kategori og Standard enhet kan stå tomme). Merk cellene, kopier (Ctrl/Cmd+C), og lim inn her under (Ctrl/Cmd+V).</div>
@@ -195,11 +198,17 @@ Smør	Meieri	65	kg	g"></textarea>
     <h3 id="vm-tittel">Ny vare</h3>
     <div class="field-group">
       <label>Varenavn</label>
-      <input type="text" id="vm-navn" placeholder="F.eks. Indrefilet">
+      <div class="produkt-wrap">
+        <input type="text" id="vm-navn" placeholder="F.eks. Indrefilet" oninput="visVareNavnForslag()" onfocus="visVareNavnForslag()">
+        <div class="produkt-forslag" id="vm-navn-forslag"></div>
+      </div>
     </div>
     <div class="field-group">
-      <label>Kategori (valgfritt)</label>
-      <input type="text" id="vm-kategori" placeholder="F.eks. Kjøtt, Meieri, Fisk">
+      <label>Kategori / leverandør (valgfritt)</label>
+      <div class="produkt-wrap">
+        <input type="text" id="vm-kategori" placeholder="F.eks. Carl Evensen, Meieri" oninput="visVareKategoriForslag()" onfocus="visVareKategoriForslag()">
+        <div class="produkt-forslag" id="vm-kategori-forslag"></div>
+      </div>
     </div>
     <div class="row2">
       <div class="field-group">
@@ -890,11 +899,19 @@ async function lagreInnstillinger() {
 
 function renderPriser() {
   const container = document.getElementById('liste-priser');
+  const sokEl = document.getElementById('pris-sok');
+  const sok = sokEl ? sokEl.value.trim().toLowerCase() : '';
+  const liste = sok
+    ? masterVarer.filter(v => v.navn.toLowerCase().includes(sok) || (v.kategori || '').toLowerCase().includes(sok))
+    : masterVarer;
+
   if (!masterVarer.length) { container.innerHTML = '<div class="empty">Ingen varer i prislisten ennå</div>'; return; }
-  const kategorier = [...new Set(masterVarer.map(v => v.kategori || 'Annet'))].sort();
+  if (!liste.length) { container.innerHTML = `<div class="empty">Ingen treff på "${sok}"</div>`; return; }
+
+  const kategorier = [...new Set(liste.map(v => v.kategori || 'Annet'))].sort();
   container.innerHTML = kategorier.map(kat => `
     <div class="section-label">${kat}</div>
-    ${masterVarer.filter(v => (v.kategori || 'Annet') === kat).map(v => `
+    ${liste.filter(v => (v.kategori || 'Annet') === kat).map(v => `
       <div class="vare-row" onclick="apneRedigerVare('${v.id}')">
         <div>
           <div class="vare-navn">${v.navn}</div>
@@ -916,6 +933,8 @@ function apneNyVare() {
   document.getElementById('vm-standard-enhet').value = '';
   document.getElementById('vm-slett-btn').style.display = 'none';
   document.getElementById('vare-modal').style.display = 'flex';
+  skjulVareNavnForslag();
+  skjulVareKategoriForslag();
 }
 
 function apneRedigerVare(id) {
@@ -930,6 +949,8 @@ function apneRedigerVare(id) {
   document.getElementById('vm-standard-enhet').value = v.standard_enhet || '';
   document.getElementById('vm-slett-btn').style.display = 'block';
   document.getElementById('vare-modal').style.display = 'flex';
+  skjulVareNavnForslag();
+  skjulVareKategoriForslag();
 }
 
 function lukkVareModal() {
@@ -937,6 +958,46 @@ function lukkVareModal() {
   redigerVareId = null;
 }
 function lukkVareModalOverlay(e) { if (e.target === document.getElementById('vare-modal')) lukkVareModal(); }
+
+function visVareNavnForslag() {
+  const q = document.getElementById('vm-navn').value.trim().toLowerCase();
+  const box = document.getElementById('vm-navn-forslag');
+  if (!q) { box.classList.remove('open'); box.innerHTML = ''; return; }
+  const treff = [...new Set(masterVarer.map(v => v.navn))]
+    .filter(n => n.toLowerCase().includes(q) && n.toLowerCase() !== q)
+    .slice(0, 6);
+  if (!treff.length) { box.classList.remove('open'); box.innerHTML = ''; return; }
+  box.innerHTML = treff.map(n => `<div class="produkt-forslag-row" onmousedown="event.preventDefault(); velgVareNavnForslag('${n.replace(/'/g, "\\'")}')"><div class="produkt-forslag-navn">${n}</div></div>`).join('');
+  box.classList.add('open');
+}
+function skjulVareNavnForslag() {
+  const box = document.getElementById('vm-navn-forslag');
+  box.classList.remove('open');
+  box.innerHTML = '';
+}
+function velgVareNavnForslag(navn) {
+  document.getElementById('vm-navn').value = navn;
+  skjulVareNavnForslag();
+}
+
+function visVareKategoriForslag() {
+  const q = document.getElementById('vm-kategori').value.trim().toLowerCase();
+  const box = document.getElementById('vm-kategori-forslag');
+  const alle = [...new Set(masterVarer.map(v => v.kategori).filter(Boolean))].sort();
+  const treff = (q ? alle.filter(k => k.toLowerCase().includes(q)) : alle).slice(0, 8);
+  if (!treff.length) { box.classList.remove('open'); box.innerHTML = ''; return; }
+  box.innerHTML = treff.map(k => `<div class="produkt-forslag-row" onmousedown="event.preventDefault(); velgVareKategoriForslag('${k.replace(/'/g, "\\'")}')"><div class="produkt-forslag-navn">${k}</div></div>`).join('');
+  box.classList.add('open');
+}
+function skjulVareKategoriForslag() {
+  const box = document.getElementById('vm-kategori-forslag');
+  box.classList.remove('open');
+  box.innerHTML = '';
+}
+function velgVareKategoriForslag(kat) {
+  document.getElementById('vm-kategori').value = kat;
+  skjulVareKategoriForslag();
+}
 
 async function lagreVare() {
   const navn = document.getElementById('vm-navn').value.trim();
