@@ -630,20 +630,39 @@ function kpFarge(kp, harLinjer) {
 
 const KAT_REKKEFOLGE = ['Huîtres', 'Huîtres – Østers', 'Østers', 'Entrées', 'Entrées – Forretter', 'Forretter', 'Plats', 'Plats – Hovedretter', 'Hovedretter', 'Fromage', 'Fromage – Ost', 'Ost', 'Desserts', 'Desserts – Desserter', 'Desserter', 'Extras', 'Extra', 'Tillegg'];
 
+function normaliserKategoriListe(s) {
+  return (s || '')
+    .trim()
+    .replace(/\s+/g, ' ')
+    .replace(/[\u2010\u2011\u2012\u2013\u2014\u2212]/g, '-')
+    .toLowerCase();
+}
+
 function renderListe(meny) {
   const liste = retter.filter(r => r.meny === meny);
   const container = document.getElementById('liste-' + meny);
   if (!liste.length) { container.innerHTML = '<div class="empty">Ingen retter funnet i menyen. Legg dem inn på Meny-fanen først.</div>'; return; }
 
-  const kategorier = [...new Set(liste.map(r => r.kategori))].sort((a, b) => {
-    const ai = KAT_REKKEFOLGE.findIndex(k => (a || '').toLowerCase().includes(k.toLowerCase()));
-    const bi = KAT_REKKEFOLGE.findIndex(k => (b || '').toLowerCase().includes(k.toLowerCase()));
+  // Grupper etter normalisert kategori-tekst (samme fiks som i Meny-appen), slik at
+  // små skrivemåte-forskjeller (mellomrom, ulike bindestreker) ikke lager to seksjoner
+  // av det som egentlig skal være samme kategori.
+  const kategoriGrupperListe = {};
+  liste.forEach(r => {
+    const norm = normaliserKategoriListe(r.kategori);
+    if (!kategoriGrupperListe[norm]) kategoriGrupperListe[norm] = { visning: (r.kategori || 'Uten kategori').trim(), retter: [] };
+    kategoriGrupperListe[norm].retter.push(r);
+  });
+  const kategoriNoklerListe = Object.keys(kategoriGrupperListe).sort((a, b) => {
+    const ai = KAT_REKKEFOLGE.findIndex(k => a.includes(normaliserKategoriListe(k)));
+    const bi = KAT_REKKEFOLGE.findIndex(k => b.includes(normaliserKategoriListe(k)));
     return (ai === -1 ? 999 : ai) - (bi === -1 ? 999 : bi);
   });
 
-  container.innerHTML = kategorier.map(kat => `
-    <div class="section-label">${kat || 'Uten kategori'}</div>
-    ${liste.filter(r => r.kategori === kat).map(r => {
+  container.innerHTML = kategoriNoklerListe.map(nokkel => {
+    const gruppe = kategoriGrupperListe[nokkel];
+    return `
+    <div class="section-label">${gruppe.visning}</div>
+    ${gruppe.retter.map(r => {
       const b = beregnRett(r);
       return `
         <div class="rett-card" onclick="apneRett('${r.id}')">
@@ -658,7 +677,8 @@ function renderListe(meny) {
         </div>
       `;
     }).join('')}
-  `).join('');
+  `;
+  }).join('');
 }
 
 function apneRett(id) {
@@ -923,10 +943,18 @@ function renderPriser() {
   if (!masterVarer.length) { container.innerHTML = '<div class="empty">Ingen varer i prislisten ennå</div>'; return; }
   if (!liste.length) { container.innerHTML = `<div class="empty">Ingen treff på "${sok}"</div>`; return; }
 
-  const kategorier = [...new Set(liste.map(v => v.kategori || 'Annet'))].sort();
-  container.innerHTML = kategorier.map(kat => `
-    <div class="section-label">${kat}</div>
-    ${liste.filter(v => (v.kategori || 'Annet') === kat).map(v => `
+  const kategoriGrupperPriser = {};
+  liste.forEach(v => {
+    const norm = normaliserKategoriListe(v.kategori || 'Annet');
+    if (!kategoriGrupperPriser[norm]) kategoriGrupperPriser[norm] = { visning: (v.kategori || 'Annet').trim(), varer: [] };
+    kategoriGrupperPriser[norm].varer.push(v);
+  });
+  const kategoriNoklerPriser = Object.keys(kategoriGrupperPriser).sort();
+  container.innerHTML = kategoriNoklerPriser.map(nokkel => {
+    const gruppe = kategoriGrupperPriser[nokkel];
+    return `
+    <div class="section-label">${gruppe.visning}</div>
+    ${gruppe.varer.map(v => `
       <div class="vare-row" onclick="apneRedigerVare('${v.id}')">
         <div>
           <div class="vare-navn">${v.navn}</div>
@@ -936,7 +964,8 @@ function renderPriser() {
         <div class="vare-pris">${v.innkjopspris} kr/${v.innkjopsenhet}</div>
       </div>
     `).join('')}
-  `).join('');
+  `;
+  }).join('');
 }
 
 function apneNyVare() {
@@ -1110,10 +1139,18 @@ async function bekreftImport() {
 function renderBatcher() {
   const container = document.getElementById('liste-batcher');
   if (!batcher.length) { container.innerHTML = '<div class="empty">Ingen batcher opprettet ennå</div>'; return; }
-  const kategorier = [...new Set(batcher.map(b => b.kategori || 'Annet'))].sort();
-  container.innerHTML = kategorier.map(kat => `
-    <div class="section-label">${kat}</div>
-    ${batcher.filter(b => (b.kategori || 'Annet') === kat).map(b => {
+  const kategoriGrupperBatch = {};
+  batcher.forEach(b => {
+    const norm = normaliserKategoriListe(b.kategori || 'Annet');
+    if (!kategoriGrupperBatch[norm]) kategoriGrupperBatch[norm] = { visning: (b.kategori || 'Annet').trim(), batcher: [] };
+    kategoriGrupperBatch[norm].batcher.push(b);
+  });
+  const kategoriNoklerBatch = Object.keys(kategoriGrupperBatch).sort();
+  container.innerHTML = kategoriNoklerBatch.map(nokkel => {
+    const gruppe = kategoriGrupperBatch[nokkel];
+    return `
+    <div class="section-label">${gruppe.visning}</div>
+    ${gruppe.batcher.map(b => {
       const ber = beregnBatch(b);
       return `
         <div class="rett-card" onclick="apneBatch('${b.id}')">
@@ -1128,7 +1165,8 @@ function renderBatcher() {
         </div>
       `;
     }).join('')}
-  `).join('');
+  `;
+  }).join('');
 }
 
 function apneBatch(id) {
