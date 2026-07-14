@@ -540,14 +540,22 @@ async function lastNedPDF(btn, meny) {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF({ unit: 'pt', format: 'a4' });
     const W = 595, H = 842;
-    const mL = 45, mR = 45, mT = 55, mB = 52;
+    const mL = 45, mR = 45, mT = 32, mB = 40;
     const cW = W - mL - mR;
     const burgunder = [120, 20, 30];
+    const PAGE_BOTTOM = H - mB;
 
     const logoImg = await loadImg('logo-print.png');
-    const lh = 90, lw = 90;
+    const lh = 55, lw = 55;
     doc.addImage(logoImg, 'PNG', W/2 - lw/2, mT, lw, lh);
-    let y = mT + lh + 55;
+    let y = mT + lh + 20;
+
+    function trengNySide(behov) {
+      if (y + behov > PAGE_BOTTOM) {
+        doc.addPage();
+        y = mT;
+      }
+    }
 
     const res = await fetch(`${SUPABASE_URL}/rest/v1/meny_retter?meny=eq.${meny}&order=sort_order.asc,created_at.asc`, {
       headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}`, 'Cache-Control': 'no-cache' }
@@ -621,20 +629,26 @@ async function lastNedPDF(btn, meny) {
       const kategoriNoklerPDF = Object.keys(kategoriGrupperPDF).sort(katSortPDF);
       for (const nokkel of kategoriNoklerPDF) {
         const gruppe = kategoriGrupperPDF[nokkel];
-        y += 10;
+        trengNySide(6 + 17 + 36); // overskrift + plass til minst én rett, ellers ny side
+        y += 6;
         doc.setFont('helvetica', 'bold');
-        doc.setFontSize(13);
+        doc.setFontSize(11.5);
         doc.setTextColor(...burgunder);
         doc.text(gruppe.visning.toUpperCase(), mL, y);
-        y += 22;
+        y += 17;
 
         for (const r of gruppe.retter) {
           const navn = (r.navn || '').toUpperCase();
           const pris = r.pris != null ? String(r.pris) : '';
           const allerg = r.allergener ? '( ' + r.allergener + ' )' : '';
+          doc.setFont('helvetica', 'normal');
+          doc.setFontSize(8.5);
+          const beskrivelseLines = r.beskrivelse ? doc.splitTextToSize(r.beskrivelse, cW) : [];
+          const behov = 11.5 + (beskrivelseLines.length * 9.5) + 4;
+          trengNySide(behov);
 
           doc.setFont('helvetica', 'bold');
-          doc.setFontSize(12);
+          doc.setFontSize(10.5);
           doc.setTextColor(26, 26, 26);
           doc.text(navn, mL, y);
           const navnW = doc.getTextWidth(navn);
@@ -644,37 +658,37 @@ async function lastNedPDF(btn, meny) {
             if (allerg) {
               const prisW = doc.getTextWidth(pris);
               doc.setFont('helvetica', 'normal');
-              doc.setFontSize(7);
+              doc.setFontSize(6.5);
               doc.setTextColor(120, 118, 115);
               doc.text(allerg, mL + navnW + 7 + prisW + 4, y);
             }
           } else if (allerg) {
             doc.setFont('helvetica', 'normal');
-            doc.setFontSize(7);
+            doc.setFontSize(6.5);
             doc.setTextColor(120, 118, 115);
             doc.text(allerg, mL + navnW + 7, y);
           }
-          y += 13;
+          y += 11.5;
 
-          if (r.beskrivelse) {
+          if (beskrivelseLines.length) {
             doc.setFont('helvetica', 'normal');
-            doc.setFontSize(10);
+            doc.setFontSize(8.5);
             doc.setTextColor(60, 58, 55);
-            const lines = doc.splitTextToSize(r.beskrivelse, cW);
-            doc.text(lines, mL, y);
-            y += lines.length * 11;
+            doc.text(beskrivelseLines, mL, y);
+            y += beskrivelseLines.length * 9.5;
           }
-          y += 6;
+          y += 4;
         }
       }
     }
 
-    // Allergenliste fast i bunn
+    // Allergenliste fast i bunn — ny side hvis innholdet allerede fyller siden
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(7.5);
     doc.setTextColor(120, 118, 115);
     const aT = 'Allergener: E Egg, F Fisk, L Lactose, Sn Sennep, Pi Pistasj, So Soya, Se Sesam, By Bygg, H Hvete, Ha Havre, R Rug, Vn Valnøtt, S Selleri, Su sulfitt, N Nøtter, Ma Mandel, Mo Mollusc, Sk Skalldyr';
     const aLines = doc.splitTextToSize(aT, cW);
+    if (y > H - mB - (aLines.length * 10) - 10) doc.addPage();
     doc.text(aLines, W/2, H - mB, { align: 'center' });
 
     const dato = new Date().toLocaleDateString('no-NO', { day: '2-digit', month: '2-digit', year: '2-digit' }).replace(/\./g, '_');
