@@ -490,6 +490,30 @@
     <div class="card-header">Nøkkeltall</div>
     <div class="kpi-grid">
       <div class="kpi">
+        <span class="kpi-label">Dagsomsetning (eks mva)</span>
+        <span class="kpi-value" id="kpiOmsDag">–</span>
+      </div>
+      <div class="kpi">
+        <span class="kpi-label">Dags PAX</span>
+        <span class="kpi-value" id="kpiPaxDag">–</span>
+      </div>
+      <div class="kpi">
+        <span class="kpi-label">Ukesomsetning (eks mva)</span>
+        <span class="kpi-value" id="kpiOmsUke">–</span>
+      </div>
+      <div class="kpi">
+        <span class="kpi-label">Ukes PAX</span>
+        <span class="kpi-value" id="kpiPaxUke">–</span>
+      </div>
+      <div class="kpi">
+        <span class="kpi-label">Månedsomsetning (eks mva)</span>
+        <span class="kpi-value" id="kpiOmsMnd">–</span>
+      </div>
+      <div class="kpi">
+        <span class="kpi-label">Mnd PAX</span>
+        <span class="kpi-value" id="kpiPaxMnd">–</span>
+      </div>
+      <div class="kpi">
         <span class="kpi-label">GP %</span>
         <span class="kpi-value" id="kpiGp">–</span>
       </div>
@@ -625,8 +649,11 @@
     const nettoAar = nettoDag * dpw * wpy;
     const gpMnd    = gpDag * dpw * 4;
     const gpAar    = gpDag * dpw * wpy;
+    const omsUke   = omsEksMva * dpw;
     const omsMnd   = omsEksMva * dpw * 4;
     const omsAar   = omsEksMva * dpw * wpy;
+    const paxUke   = pax * dpw;
+    const paxMnd   = pax * dpw * 4;
     const vkMnd    = vkDag * dpw * 4;
     const vkAar    = vkDag * dpw * wpy;
     const lonMnd   = lonInklAga * dpw * 4;
@@ -665,6 +692,13 @@
     document.getElementById('nettoAar').textContent = nok(nettoAar);
 
     // KPI
+    document.getElementById('kpiOmsDag').textContent = nok(omsEksMva);
+    document.getElementById('kpiOmsUke').textContent = nok(omsUke);
+    document.getElementById('kpiOmsMnd').textContent = nok(omsMnd);
+    document.getElementById('kpiPaxDag').textContent = pax.toLocaleString('nb-NO');
+    document.getElementById('kpiPaxUke').textContent = paxUke.toLocaleString('nb-NO');
+    document.getElementById('kpiPaxMnd').textContent = paxMnd.toLocaleString('nb-NO');
+
     const gpPct = omsEksMva > 0 ? gpDag / omsEksMva : 0;
     const gpEl = document.getElementById('kpiGp');
     gpEl.textContent = pct(gpPct);
