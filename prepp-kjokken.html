@@ -107,6 +107,7 @@ header { background: #1a1a1a; padding: 1rem 1.25rem; padding-top: calc(1rem + en
       <option>FORRETTER</option>
       <option>HOVEDRETTER</option>
       <option>DESSERTER</option>
+      <option>DIVERSE</option>
       <option>ANNET</option>
     </select>
     <select id="modal-seksjon" onchange="oppdaterSeksjonInput()">
@@ -158,10 +159,10 @@ async function hent() {
   render();
 }
 
-const KATEGORI_ORDER = ['FORRETTER', 'HOVEDRETTER', 'DESSERTER'];
+const KATEGORI_ORDER = ['FORRETTER', 'HOVEDRETTER', 'DESSERTER', 'DIVERSE'];
 const PERSON_KATEGORIER = {
-  thomas: ['FORRETTER', 'DESSERTER'],
-  joakim: ['HOVEDRETTER']
+  thomas: ['FORRETTER', 'DESSERTER', 'DIVERSE'],
+  joakim: ['HOVEDRETTER', 'DIVERSE']
 };
 let aktivPerson = 'alle';
 
