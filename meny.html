@@ -236,9 +236,26 @@ function renderMeny(meny) {
     'Extras', 'Extra', 'Tillegg'
   ];
 
-  const kategorier = [...new Set(liste.map(r => r.kategori))].sort((a, b) => {
-    const ai = katRekkefølge.findIndex(k => a.toLowerCase().includes(k.toLowerCase()));
-    const bi = katRekkefølge.findIndex(k => b.toLowerCase().includes(k.toLowerCase()));
+  function normaliserKategori(s) {
+    return (s || '')
+      .trim()
+      .replace(/\s+/g, ' ')
+      .replace(/[\u2010\u2011\u2012\u2013\u2014\u2212]/g, '-')
+      .toLowerCase();
+  }
+
+  // Grupper etter NORMALISERT kategori-tekst, slik at små skrivemåte-forskjeller
+  // (ekstra mellomrom, ulike bindestrek-tegn, store/små bokstaver) ikke lager to
+  // seksjoner av det som egentlig skal være samme kategori.
+  const kategoriGrupper = {};
+  liste.forEach(r => {
+    const norm = normaliserKategori(r.kategori);
+    if (!kategoriGrupper[norm]) kategoriGrupper[norm] = { visning: (r.kategori || '').trim(), retter: [] };
+    kategoriGrupper[norm].retter.push(r);
+  });
+  const kategoriNokler = Object.keys(kategoriGrupper).sort((a, b) => {
+    const ai = katRekkefølge.findIndex(k => a.includes(normaliserKategori(k)));
+    const bi = katRekkefølge.findIndex(k => b.includes(normaliserKategori(k)));
     const av = ai === -1 ? 999 : ai;
     const bv = bi === -1 ? 999 : bi;
     return av - bv;
@@ -284,9 +301,11 @@ function renderMeny(meny) {
     }
     container.innerHTML = html;
   } else {
-  container.innerHTML = kategorier.map(kat => `
-    <div class="section-title">${kat}</div>
-    ${liste.filter(r => r.kategori === kat).map(r => `
+  container.innerHTML = kategoriNokler.map(nokkel => {
+    const gruppe = kategoriGrupper[nokkel];
+    return `
+    <div class="section-title">${gruppe.visning}</div>
+    ${gruppe.retter.map(r => `
       <div class="dish">
         <div class="dish-head"><span class="dish-name">${(r.navn||"").toUpperCase()}</span><span class="dish-price">${r.pris != null ? r.pris : ''}</span></div>
         ${r.allergener ? `<div class="dish-allergens">${r.allergener}</div>` : ''}
@@ -294,7 +313,8 @@ function renderMeny(meny) {
         ${redigeringPa ? `<div class="dish-edit-actions"><button onclick="apneRedigerRett('${r.id}')">Rediger</button><button onclick="slettRett('${r.id}')">Slett</button></div>` : ''}
       </div>
     `).join('')}
-  `).join('');
+  `;
+  }).join('');
   }
 }
 
