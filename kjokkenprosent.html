@@ -472,6 +472,7 @@ Smør	Meieri	65	kg	g"></textarea>
   </div>
 </div>
 
+<script src="kategori-utils.js"></script>
 <script>
 const SUPABASE_URL = 'https://izdclsyuplghwznsjnom.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml6ZGNsc3l1cGxnaHd6bnNqbm9tIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE1MjY5MjksImV4cCI6MjA5NzEwMjkyOX0.GkjxcToCHZrLAm1pVGsBkcLapIOj7uSYd6IcDC0Lyzk';
@@ -630,13 +631,7 @@ function kpFarge(kp, harLinjer) {
 
 const KAT_REKKEFOLGE = ['Huîtres', 'Huîtres – Østers', 'Østers', 'Entrées', 'Entrées – Forretter', 'Forretter', 'Plats', 'Plats – Hovedretter', 'Hovedretter', 'Fromage', 'Fromage – Ost', 'Ost', 'Desserts', 'Desserts – Desserter', 'Desserter', 'Extras', 'Extra', 'Tillegg'];
 
-function normaliserKategoriListe(s) {
-  return (s || '')
-    .trim()
-    .replace(/\s+/g, ' ')
-    .replace(/[\u2010\u2011\u2012\u2013\u2014\u2212]/g, '-')
-    .toLowerCase();
-}
+// normaliserKategori() kommer fra kategori-utils.js (delt med Meny-appen).
 
 function renderListe(meny) {
   const liste = retter.filter(r => r.meny === meny);
@@ -648,13 +643,13 @@ function renderListe(meny) {
   // av det som egentlig skal være samme kategori.
   const kategoriGrupperListe = {};
   liste.forEach(r => {
-    const norm = normaliserKategoriListe(r.kategori);
+    const norm = normaliserKategori(r.kategori);
     if (!kategoriGrupperListe[norm]) kategoriGrupperListe[norm] = { visning: (r.kategori || 'Uten kategori').trim(), retter: [] };
     kategoriGrupperListe[norm].retter.push(r);
   });
   const kategoriNoklerListe = Object.keys(kategoriGrupperListe).sort((a, b) => {
-    const ai = KAT_REKKEFOLGE.findIndex(k => a.includes(normaliserKategoriListe(k)));
-    const bi = KAT_REKKEFOLGE.findIndex(k => b.includes(normaliserKategoriListe(k)));
+    const ai = KAT_REKKEFOLGE.findIndex(k => a.includes(normaliserKategori(k)));
+    const bi = KAT_REKKEFOLGE.findIndex(k => b.includes(normaliserKategori(k)));
     return (ai === -1 ? 999 : ai) - (bi === -1 ? 999 : bi);
   });
 
@@ -945,7 +940,7 @@ function renderPriser() {
 
   const kategoriGrupperPriser = {};
   liste.forEach(v => {
-    const norm = normaliserKategoriListe(v.kategori || 'Annet');
+    const norm = normaliserKategori(v.kategori || 'Annet');
     if (!kategoriGrupperPriser[norm]) kategoriGrupperPriser[norm] = { visning: (v.kategori || 'Annet').trim(), varer: [] };
     kategoriGrupperPriser[norm].varer.push(v);
   });
@@ -1141,7 +1136,7 @@ function renderBatcher() {
   if (!batcher.length) { container.innerHTML = '<div class="empty">Ingen batcher opprettet ennå</div>'; return; }
   const kategoriGrupperBatch = {};
   batcher.forEach(b => {
-    const norm = normaliserKategoriListe(b.kategori || 'Annet');
+    const norm = normaliserKategori(b.kategori || 'Annet');
     if (!kategoriGrupperBatch[norm]) kategoriGrupperBatch[norm] = { visning: (b.kategori || 'Annet').trim(), batcher: [] };
     kategoriGrupperBatch[norm].batcher.push(b);
   });
