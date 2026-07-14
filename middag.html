@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+  <meta charset="UTF-8">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Fager Bistro – Middagsimulering</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #f5f5f5;
+      color: #1a1a1a;
+      min-height: 100vh;
+    }
+
+    /* ── Scenario toggle ── */
+    .scenario-toggle {
+      display: flex;
+      background: #fff;
+      border-radius: 10px;
+      margin-bottom: 14px;
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0,0,0,.07);
+    }
+    .scenario-btn {
+      flex: 1;
+      padding: 13px 10px;
+      text-align: center;
+      font-size: 13px;
+      font-weight: 600;
+      color: #888;
+      cursor: pointer;
+      border: none;
+      background: none;
+      border-bottom: 3px solid transparent;
+      transition: all .15s;
+    }
+    .scenario-btn.active {
+      color: #1a1a1a;
+      border-bottom: 3px solid #1a1a1a;
+    }
+    .scenario-btn span { display: block; font-size: 11px; font-weight: 400; color: #aaa; margin-top: 2px; }
+    .scenario-btn.active span { color: #777; }
+
+    /* ── Top bar ── */
+    .topbar {
+      background: #1a1a1a;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      padding: 0 16px;
+      height: 52px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .topbar a {
+      color: #aaa;
+      text-decoration: none;
+      font-size: 14px;
+      margin-right: 16px;
+    }
+    .topbar a:hover { color: #fff; }
+    .topbar h1 {
+      font-size: 15px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+    }
+
+    /* ── Page ── */
+    .page { max-width: 680px; margin: 0 auto; padding: 24px 16px 60px; }
+
+    .page-title {
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #888;
+      margin-bottom: 20px;
+    }
+
+    /* ── Cards / sections ── */
+    .card {
+      background: #fff;
+      border-radius: 10px;
+      margin-bottom: 14px;
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0,0,0,.07);
+    }
+
+    .card-header {
+      background: #1a1a1a;
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 9px 14px;
+    }
+
+    /* ── Rows ── */
+    .row {
+      display: flex;
+      align-items: center;
+      padding: 11px 14px;
+      border-bottom: 1px solid #f0f0f0;
+      gap: 10px;
+    }
+    .row:last-child { border-bottom: none; }
+
+    .row-label {
+      flex: 1;
+      font-size: 14px;
+      color: #333;
+    }
+    .row-label.sub { color: #777; font-size: 13px; padding-left: 10px; }
+
+    .row-value {
+      font-size: 14px;
+      font-weight: 600;
+      color: #1a1a1a;
+      min-width: 90px;
+      text-align: right;
+    }
+    .row-value.computed { color: #555; font-weight: 500; }
+
+    /* ── Inputs ── */
+    .inp {
+      border: 1.5px solid #f0c040;
+      background: #fffde7;
+      border-radius: 7px;
+      font-size: 14px;
+      font-weight: 600;
+      color: #1a1a1a;
+      text-align: right;
+      padding: 5px 8px;
+      width: 100px;
+      outline: none;
+      -moz-appearance: textfield;
+    }
+    .inp::-webkit-outer-spin-button,
+    .inp::-webkit-inner-spin-button { -webkit-appearance: none; }
+    .inp:focus { border-color: #e6a800; background: #fff9d6; }
+
+    /* ── Two-col input row ── */
+    .row-2inp {
+      display: flex;
+      align-items: center;
+      padding: 11px 14px;
+      border-bottom: 1px solid #f0f0f0;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .row-2inp:last-child { border-bottom: none; }
+    .row-2inp .lbl { font-size: 13px; color: #555; flex: 1 1 auto; }
+    .row-2inp .pair { display: flex; align-items: center; gap: 6px; }
+    .row-2inp .pair-label { font-size: 12px; color: #888; white-space: nowrap; }
+    .inp.sm { width: 66px; }
+
+    /* ── Columns header ── */
+    .col-header {
+      display: flex;
+      padding: 8px 14px;
+      background: #f7f7f7;
+      border-bottom: 1px solid #ebebeb;
+      gap: 10px;
+    }
+    .col-header span {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      color: #888;
+      min-width: 90px;
+      text-align: right;
+    }
+    .col-header span:first-child { flex: 1; text-align: left; }
+
+    /* ── Three-column result rows ── */
+    .row3 {
+      display: flex;
+      align-items: center;
+      padding: 11px 14px;
+      border-bottom: 1px solid #f0f0f0;
+      gap: 10px;
+    }
+    .row3:last-child { border-bottom: none; }
+    .row3 .lbl { flex: 1; font-size: 14px; color: #333; }
+    .row3 .lbl.bold { font-weight: 700; }
+    .row3 .val {
+      min-width: 90px;
+      text-align: right;
+      font-size: 14px;
+      color: #555;
+    }
+    .row3 .val.bold { font-weight: 700; color: #1a1a1a; }
+
+    /* ── Nøkkeltall ── */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1px;
+      background: #f0f0f0;
+    }
+    .kpi {
+      background: #fff;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .kpi-label { font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: 0.06em; }
+    .kpi-value { font-size: 22px; font-weight: 700; color: #1a1a1a; }
+    .kpi-value.pos { color: #2e7d32; }
+    .kpi-value.neg { color: #c62828; }
+    .kpi-value.warn { color: #e65100; }
+
+    /* ── Breakeven banner ── */
+    .be-banner {
+      margin: 14px 0 0;
+      border-radius: 10px;
+      padding: 16px 18px;
+      font-size: 15px;
+      font-weight: 700;
+      text-align: center;
+      letter-spacing: 0.01em;
+    }
+    .be-banner.pos { background: #e8f5e9; color: #2e7d32; }
+    .be-banner.neg { background: #fce4d6; color: #c62828; }
+    .be-banner.neutral { background: #f5f5f5; color: #555; }
+    .be-sub { font-size: 13px; font-weight: 400; margin-top: 4px; color: inherit; opacity: .8; }
+
+    /* ── Subheader inside card ── */
+    .sub-header {
+      background: #f0f4ff;
+      padding: 8px 14px;
+      border-bottom: 1px solid #e8eaf0;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: #4a5fa0;
+    }
+
+    /* ── Legend ── */
+    .legend {
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+      margin-top: 10px;
+      padding: 0 2px;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: #777;
+    }
+    .legend-dot {
+      width: 12px; height: 12px; border-radius: 3px;
+    }
+    .legend-dot.yellow { background: #fffde7; border: 1.5px solid #f0c040; }
+    .legend-dot.grey { background: #f5f5f5; border: 1.5px solid #ddd; }
+  </style>
+</head>
+<body>
+
+<div class="topbar">
+  <a href="portal.html">‹ Portal</a>
+  <h1>Middagsimulering</h1>
+</div>
+
+<div class="page">
+
+  <div class="page-title">Fager Bistro — 2026</div>
+
+  <!-- FORUTSETNINGER -->
+  <div class="card">
+    <div class="card-header">Forutsetninger</div>
+    <div class="row">
+      <span class="row-label">Antall dager pr uke</span>
+      <input class="inp" id="dagerPrUke" type="number" value="5" min="1" max="7">
+    </div>
+    <div class="row">
+      <span class="row-label">Antall uker pr år i drift</span>
+      <input class="inp" id="ukerPrAar" type="number" value="48" min="1" max="52">
+    </div>
+    <input type="hidden" id="aga" value="14.1">
+  </div>
+
+  <!-- OMSETNING -->
+  <div class="card">
+    <div class="card-header">Omsetning</div>
+    <div class="row">
+      <span class="row-label">Kuverter pr dag (PAX)</span>
+      <input class="inp" id="pax" type="number" value="15" min="0">
+    </div>
+    <div class="row">
+      <span class="row-label">Snitt mat pr kuvert (inkl mva)</span>
+      <input class="inp" id="sniMat" type="number" value="260" min="0">
+    </div>
+    <div class="row">
+      <span class="row-label">Snitt drikke pr kuvert (inkl mva)</span>
+      <input class="inp" id="sniDrikke" type="number" value="50" min="0">
+    </div>
+    <div class="row">
+      <span class="row-label">Snitt total pr kuvert (eks mva)</span>
+      <span class="row-value computed" id="sniTotal">–</span>
+    </div>
+    <div class="row">
+      <span class="row-label">Tips % av omsetning</span>
+      <input class="inp" id="tipsPct" type="number" value="5" min="0" max="30" step="0.5">
+    </div>
+    <div class="row">
+      <span class="row-label sub">herav tips (kr pr dag)</span>
+      <span class="row-value computed" id="tipsKr">–</span>
+    </div>
+  </div>
+
+  <!-- KOSTNADER -->
+  <div class="card">
+    <div class="card-header">Kostnader</div>
+    <div class="row">
+      <span class="row-label">Varekost %</span>
+      <input class="inp" id="varekostPct" type="number" value="32" min="0" max="80" step="0.5">
+    </div>
+
+    <!-- Lønn til fast ansatte -->
+    <div id="lon-section">
+      <div class="sub-header">Lønnskostnader — fast ansatte (fast kostnad uansett)</div>
+      <div class="row">
+        <span class="row-label">Kokk — Joakim (månedslønn)</span>
+        <input class="inp" id="joakimMnd" type="number" value="48000" min="0">
+      </div>
+      <div class="row">
+        <span class="row-label">Servitør — Benjamin (månedslønn)</span>
+        <input class="inp" id="benjaminMnd" type="number" value="45000" min="0">
+      </div>
+      <div class="row">
+        <span class="row-label sub">Sum månedslønn inkl sos.avg</span>
+        <span class="row-value computed" id="lonMndTotal">–</span>
+      </div>
+      <div class="row">
+        <span class="row-label" style="font-weight:700;">Lønnskost fast ansatte inkl sos.avg (pr dag)</span>
+        <span class="row-value" id="lonTotal">–</span>
+      </div>
+      <div class="row" style="font-size:12px;color:#888;line-height:1.4;">
+        Thomas og Christine sin egen lønn er IKKE lagt inn her — de tar i dag ikke fast lønn. Det de har igjen å dele, vises som "Disponibelt til Thomas &amp; Christine" i Resultat-kortet under.
+      </div>
+    </div>
+  </div>
+
+  <!-- ANDRE DRIFTSKOSTNADER (ADK) -->
+  <div class="card">
+    <div class="card-header">Andre driftskostnader (ADK)</div>
+    <div class="sub-header">Basert på faktisk regnskap, snitt jan–jun 2026 — juster fritt</div>
+    <div class="row" style="font-size:12px;color:#888;line-height:1.4;">
+      Dette er totale driftskostnader for hele virksomheten (husleie m.m. løper uansett om det er lunsj- eller middagsservering). Bruker du lunsjsimuleringen samtidig, ikke tell disse to ganger — sett dem gjerne til 0 der, eller fordel etter hvor mye av omsetningen som kommer fra hver.
+    </div>
+    <div class="row">
+      <span class="row-label">Husleie (pr mnd)</span>
+      <input class="inp" id="adkHusleie" type="number" value="56679" min="0">
+    </div>
+    <div class="row">
+      <span class="row-label">Strøm, vann, renovasjon (pr mnd)</span>
+      <input class="inp" id="adkStrom" type="number" value="11587" min="0">
+    </div>
+    <div class="row">
+      <span class="row-label">Renhold (pr mnd)</span>
+      <input class="inp" id="adkRenhold" type="number" value="6809" min="0">
+    </div>
+    <div class="row">
+      <span class="row-label">Diverse andre driftskostnader (pr mnd)</span>
+      <input class="inp" id="adkDiverse" type="number" value="62487" min="0">
+    </div>
+    <div class="row">
+      <span class="row-label" style="font-weight:700;">ADK totalt (pr mnd)</span>
+      <span class="row-value" id="adkMndTotal">–</span>
+    </div>
+    <div class="row">
+      <span class="row-label sub">herav pr dag i drift</span>
+      <span class="row-value computed" id="adkDagTotal">–</span>
+    </div>
+  </div>
+
+  <!-- RESULTAT -->
+  <div class="card">
+    <div class="card-header">Resultat</div>
+    <div class="col-header">
+      <span></span>
+      <span>Pr dag</span>
+      <span>Pr mnd</span>
+      <span>Fullt år</span>
+    </div>
+    <div class="row3">
+      <span class="lbl">Omsetning eks mva</span>
+      <span class="val" id="omsDag">–</span>
+      <span class="val" id="omsMnd">–</span>
+      <span class="val" id="omsAar">–</span>
+    </div>
+    <div class="row3">
+      <span class="lbl">Varekost</span>
+      <span class="val" id="vkDag">–</span>
+      <span class="val" id="vkMnd">–</span>
+      <span class="val" id="vkAar">–</span>
+    </div>
+    <div class="row3">
+      <span class="lbl bold">Gross Profit (GP)</span>
+      <span class="val bold" id="gpDag">–</span>
+      <span class="val bold" id="gpMnd">–</span>
+      <span class="val bold" id="gpAar">–</span>
+    </div>
+    <div class="row3" id="lonResultRow">
+      <span class="lbl">Lønnskost inkl sos.avg</span>
+      <span class="val" id="lonDag">–</span>
+      <span class="val" id="lonMnd">–</span>
+      <span class="val" id="lonAar">–</span>
+    </div>
+    <div class="row3">
+      <span class="lbl">Andre driftskostnader</span>
+      <span class="val" id="adkDagRes">–</span>
+      <span class="val" id="adkMndRes">–</span>
+      <span class="val" id="adkAarRes">–</span>
+    </div>
+    <div class="row3">
+      <span class="lbl bold" id="nettoLabel">Resultat</span>
+      <span class="val bold" id="nettoDag">–</span>
+      <span class="val bold" id="nettoMnd">–</span>
+      <span class="val bold" id="nettoAar">–</span>
+    </div>
+  </div>
+
+  <!-- NØKKELTALL -->
+  <div class="card">
+    <div class="card-header">Nøkkeltall</div>
+    <div class="kpi-grid">
+      <div class="kpi">
+        <span class="kpi-label">GP %</span>
+        <span class="kpi-value" id="kpiGp">–</span>
+      </div>
+      <div class="kpi">
+        <span class="kpi-label">Varekost %</span>
+        <span class="kpi-value" id="kpiVk">–</span>
+      </div>
+      <div class="kpi" id="kpiBeContainer">
+        <span class="kpi-label">Breakeven PAX pr dag</span>
+        <span class="kpi-value" id="kpiBe">–</span>
+      </div>
+      <div class="kpi">
+        <span class="kpi-label" id="kpiDispLonLabel">Disponibelt til lønn (12 mnd)</span>
+        <span class="kpi-value" id="kpiDispLon">–</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- BREAKEVEN BANNER — kun Scenario A -->
+  <div class="be-banner neutral" id="beBanner">
+    Juster tallene for å se status
+  </div>
+
+  <!-- LEGEND -->
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot yellow"></div>Inputfelt — endre fritt</div>
+    <div class="legend-item"><div class="legend-dot grey"></div>Beregnet av modellen</div>
+  </div>
+</div>
+
+<script>
+
+  const STORAGE_KEY = 'fager_middag_inputs';
+  const INPUT_IDS = ['dagerPrUke','ukerPrAar','pax','sniMat','sniDrikke','tipsPct','varekostPct','joakimMnd','benjaminMnd','adkHusleie','adkStrom','adkRenhold','adkDiverse'];
+
+  function saveInputs() {
+    const data = {};
+    INPUT_IDS.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) data[id] = el.value;
+    });
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch(e) {}
+  }
+
+  function loadInputs() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return;
+      const data = JSON.parse(raw);
+      INPUT_IDS.forEach(id => {
+        const el = document.getElementById(id);
+        if (el && data[id] !== undefined) el.value = data[id];
+      });
+    } catch(e) {}
+  }
+
+  const ids = [
+    'dagerPrUke','ukerPrAar','aga','pax','sniMat','sniDrikke',
+    'tipsPct','varekostPct','joakimMnd','benjaminMnd',
+    'adkHusleie','adkStrom','adkRenhold','adkDiverse'
+  ];
+
+  function nok(v) {
+    if (!isFinite(v)) return '–';
+    const neg = v < 0;
+    const abs = Math.abs(Math.round(v));
+    const s = abs.toLocaleString('nb-NO') + ' kr';
+    return neg ? '(' + s + ')' : s;
+  }
+  function pct(v) {
+    if (!isFinite(v)) return '–';
+    return (v * 100).toFixed(1) + '%';
+  }
+  function color(el, v) {
+    el.className = 'kpi-value ' + (v > 0 ? 'pos' : v < 0 ? 'neg' : '');
+  }
+
+  function initLabels() {
+    document.getElementById('nettoLabel').textContent = 'Disponibelt til Thomas & Christine';
+    document.getElementById('kpiDispLonLabel').textContent = 'Disponibelt til Thomas & Christine (fullt år)';
+  }
+
+  function calc() {
+    const dpw   = +document.getElementById('dagerPrUke').value  || 0;
+    const wpy   = +document.getElementById('ukerPrAar').value   || 0;
+    const aga   = +document.getElementById('aga').value / 100   || 0;
+    const pax   = +document.getElementById('pax').value         || 0;
+    const mat   = (+document.getElementById('sniMat').value     || 0) / 1.25;
+    const drikk = (+document.getElementById('sniDrikke').value  || 0) / 1.25;
+    const tpct  = +document.getElementById('tipsPct').value / 100 || 0;
+    const vpct  = +document.getElementById('varekostPct').value / 100 || 0;
+    const joakimMnd   = +document.getElementById('joakimMnd').value   || 0;
+    const benjaminMnd = +document.getElementById('benjaminMnd').value || 0;
+
+    const adkMndInput = (+document.getElementById('adkHusleie').value || 0)
+                       + (+document.getElementById('adkStrom').value || 0)
+                       + (+document.getElementById('adkRenhold').value || 0)
+                       + (+document.getElementById('adkDiverse').value || 0);
+    const adkDag = dpw > 0 ? adkMndInput / (dpw * 4) : 0;   // "pr mnd" ≈ dpw × 4 dager, samme konvensjon som resten av modellen
+
+    const snittEks     = mat + drikk;                        // eks mva pr kuvert
+    const snittInklMva = snittEks * 1.25;
+    const tipsKr       = snittInklMva * pax * tpct;         // tips av inkl mva
+    const omsEksMva    = snittEks * pax;                     // omsetning eks mva, eks tips
+
+    const vkDag  = omsEksMva * vpct;
+    const gpDag  = omsEksMva - vkDag + tipsKr;              // GP = (oms - vk) + tips
+
+    const lonMndTotal = (joakimMnd + benjaminMnd) * (1 + aga);  // inkl AGA
+    const lonInklAga  = dpw > 0 ? lonMndTotal / (dpw * 4) : 0;   // prorata til pr dag, samme konvensjon som ADK
+
+    // Disponibelt til Thomas & Christine: det som er igjen etter innleid personale og ADK.
+    // De tar ingen fast lønn selv i dag, så dette ER deres inntekt fra middagsdriften.
+    const nettoDag = gpDag - lonInklAga - adkDag;
+
+    const nettoMnd = nettoDag * dpw * 4;
+    const nettoAar = nettoDag * dpw * wpy;
+    const gpMnd    = gpDag * dpw * 4;
+    const gpAar    = gpDag * dpw * wpy;
+    const omsMnd   = omsEksMva * dpw * 4;
+    const omsAar   = omsEksMva * dpw * wpy;
+    const vkMnd    = vkDag * dpw * 4;
+    const vkAar    = vkDag * dpw * wpy;
+    const lonMnd   = lonInklAga * dpw * 4;
+    const lonAar   = lonInklAga * dpw * wpy;
+    const adkMnd   = adkDag * dpw * 4;
+    const adkAar   = adkDag * dpw * wpy;
+
+    // Breakeven (Scenario A): PAX der GP dekker BÅDE lønn og andre driftskostnader
+    // gpPerPax = snittEks*(1-vpct) + snittInklMva*tpct
+    const gpPerPax = snittEks * (1 - vpct) + snittInklMva * tpct;
+    const be = gpPerPax > 0 ? Math.ceil((lonInklAga + adkDag) / gpPerPax) : null;
+
+    // ── Write ──
+    document.getElementById('sniTotal').textContent  = nok(snittEks);
+    document.getElementById('tipsKr').textContent    = nok(tipsKr);
+    document.getElementById('lonTotal').textContent  = nok(lonInklAga);
+    document.getElementById('lonMndTotal').textContent = nok(lonMndTotal);
+    document.getElementById('adkMndTotal').textContent = nok(adkMndInput);
+    document.getElementById('adkDagTotal').textContent = nok(adkDag);
+
+    document.getElementById('omsDag').textContent  = nok(omsEksMva);
+    document.getElementById('omsMnd').textContent  = nok(omsMnd);
+    document.getElementById('omsAar').textContent  = nok(omsAar);
+    document.getElementById('vkDag').textContent   = nok(vkDag);
+    document.getElementById('vkMnd').textContent   = nok(vkMnd);
+    document.getElementById('vkAar').textContent   = nok(vkAar);
+    document.getElementById('gpDag').textContent   = nok(gpDag);
+    document.getElementById('gpMnd').textContent   = nok(gpMnd);
+    document.getElementById('gpAar').textContent   = nok(gpAar);
+    document.getElementById('lonDag').textContent  = nok(lonInklAga);
+    document.getElementById('lonMnd').textContent  = nok(lonMnd);
+    document.getElementById('lonAar').textContent  = nok(lonAar);
+    document.getElementById('nettoDag').textContent = nok(nettoDag);
+    document.getElementById('nettoMnd').textContent = nok(nettoMnd);
+    document.getElementById('nettoAar').textContent = nok(nettoAar);
+
+    // KPI
+    const gpPct = omsEksMva > 0 ? gpDag / omsEksMva : 0;
+    const gpEl = document.getElementById('kpiGp');
+    gpEl.textContent = pct(gpPct);
+    color(gpEl, gpPct);
+
+    const vkEl = document.getElementById('kpiVk');
+    vkEl.textContent = pct(vpct);
+    vkEl.className = 'kpi-value ' + (vpct > 0.38 ? 'neg' : vpct > 0.32 ? 'warn' : 'pos');
+
+    const beEl = document.getElementById('kpiBe');
+    beEl.textContent = be !== null ? be : '–';
+    beEl.className = 'kpi-value ' + (be !== null && pax >= be ? 'pos' : 'neg');
+
+    const dispEl = document.getElementById('kpiDispLon');
+    dispEl.textContent = nok(nettoAar);
+    color(dispEl, nettoAar);
+
+    // Banner
+    const banner = document.getElementById('beBanner');
+    if (be === null || pax === 0) {
+      banner.className = 'be-banner neutral';
+      banner.innerHTML = 'Fyll inn tall for å beregne breakeven';
+    } else if (pax >= be) {
+      const over = pax - be;
+      banner.className = 'be-banner pos';
+      banner.innerHTML = `✓ ALLE FÅR LØNN<div class="be-sub">${over} kuvert${over === 1 ? '' : 'er'} over breakeven (BE = ${be} PAX) — ${nok(nettoDag)} igjen til Thomas &amp; Christine pr dag</div>`;
+    } else {
+      const under = be - pax;
+      banner.className = 'be-banner neg';
+      banner.innerHTML = `✗ UNDER BREAK EVEN<div class="be-sub">${under} kuvert${under === 1 ? '' : 'er'} mangler (BE = ${be} PAX) før innleid personale og ADK er dekket</div>`;
+    }
+  }
+
+  ids.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('input', () => { calc(); saveInputs(); });
+  });
+
+  loadInputs();
+  initLabels();
+  calc();
+</script>
+</body>
+</html>
