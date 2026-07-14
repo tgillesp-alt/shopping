@@ -374,10 +374,12 @@ async function lagreRett() {
   const beskrivelse = document.getElementById('m-beskrivelse').value.trim();
   if (!kategori || !navn) { alert('Fyll inn kategori og navn'); return; }
 
-  // Sikkerhetssjekk: hvis kategorien ikke matcher noen eksisterende (etter normalisering),
-  // spør om bekreftelse — dette fanger opp skrivefeil som ellers ville laget en usynlig
-  // ny "dobbel" seksjon på menyen (slik "ENTREES" gjorde tidligere).
-  const eksisterendeKategorier = [...new Set(retter.map(r => r.kategori).filter(Boolean))];
+  // Sikkerhetssjekk: hvis kategorien ikke matcher noen eksisterende I SAMME MENY
+  // (etter normalisering), spør om bekreftelse — dette fanger opp skrivefeil som
+  // ellers ville laget en usynlig ny "dobbel" seksjon på menyen (slik "ENTREES"
+  // gjorde tidligere). Må sjekkes pr. meny, ikke på tvers av lunsj/middag —
+  // en kategori i lunsj skal ikke telle som "finnes fra før" for en middagsrett.
+  const eksisterendeKategorier = [...new Set(retter.filter(r => r.meny === editMeny).map(r => r.kategori).filter(Boolean))];
   const normInput = normaliserKategori(kategori);
   const matcherEksisterende = eksisterendeKategorier.some(k => normaliserKategori(k) === normInput);
   if (!matcherEksisterende && eksisterendeKategorier.length) {
@@ -402,7 +404,17 @@ async function lagreRett() {
 function visKategoriForslag() {
   const q = document.getElementById('m-kategori').value.trim().toLowerCase();
   const box = document.getElementById('kategori-forslag');
-  const alle = [...new Set(retter.map(r => r.kategori).filter(Boolean))].sort();
+  // Kun kategorier fra SAMME meny (lunsj/middag) som retten som redigeres — en
+  // kategori i lunsj skal ikke telle som "finnes fra før" for en middagsrett.
+  // Slått sammen på normalisert tekst, så nesten-identiske varianter (aksent,
+  // bindestrek, store/små bokstaver) ikke vises som flere separate forslag.
+  const settNavn = new Map();
+  retter.filter(r => r.meny === editMeny).forEach(r => {
+    if (!r.kategori) return;
+    const norm = normaliserKategori(r.kategori);
+    if (!settNavn.has(norm)) settNavn.set(norm, r.kategori.trim());
+  });
+  const alle = [...settNavn.values()].sort();
   const treff = (q ? alle.filter(k => k.toLowerCase().includes(q)) : alle).slice(0, 8);
   if (!treff.length) { box.classList.remove('open'); box.innerHTML = ''; return; }
   box.innerHTML = treff.map(k => `<div class="kategori-forslag-row" onmousedown="event.preventDefault(); velgKategoriForslag('${k.replace(/'/g, "\\'")}')">${k}</div>`).join('');
