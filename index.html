@@ -276,6 +276,7 @@ const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 const WORKER_URL = 'https://fager-push.thomas-0e8.workers.dev';
 const VAPID_PUBLIC = 'BBugd5BD_AJbVUv9lfD-2tfp3apULExDnMQ8xVQZ9oUMmG8nUXwG-ADhCojwp4DDMI3XybLCIBe_951RA5_PHUs';
 const PASSORD = 'fager2026';
+const normKat = k => (k==='Meieri/Ost'||k==='Ost') ? 'Meieri/Ost/Egg' : (k||'Annet');
 const KAT_ORDER = ['Kjøtt','Fugl','Fisk & Fond','Frukt & Grønt','Meieri/Ost/Egg','Hygiene & Forbruksmateriell','Annet','Vin','Sprit','Øl','Mineralvann'];
 const VARSLE = ['Thomas','Marcus'];
 
@@ -336,7 +337,7 @@ function render() {
   if (fLev) vis = vis.filter(v => v.leverandor === fLev);
   if (sok) vis = vis.filter(v => v.navn.toLowerCase().includes(sok));
   const grouped = {};
-  vis.forEach(v => { const k = v.kategori || 'Annet'; if (!grouped[k]) grouped[k] = []; grouped[k].push(v); });
+  vis.forEach(v => { const k = normKat(v.kategori); if (!grouped[k]) grouped[k] = []; grouped[k].push(v); });
   const container = document.getElementById('liste');
   if (!vis.length) { container.innerHTML = '<div class="empty">Ingen varer</div>'; return; }
   container.innerHTML = Object.entries(grouped)
@@ -478,7 +479,7 @@ function renderHistorikk() {
 
   const grouped = {};
   data.forEach(v => {
-    const key = v.kategori || 'Ukjent';
+    const key = normKat(v.kategori);
     if (!grouped[key]) grouped[key] = [];
     grouped[key].push(v);
   });
@@ -510,7 +511,7 @@ function byggPrintListe() {
 
   const byKat = {};
   aktive.forEach(v => {
-    const k = v.kategori || 'Annet';
+    const k = normKat(v.kategori);
     if (!byKat[k]) byKat[k] = [];
     byKat[k].push(v.navn);
   });
