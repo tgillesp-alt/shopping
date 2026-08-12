@@ -164,17 +164,15 @@ function settPerson(p) {
   render();
 }
 
-function render() {
-  const _scrollPos = window.scrollY;
-  // Seksjoner som skal tvangsplasseres i bestemt kategori
-  const SEKSJON_KATEGORI_OVERRIDE = {
-    'TARTE TATIN': 'DESSERTER',
-    'CRÊPE SUZETTE': 'DESSERTER',
-    'CREMEUSE AU CHOCOLAT': 'DESSERTER',
-    'COLONEL AU CITRON': 'DESSERTER',
-  };
-  const effektivKategori = i => SEKSJON_KATEGORI_OVERRIDE[i.seksjon || 'ANNET'] || i.kategori || 'ANNET';
+const SEKSJON_KATEGORI_OVERRIDE = {
+  'TARTE TATIN': 'DESSERTER',
+  'CRÊPE SUZETTE': 'DESSERTER',
+  'CREMEUSE AU CHOCOLAT': 'DESSERTER',
+  'COLONEL AU CITRON': 'DESSERTER',
+};
+const effektivKategori = i => SEKSJON_KATEGORI_OVERRIDE[i.seksjon || 'ANNET'] || i.kategori || 'ANNET';
 
+function oppdaterProgress() {
   // Progresstall skal kun telle punktene som faktisk hører til aktiv person
   const personRelevante = aktivPerson === 'alle'
     ? items
@@ -185,6 +183,15 @@ function render() {
   const pct = totalt ? Math.round(ferdig / totalt * 100) : 0;
   document.getElementById('progress-label').textContent = `${ferdig} / ${totalt} gjort`;
   document.getElementById('progress-fill').style.width = pct + '%';
+}
+
+function render() {
+  const _scrollPos = window.scrollY;
+  oppdaterProgress();
+
+  const personRelevante = aktivPerson === 'alle'
+    ? items
+    : items.filter(i => (PERSON_KATEGORIER[aktivPerson] || []).includes(effektivKategori(i)));
 
   // Seksjoner som alltid skal vises sist
   const SEKSJON_SIST = ['SMØR SAL'];
@@ -242,12 +249,34 @@ function render() {
     </div>
   `).join('');
 
-  requestAnimationFrame(() => window.scrollTo(0, _scrollPos));
+  requestAnimationFrame(() => requestAnimationFrame(() => window.scrollTo(0, _scrollPos)));
 }
 
 async function toggleFerdig(id, ferdig) {
-  await api('PATCH', `prepp?id=eq.${id}`, { ferdig });
-  hent();
+  const item = items.find(i => i.id === id);
+  if (item) item.ferdig = ferdig;
+
+  const el = document.getElementById('item-' + id);
+  if (el) {
+    if (aktivPerson !== 'alle' && ferdig) {
+      // I person-filtrert visning forsvinner ferdige punkter — fade ut uten å bygge om resten av listen
+      el.style.transition = 'opacity 0.15s';
+      el.style.opacity = '0';
+      setTimeout(() => el.remove(), 150);
+    } else {
+      el.classList.toggle('ferdig', ferdig);
+      const cb = el.querySelector('input[type="checkbox"]');
+      if (cb) cb.checked = ferdig;
+    }
+  }
+  oppdaterProgress();
+
+  try {
+    await api('PATCH', `prepp?id=eq.${id}`, { ferdig });
+  } catch (e) {
+    console.error('Kunne ikke lagre kryss, laster listen på nytt', e);
+    hent();
+  }
 }
 
 async function slett(id) {
