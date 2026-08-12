@@ -36,6 +36,11 @@ header { background: #1a1a1a; padding: 1rem 1.25rem; padding-top: calc(1rem + en
 .check-custom { width: 20px; height: 20px; flex-shrink: 0; border: 1.5px solid #c4c0b6; border-radius: 5px; cursor: pointer; display: flex; align-items: center; justify-content: center; background: #fff; }
 .check-custom.checked { background: #1a1a1a; border-color: #1a1a1a; }
 .check-custom.checked::after { content: '✓'; color: #fff; font-size: 13px; font-weight: 700; line-height: 1; }
+.person-tag { width: 26px; height: 26px; border-radius: 50%; border: 1.5px dashed #d4d0c6; color: #b0aca2; font-size: 0.72rem; font-weight: 700; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; margin-left: 0.4rem; user-select: none; }
+.person-tag.assigned { border-style: solid; color: #fff; }
+.person-tag.person-thomas { background: #1a1a1a; border-color: #1a1a1a; }
+.person-tag.person-joakim { background: #7a6a52; border-color: #7a6a52; }
+.person-tag.person-marcus { background: #4a5fa0; border-color: #4a5fa0; }
 .prepp-tekst { flex: 1; font-size: 0.95rem; line-height: 1.4; color: #1a1a1a; }
 .prepp-item.ferdig .prepp-tekst { text-decoration: line-through; }
 .item-actions { display: flex; gap: 0.35rem; flex-shrink: 0; }
@@ -126,6 +131,12 @@ header { background: #1a1a1a; padding: 1rem 1.25rem; padding-top: calc(1rem + en
       <div class="seksjon-forslag" id="seksjon-forslag"></div>
     </div>
     <input type="text" id="modal-tekst" placeholder="Beskrivelse *" autocorrect="off">
+    <select id="modal-person">
+      <option value="">Ikke tildelt (synlig for alle)</option>
+      <option value="thomas">Thomas</option>
+      <option value="joakim">Joakim</option>
+      <option value="marcus">Marcus</option>
+    </select>
     <div class="modal-btns">
       <button class="btn-avbryt" onclick="lukkModal()">Avbryt</button>
       <button class="btn-lagre" onclick="lagreItem()">Lagre</button>
@@ -157,11 +168,6 @@ async function hent() {
 }
 
 const KATEGORI_ORDER = ['FORRETTER', 'HOVEDRETTER', 'DESSERTER', 'DIVERSE'];
-const PERSON_KATEGORIER = {
-  thomas: ['FORRETTER', 'DESSERTER', 'DIVERSE'],
-  joakim: ['HOVEDRETTER', 'DIVERSE'],
-  marcus: ['HOVEDRETTER', 'DIVERSE']
-};
 let aktivPerson = 'alle';
 
 function settPerson(p) {
@@ -178,11 +184,15 @@ const SEKSJON_KATEGORI_OVERRIDE = {
 };
 const effektivKategori = i => SEKSJON_KATEGORI_OVERRIDE[i.seksjon || 'ANNET'] || i.kategori || 'ANNET';
 
+// Et punkt uten tildelt person (i.person er tom) er "delt" og synlig for alle
+const gjelderPerson = (i, p) => p === 'alle' || !i.person || i.person === p;
+
+const PERSON_LABEL = { thomas: 'T', joakim: 'J', marcus: 'M' };
+const PERSON_SYKLUS = [null, 'thomas', 'joakim', 'marcus'];
+
 function oppdaterProgress() {
   // Progresstall skal kun telle punktene som faktisk hører til aktiv person
-  const personRelevante = aktivPerson === 'alle'
-    ? items
-    : items.filter(i => (PERSON_KATEGORIER[aktivPerson] || []).includes(effektivKategori(i)));
+  const personRelevante = items.filter(i => gjelderPerson(i, aktivPerson));
 
   const totalt = personRelevante.length;
   const ferdig = personRelevante.filter(i => i.ferdig).length;
@@ -195,9 +205,7 @@ function render() {
   const _scrollPos = window.scrollY;
   oppdaterProgress();
 
-  const personRelevante = aktivPerson === 'alle'
-    ? items
-    : items.filter(i => (PERSON_KATEGORIER[aktivPerson] || []).includes(effektivKategori(i)));
+  const personRelevante = items.filter(i => gjelderPerson(i, aktivPerson));
 
   // Seksjoner som alltid skal vises sist
   const SEKSJON_SIST = ['SMØR SAL'];
@@ -214,9 +222,6 @@ function render() {
   });
 
   let allKategorier = Object.keys(byKategori);
-  if (aktivPerson !== 'alle' && PERSON_KATEGORIER[aktivPerson]) {
-    allKategorier = allKategorier.filter(k => PERSON_KATEGORIER[aktivPerson].includes(k));
-  }
   const orderedKategorier = [
     ...KATEGORI_ORDER.filter(k => allKategorier.includes(k)),
     ...allKategorier.filter(k => !KATEGORI_ORDER.includes(k))
@@ -244,6 +249,7 @@ function render() {
             <div class="prepp-item ${i.ferdig ? 'ferdig' : ''}" id="item-${i.id}">
               <div class="check-custom ${i.ferdig ? 'checked' : ''}" onclick="toggleFerdig('${i.id}', ${i.ferdig ? 'false' : 'true'})"></div>
               <span class="prepp-tekst">${i.tekst}</span>
+              <div class="person-tag ${i.person ? 'assigned person-' + i.person : ''}" onclick="syklePerson('${i.id}')">${i.person ? PERSON_LABEL[i.person] : '–'}</div>
               <div class="item-actions">
                 <button class="btn-edit" onclick="apneRediger('${i.id}')">✏️ Rediger</button>
                 <button class="btn-del" onclick="slett('${i.id}')">✕</button>
@@ -257,6 +263,7 @@ function render() {
 
   requestAnimationFrame(() => requestAnimationFrame(() => window.scrollTo(0, _scrollPos)));
 }
+
 
 async function toggleFerdig(id, ferdig) {
   const item = items.find(i => i.id === id);
@@ -288,6 +295,39 @@ async function toggleFerdig(id, ferdig) {
   }
 }
 
+async function syklePerson(id) {
+  const item = items.find(i => i.id === id);
+  if (!item) return;
+
+  const idx = PERSON_SYKLUS.indexOf(item.person || null);
+  const nyPerson = PERSON_SYKLUS[(idx + 1) % PERSON_SYKLUS.length];
+  item.person = nyPerson;
+
+  const el = document.getElementById('item-' + id);
+  if (el) {
+    if (aktivPerson !== 'alle' && !gjelderPerson(item, aktivPerson)) {
+      // Punktet er nå tildelt en annen person — forsvinner fra denne visningen
+      el.style.transition = 'opacity 0.15s';
+      el.style.opacity = '0';
+      setTimeout(() => el.remove(), 150);
+    } else {
+      const tag = el.querySelector('.person-tag');
+      if (tag) {
+        tag.className = 'person-tag' + (nyPerson ? ' assigned person-' + nyPerson : '');
+        tag.textContent = nyPerson ? PERSON_LABEL[nyPerson] : '–';
+      }
+    }
+  }
+  oppdaterProgress();
+
+  try {
+    await api('PATCH', `prepp?id=eq.${id}`, { person: nyPerson });
+  } catch (e) {
+    console.error('Kunne ikke lagre tildeling, laster listen på nytt', e);
+    hent();
+  }
+}
+
 async function slett(id) {
   if (!confirm('Slett dette punktet?')) return;
   await api('DELETE', `prepp?id=eq.${id}`);
@@ -307,6 +347,7 @@ function apneNy() {
   skjulSeksjonForslag();
   document.getElementById('modal-kategori').value = '';
   document.getElementById('modal-tekst').value = '';
+  document.getElementById('modal-person').value = '';
   document.getElementById('modal').style.display = 'flex';
   setTimeout(() => document.getElementById('modal-tekst').focus(), 100);
 }
@@ -320,6 +361,7 @@ function apneRediger(id) {
   document.getElementById('modal-seksjon').value = item.seksjon || '';
   skjulSeksjonForslag();
   document.getElementById('modal-tekst').value = item.tekst;
+  document.getElementById('modal-person').value = item.person || '';
   document.getElementById('modal').style.display = 'flex';
   setTimeout(() => document.getElementById('modal-tekst').focus(), 100);
 }
@@ -328,12 +370,13 @@ async function lagreItem() {
   const tekst = document.getElementById('modal-tekst').value.trim();
   const kategori = document.getElementById('modal-kategori').value || null;
   const seksjon = document.getElementById('modal-seksjon').value.trim().toUpperCase() || null;
+  const person = document.getElementById('modal-person').value || null;
   if (!tekst) { alert('Skriv inn beskrivelse'); return; }
   if (editId) {
     const gammeltItem = items.find(i => i.id === editId);
     const gammelSeksjon = gammeltItem?.seksjon;
     // Oppdater selve punktet
-    await api('PATCH', `prepp?id=eq.${editId}`, { tekst, kategori, seksjon });
+    await api('PATCH', `prepp?id=eq.${editId}`, { tekst, kategori, seksjon, person });
     // Hvis seksjonsnavnet er endret, oppdater alle andre punkter i samme seksjon
     if (gammelSeksjon && seksjon && gammelSeksjon !== seksjon) {
       const andreIds = items
@@ -344,7 +387,7 @@ async function lagreItem() {
       }
     }
   } else {
-    await api('POST', 'prepp', { side: SIDE, tidspunkt: TIDSPUNKT, kategori, seksjon, tekst, ferdig: false });
+    await api('POST', 'prepp', { side: SIDE, tidspunkt: TIDSPUNKT, kategori, seksjon, tekst, ferdig: false, person });
   }
   lukkModal();
   hent();
