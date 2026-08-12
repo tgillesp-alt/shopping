@@ -33,6 +33,9 @@ header { background: #1a1a1a; padding: 1rem 1.25rem; padding-top: calc(1rem + en
 .prepp-item { background: #fff; border: 0.5px solid #e5e2da; border-radius: 12px; padding: 0.85rem 1rem; margin-bottom: 6px; display: flex; align-items: center; gap: 0.75rem; transition: opacity 0.2s; }
 .prepp-item.ferdig { opacity: 0.45; }
 .prepp-item input[type=checkbox] { width: 20px; height: 20px; accent-color: #1a1a1a; cursor: pointer; flex-shrink: 0; border-radius: 4px; }
+.check-custom { width: 20px; height: 20px; flex-shrink: 0; border: 1.5px solid #c4c0b6; border-radius: 5px; cursor: pointer; display: flex; align-items: center; justify-content: center; background: #fff; }
+.check-custom.checked { background: #1a1a1a; border-color: #1a1a1a; }
+.check-custom.checked::after { content: '✓'; color: #fff; font-size: 13px; font-weight: 700; line-height: 1; }
 .prepp-tekst { flex: 1; font-size: 0.95rem; line-height: 1.4; color: #1a1a1a; }
 .prepp-item.ferdig .prepp-tekst { text-decoration: line-through; }
 .item-actions { display: flex; gap: 0.35rem; flex-shrink: 0; }
@@ -236,7 +239,7 @@ function render() {
           <div class="seksjon-header">${seksjon}</div>
           ${its.map(i => `
             <div class="prepp-item ${i.ferdig ? 'ferdig' : ''}" id="item-${i.id}">
-              <input type="checkbox" ${i.ferdig ? 'checked' : ''} onchange="toggleFerdig('${i.id}', this.checked)">
+              <div class="check-custom ${i.ferdig ? 'checked' : ''}" onclick="toggleFerdig('${i.id}', ${i.ferdig ? 'false' : 'true'})"></div>
               <span class="prepp-tekst">${i.tekst}</span>
               <div class="item-actions">
                 <button class="btn-edit" onclick="apneRediger('${i.id}')">✏️ Rediger</button>
@@ -265,8 +268,11 @@ async function toggleFerdig(id, ferdig) {
       setTimeout(() => el.remove(), 150);
     } else {
       el.classList.toggle('ferdig', ferdig);
-      const cb = el.querySelector('input[type="checkbox"]');
-      if (cb) cb.checked = ferdig;
+      const cb = el.querySelector('.check-custom');
+      if (cb) {
+        cb.classList.toggle('checked', ferdig);
+        cb.setAttribute('onclick', `toggleFerdig('${id}', ${ferdig ? 'false' : 'true'})`);
+      }
     }
   }
   oppdaterProgress();
