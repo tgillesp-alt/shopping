@@ -41,6 +41,7 @@ header { background: #1a1a1a; padding: 1rem 1.25rem; padding-top: calc(1rem + en
 .person-tag.person-thomas { background: #1a1a1a; border-color: #1a1a1a; }
 .person-tag.person-joakim { background: #7a6a52; border-color: #7a6a52; }
 .person-tag.person-marcus { background: #4a5fa0; border-color: #4a5fa0; }
+.person-tag.person-benjamin { background: #8a5a7a; border-color: #8a5a7a; }
 .prepp-tekst { flex: 1; font-size: 0.95rem; line-height: 1.4; color: #1a1a1a; }
 .prepp-item.ferdig .prepp-tekst { text-decoration: line-through; }
 .item-actions { display: flex; gap: 0.35rem; flex-shrink: 0; }
@@ -106,6 +107,7 @@ header { background: #1a1a1a; padding: 1rem 1.25rem; padding-top: calc(1rem + en
   <button class="person-btn" data-person="thomas" onclick="settPerson('thomas')">Thomas</button>
   <button class="person-btn" data-person="joakim" onclick="settPerson('joakim')">Joakim</button>
   <button class="person-btn" data-person="marcus" onclick="settPerson('marcus')">Marcus</button>
+  <button class="person-btn" data-person="benjamin" onclick="settPerson('benjamin')">Benjamin</button>
 </div>
 
 <div class="main">
@@ -136,6 +138,7 @@ header { background: #1a1a1a; padding: 1rem 1.25rem; padding-top: calc(1rem + en
       <option value="thomas">Thomas</option>
       <option value="joakim">Joakim</option>
       <option value="marcus">Marcus</option>
+      <option value="benjamin">Benjamin</option>
     </select>
     <div class="modal-btns">
       <button class="btn-avbryt" onclick="lukkModal()">Avbryt</button>
@@ -187,8 +190,8 @@ const effektivKategori = i => SEKSJON_KATEGORI_OVERRIDE[i.seksjon || 'ANNET'] ||
 // Et punkt uten tildelt person (i.person er tom) er "delt" og synlig for alle
 const gjelderPerson = (i, p) => p === 'alle' || !i.person || i.person === p;
 
-const PERSON_LABEL = { thomas: 'T', joakim: 'J', marcus: 'M' };
-const PERSON_SYKLUS = [null, 'thomas', 'joakim', 'marcus'];
+const PERSON_LABEL = { thomas: 'T', joakim: 'J', marcus: 'M', benjamin: 'B' };
+const PERSON_SYKLUS = [null, 'thomas', 'joakim', 'marcus', 'benjamin'];
 
 function oppdaterProgress() {
   // Progresstall skal kun telle punktene som faktisk hører til aktiv person
