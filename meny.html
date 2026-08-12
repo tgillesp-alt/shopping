@@ -213,9 +213,11 @@ async function api(method, path, body) {
 }
 
 async function hentRetter() {
+  const _scrollPos = window.scrollY;
   retter = await api('GET', 'meny_retter?order=meny.asc,sort_order.asc,created_at.asc&select=*');
   renderMeny('middag');
   renderMeny('lunsj');
+  requestAnimationFrame(() => requestAnimationFrame(() => window.scrollTo(0, _scrollPos)));
 }
 
 function visDato(meny, retter) {
