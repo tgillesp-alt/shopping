@@ -184,10 +184,12 @@ function visTab(tab) {
 }
 
 async function hentAlt() {
+  const _scrollPos = window.scrollY;
   produkter = await api('GET', 'lager_produkter?order=kategori.asc,sort_order.asc&select=*');
   tellinger = await api('GET', 'lager_telling?order=maned.desc&select=*,lager_telling_linjer(*)');
   innstillinger = await api('GET', 'lager_innstillinger?order=ar.desc&select=*');
   renderNyTelling();
+  requestAnimationFrame(() => requestAnimationFrame(() => window.scrollTo(0, _scrollPos)));
 }
 
 function getInngangsverdi() {
@@ -297,6 +299,7 @@ async function lagreTelling() {
 }
 
 function renderProduktListe() {
+  const _scrollPos = window.scrollY;
   const kategorier = ['Rødvin', 'Hvitvin', 'Hetvin', 'Sprit', 'Øl', 'Mineralvann'];
   const container = document.getElementById('produkt-liste');
   container.innerHTML = kategorier.map(kat => {
@@ -317,6 +320,7 @@ function renderProduktListe() {
       `).join('') : '<div class="empty">Ingen produkter</div>'}
     `;
   }).join('');
+  requestAnimationFrame(() => requestAnimationFrame(() => window.scrollTo(0, _scrollPos)));
 }
 
 function apneNyttProdukt() {
