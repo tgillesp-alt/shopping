@@ -165,6 +165,7 @@ function settPerson(p) {
 }
 
 function render() {
+  const _scrollPos = window.scrollY;
   // Seksjoner som skal tvangsplasseres i bestemt kategori
   const SEKSJON_KATEGORI_OVERRIDE = {
     'TARTE TATIN': 'DESSERTER',
@@ -240,6 +241,8 @@ function render() {
       `).join('')}
     </div>
   `).join('');
+
+  requestAnimationFrame(() => window.scrollTo(0, _scrollPos));
 }
 
 async function toggleFerdig(id, ferdig) {
