@@ -308,17 +308,12 @@ async function syklePerson(id) {
 
   const el = document.getElementById('item-' + id);
   if (el) {
-    if (aktivPerson !== 'alle' && !gjelderPerson(item, aktivPerson)) {
-      // Punktet er nå tildelt en annen person — forsvinner fra denne visningen
-      el.style.transition = 'opacity 0.15s';
-      el.style.opacity = '0';
-      setTimeout(() => el.remove(), 150);
-    } else {
-      const tag = el.querySelector('.person-tag');
-      if (tag) {
-        tag.className = 'person-tag' + (nyPerson ? ' assigned person-' + nyPerson : '');
-        tag.textContent = nyPerson ? PERSON_LABEL[nyPerson] : '–';
-      }
+    // Punktet blir stående synlig med oppdatert tag selv om det ikke lenger
+    // hører til aktiv person-fane — forsvinner først ved neste fanebytte/oppdatering
+    const tag = el.querySelector('.person-tag');
+    if (tag) {
+      tag.className = 'person-tag' + (nyPerson ? ' assigned person-' + nyPerson : '');
+      tag.textContent = nyPerson ? PERSON_LABEL[nyPerson] : '–';
     }
   }
   oppdaterProgress();
