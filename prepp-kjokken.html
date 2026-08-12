@@ -79,7 +79,8 @@ header { background: #1a1a1a; padding: 1rem 1.25rem; padding-top: calc(1rem + en
   .seksjon-header { font-size: 0.62rem; margin-bottom: 0.25rem; }
 
   .prepp-item { background: none; border: none; border-radius: 0; padding: 0.18rem 0; margin-bottom: 0; gap: 0.5rem; }
-  .prepp-item input[type="checkbox"] { -webkit-appearance: none; appearance: none; width: 12px; height: 12px; border: 1px solid #1a1a1a; border-radius: 2px; margin: 0; }
+  .prepp-item .check-custom { -webkit-appearance: none; appearance: none; width: 12px; height: 12px; border: 1px solid #1a1a1a; border-radius: 2px; margin: 0; background: #fff; }
+  .prepp-item .check-custom.checked::after { display: none; }
   .prepp-tekst { font-size: 0.78rem; line-height: 1.3; }
 }
 </style>
