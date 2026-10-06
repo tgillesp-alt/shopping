@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>IK-mat – Fager Bistro</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<style>
+:root{
+  --bg:#F3F5F4; --surface:#FFFFFF; --ink:#18201E; --muted:#5E6966; --line:#D9DFDC;
+  --accent:#1F4E6E; --accent-soft:#E3ECF2;
+  --ok:#2F7A4E; --ok-bg:#E6F2EA; --warn:#9A5F0E; --warn-bg:#FBF0DD; --bad:#B53A26; --bad-bg:#F8E5E1;
+  --r-sm:6px; --r-md:10px;
+  font-family:'Barlow',system-ui,-apple-system,'Segoe UI',sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink)}
+body{font-size:17px;line-height:1.45;padding-bottom:env(safe-area-inset-bottom,0px)}
+button,input,textarea,select{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.hidden{display:none!important}
+
+header.top{position:sticky;top:0;z-index:10;background:var(--surface);border-bottom:1px solid var(--line);padding-top:env(safe-area-inset-top,0px)}
+.top-inner{max-width:760px;margin:0 auto;padding:12px 16px 0;display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+.top h1{font-size:24px;font-weight:700;margin:0;letter-spacing:-.01em}
+.top a.back{color:var(--muted);text-decoration:none;font-size:15px}
+nav.tabs{max-width:760px;margin:0 auto;display:flex;gap:4px;padding:8px 12px 0;overflow-x:auto}
+nav.tabs button{background:none;border:0;border-bottom:3px solid transparent;padding:10px 12px;font-weight:600;color:var(--muted);cursor:pointer;white-space:nowrap}
+nav.tabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent)}
+.badge{display:inline-block;min-width:22px;padding:0 6px;margin-left:6px;border-radius:11px;background:var(--bad);color:#fff;font-size:13px;line-height:22px;text-align:center}
+
+main{max-width:760px;margin:0 auto;padding:16px}
+h2.gruppe{font-size:15px;font-weight:600;color:var(--muted);margin:24px 0 8px}
+h2.gruppe:first-child{margin-top:4px}
+
+.liste{display:block;width:100%;text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-md);padding:14px 16px;margin-bottom:8px;cursor:pointer}
+.liste:hover{border-color:#B9C3BF}
+.liste .rad{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.liste h3{margin:0;font-size:19px;font-weight:600}
+.liste .meta{color:var(--muted);font-size:15px;margin-top:2px}
+.pill{flex:none;font-size:14px;font-weight:600;padding:3px 10px;border-radius:999px;white-space:nowrap}
+.pill.ok{background:var(--ok-bg);color:var(--ok)}
+.pill.forfalt{background:var(--bad-bg);color:var(--bad)}
+.pill.noy{background:var(--accent-soft);color:var(--accent)}
+.lev{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.lev span{font-size:14px;padding:2px 8px;border-radius:var(--r-sm);background:var(--bg);color:var(--muted)}
+.lev span.gjort{background:var(--ok-bg);color:var(--ok)}
+
+.pagaende{background:var(--warn-bg);border:1px solid #EBD3A6;border-radius:var(--r-md);padding:14px 16px;margin-bottom:8px}
+.pagaende h3{margin:0 0 2px;font-size:18px}
+.pagaende .tid{font-variant-numeric:tabular-nums;font-weight:700;font-size:22px}
+.pagaende.sen{background:var(--bad-bg);border-color:#E7B9AF}
+
+/* Skjema */
+.skjema-head{margin-bottom:16px}
+.skjema-head h2{font-size:26px;margin:4px 0 4px;font-weight:700;letter-spacing:-.01em}
+.skjema-head p{margin:0;color:var(--muted)}
+.tilbake{background:none;border:0;padding:6px 0;color:var(--accent);font-weight:600;cursor:pointer}
+.punkt{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-md);padding:14px 16px;margin-bottom:10px}
+.punkt.avvik{border-color:var(--bad);box-shadow:inset 4px 0 0 var(--bad)}
+.punkt.besvart{box-shadow:inset 4px 0 0 var(--ok)}
+.punkt.avvik.besvart{box-shadow:inset 4px 0 0 var(--bad)}
+.punkt-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px}
+.punkt h3{margin:0;font-size:18px;font-weight:600}
+.punkt .grense{color:var(--muted);font-size:15px;white-space:nowrap;font-variant-numeric:tabular-nums}
+.punkt .instruks{margin:4px 0 0;color:var(--muted);font-size:15px}
+.valgfri{font-size:13px;color:var(--muted);font-weight:500;margin-left:6px}
+
+.maal{display:flex;align-items:center;gap:8px;margin-top:12px}
+.sign{width:52px;height:56px;border:1px solid var(--line);border-radius:var(--r-sm);background:var(--bg);font-size:28px;font-weight:600;cursor:pointer;line-height:1}
+.verdi{width:120px;height:56px;border:1px solid var(--line);border-radius:var(--r-sm);padding:0 12px;font-size:30px;font-weight:700;font-variant-numeric:tabular-nums;background:var(--surface)}
+.enhet{font-size:22px;font-weight:600;color:var(--muted)}
+
+/* Termometer-skala: målt verdi mot tillatt område */
+.skala{position:relative;height:12px;margin:14px 2px 4px;border-radius:6px;background:repeating-linear-gradient(90deg,var(--bg) 0 6px,#E9EDEB 6px 12px);border:1px solid var(--line)}
+.skala .band{position:absolute;top:0;bottom:0;background:var(--ok-bg);border-left:2px solid var(--ok);border-right:2px solid var(--ok)}
+.skala .mark{position:absolute;top:-6px;width:4px;height:22px;margin-left:-2px;border-radius:2px;background:var(--ink);transition:left .15s ease}
+.punkt.avvik .skala .mark{background:var(--bad)}
+.skala-tall{display:flex;justify-content:space-between;font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+
+.felt{width:100%;margin-top:10px;border:1px solid var(--line);border-radius:var(--r-sm);padding:10px 12px;background:var(--surface);font-size:16px}
+textarea.felt{min-height:72px;resize:vertical}
+.krav label{display:block;margin-top:12px;font-weight:600;color:var(--bad);font-size:15px}
+.veiledning{margin-top:12px;background:var(--bad-bg);border-radius:var(--r-sm);padding:10px 12px;font-size:15px}
+.veiledning p{margin:4px 0 2px}
+
+.seg{display:flex;margin-top:12px;border:1px solid var(--line);border-radius:var(--r-sm);overflow:hidden;width:max-content;max-width:100%}
+.seg button{border:0;border-right:1px solid var(--line);background:var(--surface);padding:12px 20px;font-weight:600;cursor:pointer;min-width:72px}
+.seg button:last-child{border-right:0}
+.seg button[aria-pressed="true"][data-svar="ja"]{background:var(--ok);color:#fff}
+.seg button[aria-pressed="true"][data-svar="nei"]{background:var(--bad);color:#fff}
+.seg button[aria-pressed="true"][data-svar="na"]{background:var(--muted);color:#fff}
+
+.verktoy{display:flex;gap:16px;align-items:center;margin-top:10px;flex-wrap:wrap}
+.lenke{background:none;border:0;padding:4px 0;color:var(--accent);font-weight:600;cursor:pointer;font-size:15px}
+.foto{position:relative;color:var(--accent);font-weight:600;font-size:15px;cursor:pointer}
+.foto input{position:absolute;inset:0;opacity:0;cursor:pointer}
+.foto.har{color:var(--ok)}
+
+.signatur{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-md);padding:14px 16px;margin-top:18px}
+.signatur h3{margin:0 0 10px;font-size:18px}
+.personer{display:flex;flex-wrap:wrap;gap:8px}
+.personer button{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:10px 18px;font-weight:600;cursor:pointer}
+.personer button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+.lagre-rad{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:16px;flex-wrap:wrap}
+.hint{color:var(--muted);font-size:15px}
+.primar{background:var(--accent);color:#fff;border:0;border-radius:var(--r-sm);padding:14px 26px;font-weight:700;font-size:17px;cursor:pointer}
+.primar:disabled{background:#AFC0CC;cursor:not-allowed}
+.sekundar{background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:var(--r-sm);padding:10px 16px;font-weight:600;cursor:pointer}
+
+/* Historikk og avvik */
+.filter{display:flex;gap:8px;align-items:end;flex-wrap:wrap;margin-bottom:12px}
+.filter label{font-size:14px;color:var(--muted);display:flex;flex-direction:column;gap:2px}
+.filter input{border:1px solid var(--line);border-radius:var(--r-sm);padding:8px 10px;background:var(--surface)}
+details.kontroll{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-md);margin-bottom:8px}
+details.kontroll summary{padding:12px 16px;cursor:pointer;list-style:none}
+details.kontroll summary::-webkit-details-marker{display:none}
+details.kontroll .rad{display:flex;justify-content:space-between;gap:12px}
+details.kontroll h3{margin:0;font-size:17px}
+table.reg{width:100%;border-collapse:collapse;font-size:15px}
+.tabell-wrap{overflow-x:auto;padding:0 16px 12px}
+table.reg td{border-top:1px solid var(--line);padding:8px 6px;vertical-align:top}
+table.reg td.v{white-space:nowrap;font-variant-numeric:tabular-nums;font-weight:600}
+table.reg tr.avvik td.v{color:var(--bad)}
+table.reg a{color:var(--accent)}
+
+.avvik-kort{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-md);padding:14px 16px;margin-bottom:10px}
+.avvik-kort.apen{box-shadow:inset 4px 0 0 var(--bad)}
+.avvik-kort h3{margin:0;font-size:17px}
+.avvik-kort .meta{color:var(--muted);font-size:14px;margin-top:2px}
+.avvik-kort dl{margin:10px 0 0}
+.avvik-kort dt{font-size:14px;color:var(--muted);margin-top:6px}
+.avvik-kort dd{margin:0}
+
+.tom{color:var(--muted);text-align:center;padding:32px 16px}
+.feil{background:var(--bad-bg);color:var(--bad);border-radius:var(--r-md);padding:12px 16px;margin-bottom:12px}
+dialog{border:0;border-radius:var(--r-md);padding:20px;max-width:440px;width:calc(100% - 32px)}
+dialog::backdrop{background:rgba(24,32,30,.45)}
+dialog h2{margin:0 0 4px;font-size:22px}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:#fff;padding:12px 20px;border-radius:var(--r-sm);font-weight:600;z-index:50}
+
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+@media print{
+  header.top,.filter,.ikke-print{display:none!important}
+  body{background:#fff;font-size:12px}
+  details.kontroll{break-inside:avoid;border-color:#999}
+  details.kontroll:not([open]) .tabell-wrap{display:block}
+}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="top-inner">
+    <h1>IK-mat</h1>
+    <a class="back" href="index.html">Til portalen</a>
+  </div>
+  <nav class="tabs" role="tablist">
+    <button role="tab" data-view="oversikt" aria-selected="true">Kontroller</button>
+    <button role="tab" data-view="historikk" aria-selected="false">Utførte</button>
+    <button role="tab" data-view="avvik" aria-selected="false">Avvik<span id="avvikBadge" class="badge hidden"></span></button>
+  </nav>
+</header>
+
+<main>
+  <div id="feil" class="feil hidden"></div>
+  <section id="view-oversikt"></section>
+  <section id="view-skjema" class="hidden"></section>
+  <section id="view-historikk" class="hidden"></section>
+  <section id="view-avvik" class="hidden"></section>
+</main>
+
+<dialog id="sluttDialog">
+  <h2>Nedkjøling slutt</h2>
+  <p id="sluttInfo" class="hint"></p>
+  <div class="maal">
+    <button class="sign" id="sluttSign" type="button">+</button>
+    <input class="verdi" id="sluttVerdi" inputmode="decimal" placeholder="0" aria-label="Temperatur">
+    <span class="enhet">°C</span>
+  </div>
+  <p class="hint" style="margin:6px 0 0">Grense: 0 til 10 °C</p>
+  <input class="felt" id="sluttKommentar" placeholder="Hva ble målt">
+  <h3 style="margin:16px 0 8px;font-size:16px">Utført av</h3>
+  <div class="personer" id="sluttPersoner"></div>
+  <div class="lagre-rad">
+    <button class="sekundar" type="button" id="sluttAvbryt">Avbryt</button>
+    <button class="primar" type="button" id="sluttLagre" disabled>Lagre slutt</button>
+  </div>
+</dialog>
+
+<script>
+// ---------- Oppsett ----------
+const SUPABASE_URL = 'https://izdclsyuplghwznsjnom.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_COeSkeglpDvtN6v4PNNZAg_MXhOFXPD';   // samme nøkkel som resten av portalen
+const BILDE_BUCKET = 'ik-bilder';
+const PERSONER = ['Thomas', 'Joakim', 'Marcus', 'Benjamin'];
+const LEVERANDORER = ['Anis Pølsemakeri', 'Langdalen', 'Strøm Larsen', 'Laks og Vilt'];
+const NEDKJOLING_MAKS_MIN = 240;
+
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+const S = { lister: [], punkter: {}, punktKode: {}, kontroller: [], apneAvvik: 0, pagaende: [] };
+let skjema = null;   // aktivt skjema
+
+// ---------- Hjelpere ----------
+const $ = (s, el = document) => el.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmtTid = d => new Date(d).toLocaleString('nb-NO', { weekday:'short', day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' });
+const fmtKl = d => new Date(d).toLocaleTimeString('nb-NO', { hour:'2-digit', minute:'2-digit' });
+const fmtTall = n => String(n).replace('.', ',');
+const varighet = min => min < 60 ? `${min} min` : `${Math.floor(min/60)} t ${min%60} min`;
+const sistePerson = () => { try { return localStorage.getItem('ik_person') || ''; } catch { return ''; } };
+const lagrePerson = p => { try { localStorage.setItem('ik_person', p); } catch {} };
+
+function visFeil(msg) { const el = $('#feil'); el.textContent = msg; el.classList.toggle('hidden', !msg); }
+function toast(msg) {
+  const t = document.createElement('div'); t.className = 'toast'; t.textContent = msg;
+  document.body.appendChild(t); setTimeout(() => t.remove(), 2600);
+}
+function lesTall(raw, neg) {
+  const s = String(raw).trim().replace(',', '.').replace(/^[-−+]/, '');
+  if (s === '' || isNaN(Number(s))) return null;
+  return Math.round(Number(s) * 10) / 10 * (neg ? -1 : 1);
+}
+function periodeStart(frekvens) {
+  const d = new Date(); d.setHours(0, 0, 0, 0);
+  if (frekvens === 'daglig') return d;
+  if (frekvens === 'ukentlig') { d.setDate(d.getDate() - ((d.getDay() + 6) % 7)); return d; }
+  if (frekvens === 'manedlig') { d.setDate(1); return d; }
+  return null;
+}
+const erVaremottak = l => l.kode === 'L05';
+const erNedkjoling = l => l.kode === 'L06';
+
+// ---------- Data ----------
+async function lastAlt() {
+  visFeil('');
+  const siden = new Date(Date.now() - 62 * 864e5).toISOString();
+  const [lister, punkter, kontroller, avvik] = await Promise.all([
+    sb.from('ik_sjekklister').select('*, ik_sjekkliste_punkter(sortering, obligatorisk, sjekkpunkt_id)').eq('aktiv', true).order('sortering'),
+    sb.from('ik_sjekkpunkter').select('*').eq('aktiv', true).order('sortering'),
+    sb.from('ik_kontroller').select('id, sjekkliste_id, utfort_av, leverandor, fullfort_at').not('fullfort_at', 'is', null).gte('fullfort_at', siden).order('fullfort_at', { ascending: false }),
+    sb.from('ik_avvik').select('id', { count: 'exact', head: true }).eq('status', 'apen')
+  ]);
+  const err = lister.error || punkter.error || kontroller.error || avvik.error;
+  if (err) { visFeil('Kunne ikke hente data fra Supabase: ' + err.message); return; }
+  S.lister = lister.data;
+  S.punkter = {}; S.punktKode = {};
+  punkter.data.forEach(p => { S.punkter[p.id] = p; S.punktKode[p.kode] = p; });
+  S.kontroller = kontroller.data;
+  S.apneAvvik = avvik.count || 0;
+  const b = $('#avvikBadge'); b.textContent = S.apneAvvik; b.classList.toggle('hidden', !S.apneAvvik);
+  await lastPagaende();
+}
+
+async function lastPagaende() {
+  S.pagaende = [];
+  const start = S.punktKode['T17'], slutt = S.punktKode['T18'];
+  if (!start || !slutt) return;
+  const { data: starter } = await sb.from('ik_registreringer')
+    .select('id, kontroll_id, verdi, kommentar, registrert_at, registrert_av')
+    .eq('sjekkpunkt_id', start.id).gte('registrert_at', new Date(Date.now() - 864e5).toISOString())
+    .order('registrert_at', { ascending: false });
+  if (!starter?.length) return;
+  const { data: avsluttet } = await sb.from('ik_registreringer').select('start_registrering_id').in('start_registrering_id', starter.map(s => s.id));
+  const ferdig = new Set((avsluttet || []).map(a => a.start_registrering_id));
+  S.pagaende = starter.filter(s => !ferdig.has(s.id));
+}
+
+// ---------- Oversikt ----------
+function statusFor(liste) {
+  const kontr = S.kontroller.filter(k => k.sjekkliste_id === liste.id);
+  const siste = kontr[0];
+  const start = periodeStart(liste.frekvens);
+  const iPerioden = start ? kontr.filter(k => new Date(k.fullfort_at) >= start) : [];
+  let pill = '';
+  if (liste.frekvens !== 'ved_behov') {
+    const tekst = { daglig: 'i dag', ukentlig: 'denne uken', manedlig: 'denne måneden' }[liste.frekvens];
+    pill = iPerioden.length ? `<span class="pill ok">Utført ${tekst}</span>` : `<span class="pill forfalt">Ikke utført ${tekst}</span>`;
+  }
+  return { siste, iPerioden, pill };
+}
+
+function visOversikt() {
+  const grupper = [['daglig', 'I dag'], ['ukentlig', 'Denne uken'], ['manedlig', 'Denne måneden'], ['ved_behov', 'Ved behov']];
+  let html = '';
+  if (S.pagaende.length) {
+    html += `<h2 class="gruppe">Nedkjøling pågår</h2>`;
+    S.pagaende.forEach(p => {
+      const min = Math.round((Date.now() - new Date(p.registrert_at)) / 6e4);
+      const sen = min > NEDKJOLING_MAKS_MIN;
+      html += `<div class="pagaende ${sen ? 'sen' : ''}">
+        <div class="rad" style="display:flex;justify-content:space-between;gap:12px;align-items:center">
+          <div><h3>${esc(p.kommentar || 'Nedkjøling')}</h3>
+            <div class="hint">Startet kl. ${fmtKl(p.registrert_at)} på ${fmtTall(p.verdi)} °C av ${esc(p.registrert_av)}</div>
+            <div class="tid">${varighet(min)}${sen ? ' – over fristen' : ''}</div></div>
+          <button class="primar" data-slutt="${p.id}">Registrer slutt</button>
+        </div></div>`;
+    });
+  }
+  grupper.forEach(([frek, tittel]) => {
+    const lister = S.lister.filter(l => l.frekvens === frek);
+    if (!lister.length) return;
+    html += `<h2 class="gruppe">${tittel}</h2>`;
+    lister.forEach(l => {
+      const st = statusFor(l);
+      const antall = l.ik_sjekkliste_punkter.length;
+      const sist = st.siste ? `Sist utført ${fmtTid(st.siste.fullfort_at)} av ${esc(st.siste.utfort_av)}` : 'Ikke utført ennå';
+      let lev = '';
+      if (erVaremottak(l)) {
+        const gjort = new Set(st.iPerioden.map(k => k.leverandor));
+        lev = `<div class="lev">${LEVERANDORER.map(n => `<span class="${gjort.has(n) ? 'gjort' : ''}">${esc(n)}</span>`).join('')}</div>`;
+      }
+      html += `<button class="liste" data-liste="${l.id}">
+        <div class="rad"><div><h3>${esc(l.navn)}</h3><div class="meta">${antall} punkter. ${sist}</div></div>${st.pill}</div>${lev}</button>`;
+    });
+  });
+  if (!S.lister.length) html = `<p class="tom">Ingen sjekklister funnet. Kjør SQL-skriptet i Supabase først.</p>`;
+  $('#view-oversikt').innerHTML = html;
+}
+
+// ---------- Skjema ----------
+function apneSkjema(listeId) {
+  const liste = S.lister.find(l => l.id === listeId);
+  let rader = [...liste.ik_sjekkliste_punkter].sort((a, b) => a.sortering - b.sortering)
+    .map(r => ({ ...r, p: S.punkter[r.sjekkpunkt_id] })).filter(r => r.p);
+  if (erNedkjoling(liste)) rader = rader.filter(r => r.p.kode !== 'T18');  // slutt registreres senere
+  skjema = {
+    liste, rader, person: sistePerson(), leverandor: '',
+    svar: Object.fromEntries(rader.map(r => [r.p.id, { neg: r.p.maks_verdi !== null && r.p.maks_verdi < 0, raw: '', svar: null, kommentar: '', tiltak: '', fil: null, visKommentar: false }]))
+  };
+  const st = statusFor(liste);
+  let html = `<button class="tilbake" data-act="tilbake">Tilbake til kontroller</button>
+    <div class="skjema-head"><h2>${esc(liste.navn)}</h2><p>${esc(liste.beskrivelse || '')}</p>
+    <p>${st.siste ? `Sist utført ${fmtTid(st.siste.fullfort_at)} av ${esc(st.siste.utfort_av)}` : 'Ikke utført ennå'}</p></div>`;
+  if (erVaremottak(liste)) {
+    html += `<div class="punkt"><h3>Leverandør</h3>
+      <input class="felt" id="leverandor" list="levListe" placeholder="Velg eller skriv leverandør">
+      <datalist id="levListe">${LEVERANDORER.map(n => `<option value="${esc(n)}">`).join('')}</datalist></div>`;
+  }
+  rader.forEach(r => html += r.p.kategori === 'temperatur' ? tempRad(r) : renholdRad(r));
+  html += `<div class="signatur"><h3>Utført av</h3>
+    <div class="personer">${PERSONER.map(n => `<button type="button" data-person="${n}" aria-pressed="${n === skjema.person}">${n}</button>`).join('')}</div>
+    <div class="lagre-rad"><span class="hint" id="hint"></span><button class="primar" id="lagre" data-act="lagre" disabled>Lagre kontroll</button></div></div>`;
+  const v = $('#view-skjema'); v.innerHTML = html;
+  rader.forEach(r => oppdaterRad(r.p.id));
+  oppdaterLagre();
+  bytt('skjema'); window.scrollTo(0, 0);
+}
+
+function grenseTekst(p) {
+  if (p.min_verdi !== null && p.maks_verdi !== null) return `${fmtTall(p.min_verdi)} til ${fmtTall(p.maks_verdi)} ${p.enhet}`;
+  if (p.min_verdi !== null) return `minst ${fmtTall(p.min_verdi)} ${p.enhet}`;
+  return `maks ${fmtTall(p.maks_verdi)} ${p.enhet}`;
+}
+function skalaRange(p) {
+  const min = p.min_verdi ?? p.maks_verdi - 10, max = p.maks_verdi ?? p.min_verdi + 10;
+  const pad = Math.max((max - min) * 0.6, 4);
+  return { lo: min - pad, hi: max + pad, min, max };
+}
+function tempRad(r) {
+  const p = r.p, s = skalaRange(p), w = s.hi - s.lo;
+  return `<div class="punkt temp" data-pid="${p.id}">
+    <div class="punkt-head"><h3>${esc(p.navn)}${r.obligatorisk ? '' : '<span class="valgfri">valgfritt</span>'}</h3><span class="grense">${grenseTekst(p)}</span></div>
+    ${p.instruks ? `<p class="instruks">${esc(p.instruks)}</p>` : ''}
+    <div class="maal">
+      <button type="button" class="sign" data-act="sign" aria-label="Bytt fortegn"></button>
+      <input class="verdi" data-felt="raw" inputmode="decimal" placeholder="0" aria-label="Temperatur ${esc(p.navn)}">
+      <span class="enhet">${esc(p.enhet)}</span>
+    </div>
+    <div class="skala" aria-hidden="true"><div class="band" style="left:${(s.min - s.lo) / w * 100}%;width:${(s.max - s.min) / w * 100}%"></div><div class="mark hidden"></div></div>
+    <div class="skala-tall" aria-hidden="true"><span>${fmtTall(Math.round(s.lo))}</span><span>${fmtTall(Math.round(s.hi))}</span></div>
+    <input class="felt" data-felt="kommentar" placeholder="Hva eller hvor ble det målt">
+    <div class="krav hidden">
+      <div class="veiledning hidden"><strong>Tiltak ved denne temperaturen</strong><p></p>
+        <button type="button" class="lenke" data-act="bruk-tiltak">Bruk dette som tiltak</button></div>
+      <label>Utenfor grensen. Hva gjorde du?</label><textarea class="felt" data-felt="tiltak" placeholder="Beskriv hva som ble gjort"></textarea></div>
+    <div class="verktoy"><label class="foto"><span>Legg til bilde</span><input type="file" accept="image/*" capture="environment" data-felt="fil"></label></div>
+  </div>`;
+}
+function renholdRad(r) {
+  const p = r.p;
+  return `<div class="punkt renhold" data-pid="${p.id}">
+    <h3>${esc(p.navn)}${r.obligatorisk ? '' : '<span class="valgfri">valgfritt</span>'}</h3>
+    ${p.instruks ? `<p class="instruks">${esc(p.instruks)}</p>` : ''}
+    <div class="seg" role="group" aria-label="Utført?">
+      <button type="button" data-svar="ja" aria-pressed="false">Ja</button>
+      <button type="button" data-svar="nei" aria-pressed="false">Nei</button>
+      <button type="button" data-svar="na" aria-pressed="false">Ikke aktuelt</button>
+    </div>
+    <div class="krav hidden"><label>Ikke utført. Skriv hvorfor.</label></div>
+    <textarea class="felt hidden" data-felt="kommentar" placeholder="Kommentar"></textarea>
+    <div class="verktoy"><button type="button" class="lenke" data-act="kommentar">Legg til kommentar</button>
+      <label class="foto"><span>Legg til bilde</span><input type="file" accept="image/*" capture="environment" data-felt="fil"></label></div>
+  </div>`;
+}
+
+function finnTiltak(p, v) {
+  const liste = Array.isArray(p.strakstiltak) ? p.strakstiltak : [];
+  return liste.find(t => (t.fra === null || v >= t.fra) && (t.til === null || v <= t.til)) || null;
+}
+
+function radStatus(p, a) {
+  if (p.kategori === 'temperatur') {
+    const v = lesTall(a.raw, a.neg);
+    if (v === null) return { besvart: false };
+    const avvik = (p.min_verdi !== null && v < p.min_verdi) || (p.maks_verdi !== null && v > p.maks_verdi);
+    return { besvart: true, avvik, v, gyldig: !avvik || a.tiltak.trim() !== '' };
+  }
+  if (!a.svar) return { besvart: false };
+  const avvik = a.svar === 'nei';
+  return { besvart: true, avvik, gyldig: !avvik || a.kommentar.trim() !== '' };
+}
+
+function oppdaterRad(pid) {
+  const el = $(`.punkt[data-pid="${pid}"]`), p = S.punkter[pid], a = skjema.svar[pid], st = radStatus(p, a);
+  el.classList.toggle('besvart', st.besvart && st.gyldig);
+  el.classList.toggle('avvik', !!st.avvik);
+  $('.krav', el).classList.toggle('hidden', !st.avvik);
+  if (p.kategori === 'temperatur') {
+    $('.sign', el).textContent = a.neg ? '−' : '+';
+    const mark = $('.mark', el), s = skalaRange(p);
+    if (st.besvart) {
+      const pos = Math.min(Math.max((st.v - s.lo) / (s.hi - s.lo), 0), 1) * 100;
+      mark.style.left = pos + '%'; mark.classList.remove('hidden');
+    } else mark.classList.add('hidden');
+    const tiltak = st.avvik ? finnTiltak(p, st.v) : null;
+    const vei = $('.veiledning', el);
+    vei.classList.toggle('hidden', !tiltak);
+    if (tiltak) { $('p', vei).textContent = tiltak.tiltak; vei.dataset.tekst = tiltak.tiltak; }
+  } else {
+    el.querySelectorAll('.seg button').forEach(b => b.setAttribute('aria-pressed', b.dataset.svar === a.svar));
+    const vis = a.visKommentar || a.svar === 'nei' || a.kommentar;
+    $('textarea[data-felt="kommentar"]', el).classList.toggle('hidden', !vis);
+    $('[data-act="kommentar"]', el).classList.toggle('hidden', !!vis);
+  }
+  const foto = $('.foto', el); foto.classList.toggle('har', !!a.fil);
+  $('.foto span', el).textContent = a.fil ? 'Bilde lagt til' : 'Legg til bilde';
+}
+
+function oppdaterLagre() {
+  if (!skjema) return;
+  let mangler = 0, ugyldig = 0;
+  skjema.rader.forEach(r => {
+    const st = radStatus(r.p, skjema.svar[r.p.id]);
+    if (!st.besvart && r.obligatorisk) mangler++;
+    if (st.besvart && !st.gyldig) ugyldig++;
+  });
+  const levMangler = erVaremottak(skjema.liste) && !skjema.leverandor.trim();
+  const deler = [];
+  if (mangler) deler.push(`${mangler} ${mangler === 1 ? 'punkt' : 'punkter'} gjenstår`);
+  if (ugyldig) deler.push(`${ugyldig} avvik mangler forklaring`);
+  if (levMangler) deler.push('velg leverandør');
+  if (!skjema.person) deler.push('velg hvem som utførte');
+  $('#hint').textContent = deler.join(', ');
+  $('#lagre').disabled = deler.length > 0;
+}
+
+async function lastOppBilde(kontrollId, kode, fil) {
+  const ext = (fil.name.split('.').pop() || 'jpg').toLowerCase();
+  const sti = `${kontrollId}/${kode}-${Date.now()}.${ext}`;
+  const { error } = await sb.storage.from(BILDE_BUCKET).upload(sti, fil, { contentType: fil.type || 'image/jpeg' });
+  if (error) throw new Error('Bildeopplasting feilet: ' + error.message);
+  return sb.storage.from(BILDE_BUCKET).getPublicUrl(sti).data.publicUrl;
+}
+
+async function lagreSkjema() {
+  const knapp = $('#lagre'); knapp.disabled = true; knapp.textContent = 'Lagrer …';
+  try {
+    const { liste, person } = skjema;
+    const { data: k, error: e1 } = await sb.from('ik_kontroller')
+      .insert({ sjekkliste_id: liste.id, utfort_av: person, leverandor: erVaremottak(liste) ? skjema.leverandor.trim() : null })
+      .select().single();
+    if (e1) throw e1;
+    const rows = [], tiltak = {};
+    for (const r of skjema.rader) {
+      const p = r.p, a = skjema.svar[p.id], st = radStatus(p, a);
+      if (!st.besvart) continue;
+      const bilde_url = a.fil ? await lastOppBilde(k.id, p.kode, a.fil) : null;
+      const row = { kontroll_id: k.id, sjekkpunkt_id: p.id, kommentar: a.kommentar.trim() || null, bilde_url, registrert_av: person };
+      if (p.kategori === 'temperatur') row.verdi = st.v; else row.svar = a.svar;
+      if (p.kategori === 'temperatur' && st.avvik) tiltak[p.id] = a.tiltak.trim();
+      rows.push(row);
+    }
+    const { data: lagret, error: e2 } = await sb.from('ik_registreringer').insert(rows).select('id, sjekkpunkt_id, status');
+    if (e2) throw e2;
+    for (const reg of lagret.filter(x => x.status === 'avvik' && tiltak[x.sjekkpunkt_id])) {
+      await sb.from('ik_avvik').update({ strakstiltak: tiltak[reg.sjekkpunkt_id] }).eq('registrering_id', reg.id);
+    }
+    const { error: e3 } = await sb.from('ik_kontroller').update({ fullfort_at: new Date().toISOString() }).eq('id', k.id);
+    if (e3) throw e3;
+    lagrePerson(person);
+    const antAvvik = lagret.filter(x => x.status === 'avvik').length;
+    toast(antAvvik ? `Kontroll lagret med ${antAvvik} avvik` : 'Kontroll lagret');
+    skjema = null;
+    await lastAlt(); visOversikt(); bytt('oversikt');
+  } catch (err) {
+    visFeil('Kontrollen ble ikke lagret: ' + (err.message || err)); window.scrollTo(0, 0);
+    knapp.disabled = false; knapp.textContent = 'Lagre kontroll';
+  }
+}
+
+// ---------- Nedkjøling slutt ----------
+const slutt = { start: null, neg: false, person: '' };
+function apneSlutt(startId) {
+  slutt.start = S.pagaende.find(p => p.id === startId); slutt.neg = false; slutt.person = sistePerson();
+  const min = Math.round((Date.now() - new Date(slutt.start.registrert_at)) / 6e4);
+  $('#sluttInfo').textContent = `Startet kl. ${fmtKl(slutt.start.registrert_at)} på ${fmtTall(slutt.start.verdi)} °C, for ${varighet(min)} siden.`;
+  $('#sluttVerdi').value = ''; $('#sluttKommentar').value = slutt.start.kommentar || '';
+  $('#sluttPersoner').innerHTML = PERSONER.map(n => `<button type="button" data-person="${n}" aria-pressed="${n === slutt.person}">${n}</button>`).join('');
+  oppdaterSlutt(); $('#sluttDialog').showModal();
+}
+function oppdaterSlutt() {
+  $('#sluttSign').textContent = slutt.neg ? '−' : '+';
+  $('#sluttLagre').disabled = lesTall($('#sluttVerdi').value, slutt.neg) === null || !slutt.person;
+}
+async function lagreSlutt() {
+  const verdi = lesTall($('#sluttVerdi').value, slutt.neg);
+  const { error } = await sb.from('ik_registreringer').insert({
+    kontroll_id: slutt.start.kontroll_id, sjekkpunkt_id: S.punktKode['T18'].id, verdi,
+    kommentar: $('#sluttKommentar').value.trim() || null, registrert_av: slutt.person, start_registrering_id: slutt.start.id
+  });
+  if (error) { visFeil('Slutt ble ikke lagret: ' + error.message); return; }
+  lagrePerson(slutt.person); $('#sluttDialog').close(); toast('Nedkjøling avsluttet');
+  await lastAlt(); visOversikt();
+}
+
+// ---------- Utførte ----------
+async function visHistorikk() {
+  const v = $('#view-historikk');
+  if (!v.dataset.klar) {
+    const til = new Date(), fra = new Date(Date.now() - 30 * 864e5);
+    v.innerHTML = `<div class="filter">
+      <label>Fra<input type="date" id="hFra" value="${fra.toISOString().slice(0,10)}"></label>
+      <label>Til<input type="date" id="hTil" value="${til.toISOString().slice(0,10)}"></label>
+      <button class="sekundar" data-act="hent">Vis</button>
+      <button class="sekundar" data-act="skrivut">Skriv ut</button></div><div id="hListe"></div>`;
+    v.dataset.klar = 1;
+  }
+  const fra = new Date($('#hFra').value + 'T00:00'), til = new Date($('#hTil').value + 'T23:59:59');
+  $('#hListe').innerHTML = '<p class="tom">Henter …</p>';
+  const { data, error } = await sb.from('ik_kontroller')
+    .select('id, utfort_av, leverandor, fullfort_at, ik_sjekklister(navn), ik_registreringer(id, verdi, svar, status, kommentar, bilde_url, registrert_at, registrert_av, ik_sjekkpunkter(navn, enhet, kategori, sortering))')
+    .not('fullfort_at', 'is', null).gte('fullfort_at', fra.toISOString()).lte('fullfort_at', til.toISOString())
+    .order('fullfort_at', { ascending: false }).limit(300);
+  if (error) { $('#hListe').innerHTML = `<p class="feil">${esc(error.message)}</p>`; return; }
+  if (!data.length) { $('#hListe').innerHTML = '<p class="tom">Ingen kontroller i valgt periode.</p>'; return; }
+  const svarTekst = { ja: 'Ja', nei: 'Nei', na: 'Ikke aktuelt' };
+  $('#hListe').innerHTML = data.map(k => {
+    const regs = [...k.ik_registreringer].sort((a, b) => (a.ik_sjekkpunkter?.sortering ?? 0) - (b.ik_sjekkpunkter?.sortering ?? 0));
+    const ant = regs.filter(r => r.status === 'avvik').length;
+    return `<details class="kontroll"><summary><div class="rad">
+      <div><h3>${esc(k.ik_sjekklister?.navn)}${k.leverandor ? `, ${esc(k.leverandor)}` : ''}</h3>
+      <div class="hint">${fmtTid(k.fullfort_at)} av ${esc(k.utfort_av)}</div></div>
+      ${ant ? `<span class="pill forfalt">${ant} avvik</span>` : '<span class="pill ok">OK</span>'}</div></summary>
+      <div class="tabell-wrap"><table class="reg">${regs.map(r => `<tr class="${r.status === 'avvik' ? 'avvik' : ''}">
+        <td>${esc(r.ik_sjekkpunkter?.navn)}${r.kommentar ? `<div class="hint">${esc(r.kommentar)}</div>` : ''}</td>
+        <td class="v">${r.ik_sjekkpunkter?.kategori === 'temperatur' ? `${fmtTall(r.verdi)} ${esc(r.ik_sjekkpunkter.enhet)}` : svarTekst[r.svar] || ''}</td>
+        <td>${r.bilde_url ? `<a href="${esc(r.bilde_url)}" target="_blank" rel="noopener">Bilde</a>` : ''}</td></tr>`).join('')}</table></div></details>`;
+  }).join('');
+}
+
+// ---------- Avvik ----------
+const lukk = {};
+async function visAvvik() {
+  const v = $('#view-avvik'); v.innerHTML = '<p class="tom">Henter …</p>';
+  const { data, error } = await sb.from('ik_avvik')
+    .select('*, ik_registreringer(registrert_at, registrert_av, bilde_url, ik_sjekkpunkter(navn))')
+    .order('created_at', { ascending: false }).limit(150);
+  if (error) { v.innerHTML = `<p class="feil">${esc(error.message)}</p>`; return; }
+  const apne = data.filter(a => a.status === 'apen'), lukket = data.filter(a => a.status === 'lukket');
+  const kort = a => {
+    const r = a.ik_registreringer;
+    const meta = r ? `${fmtTid(r.registrert_at)}, registrert av ${esc(r.registrert_av)}` : fmtTid(a.created_at);
+    if (a.status === 'lukket') return `<div class="avvik-kort"><h3>${esc(a.beskrivelse)}</h3><div class="meta">${meta}</div>
+      <dl>${a.strakstiltak ? `<dt>Strakstiltak</dt><dd>${esc(a.strakstiltak)}</dd>` : ''}
+      ${a.korrigerende_tiltak ? `<dt>Korrigerende tiltak</dt><dd>${esc(a.korrigerende_tiltak)}</dd>` : ''}
+      <dt>Lukket</dt><dd>${fmtTid(a.lukket_at)} av ${esc(a.lukket_av)}</dd></dl></div>`;
+    return `<div class="avvik-kort apen" data-avvik="${a.id}"><h3>${esc(a.beskrivelse)}</h3><div class="meta">${meta}</div>
+      ${r?.bilde_url ? `<a class="lenke" href="${esc(r.bilde_url)}" target="_blank" rel="noopener">Se bilde</a>` : ''}
+      <textarea class="felt" data-avvikfelt="strakstiltak" placeholder="Strakstiltak: hva ble gjort med en gang">${esc(a.strakstiltak || '')}</textarea>
+      <textarea class="felt" data-avvikfelt="korrigerende_tiltak" placeholder="Korrigerende tiltak: hva gjør vi så det ikke skjer igjen">${esc(a.korrigerende_tiltak || '')}</textarea>
+      <h3 style="margin:14px 0 8px;font-size:15px">Lukket av</h3>
+      <div class="personer">${PERSONER.map(n => `<button type="button" data-lukkperson="${n}" aria-pressed="false">${n}</button>`).join('')}</div>
+      <div class="lagre-rad"><span class="hint">Fyll inn tiltak og velg person for å lukke</span><button class="primar" data-act="lukk" disabled>Lukk avvik</button></div></div>`;
+  };
+  v.innerHTML = `<h2 class="gruppe">Åpne avvik</h2>${apne.length ? apne.map(kort).join('') : '<p class="tom">Ingen åpne avvik.</p>'}
+    ${lukket.length ? `<h2 class="gruppe">Lukkede avvik</h2>${lukket.map(kort).join('')}` : ''}`;
+}
+function oppdaterLukk(kortEl) {
+  const id = kortEl.dataset.avvik, kt = $('[data-avvikfelt="korrigerende_tiltak"]', kortEl).value.trim();
+  $('[data-act="lukk"]', kortEl).disabled = !(kt && lukk[id]);
+}
+async function lukkAvvik(kortEl) {
+  const id = kortEl.dataset.avvik;
+  const { error } = await sb.from('ik_avvik').update({
+    strakstiltak: $('[data-avvikfelt="strakstiltak"]', kortEl).value.trim() || null,
+    korrigerende_tiltak: $('[data-avvikfelt="korrigerende_tiltak"]', kortEl).value.trim(),
+    status: 'lukket', lukket_av: lukk[id], lukket_at: new Date().toISOString()
+  }).eq('id', id);
+  if (error) { visFeil('Avviket ble ikke lukket: ' + error.message); return; }
+  toast('Avvik lukket'); await lastAlt(); visAvvik();
+}
+
+// ---------- Navigasjon ----------
+function bytt(view) {
+  ['oversikt', 'skjema', 'historikk', 'avvik'].forEach(v => $('#view-' + v).classList.toggle('hidden', v !== view));
+  const tab = view === 'skjema' ? 'oversikt' : view;
+  document.querySelectorAll('nav.tabs button').forEach(b => b.setAttribute('aria-selected', b.dataset.view === tab));
+}
+
+// ---------- Hendelser ----------
+document.querySelector('nav.tabs').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  visFeil('');
+  if (b.dataset.view === 'oversikt') { if (skjema && !confirm('Forlate skjemaet? Det som er fylt inn blir ikke lagret.')) return; skjema = null; visOversikt(); }
+  if (b.dataset.view === 'historikk') visHistorikk();
+  if (b.dataset.view === 'avvik') visAvvik();
+  bytt(b.dataset.view);
+});
+
+$('#view-oversikt').addEventListener('click', e => {
+  const l = e.target.closest('[data-liste]'); if (l) return apneSkjema(l.dataset.liste);
+  const s = e.target.closest('[data-slutt]'); if (s) apneSlutt(s.dataset.slutt);
+});
+
+const vs = $('#view-skjema');
+vs.addEventListener('click', e => {
+  const t = e.target;
+  if (t.closest('[data-act="tilbake"]')) { skjema = null; visOversikt(); bytt('oversikt'); return; }
+  if (t.closest('[data-act="lagre"]')) return lagreSkjema();
+  const pb = t.closest('[data-person]');
+  if (pb) { skjema.person = pb.dataset.person; vs.querySelectorAll('[data-person]').forEach(x => x.setAttribute('aria-pressed', x === pb)); return oppdaterLagre(); }
+  const rad = t.closest('.punkt[data-pid]'); if (!rad) return;
+  const pid = rad.dataset.pid, a = skjema.svar[pid];
+  if (t.closest('[data-act="bruk-tiltak"]')) {
+    const tekst = $('.veiledning', rad).dataset.tekst || '';
+    a.tiltak = tekst; $('textarea[data-felt="tiltak"]', rad).value = tekst;
+  }
+  else if (t.closest('[data-act="sign"]')) a.neg = !a.neg;
+  else if (t.closest('[data-svar]')) a.svar = t.closest('[data-svar]').dataset.svar;
+  else if (t.closest('[data-act="kommentar"]')) { a.visKommentar = true; oppdaterRad(pid); return $('textarea[data-felt="kommentar"]', rad).focus(); }
+  else return;
+  oppdaterRad(pid); oppdaterLagre();
+});
+vs.addEventListener('input', e => {
+  if (e.target.id === 'leverandor') { skjema.leverandor = e.target.value; return oppdaterLagre(); }
+  const rad = e.target.closest('.punkt[data-pid]'), felt = e.target.dataset.felt; if (!rad || !felt || felt === 'fil') return;
+  const a = skjema.svar[rad.dataset.pid];
+  if (felt === 'raw') {
+    const v = e.target.value;
+    if (/^[-−]/.test(v)) { a.neg = true; e.target.value = v.slice(1); }
+    a.raw = e.target.value;
+  } else a[felt] = e.target.value;
+  oppdaterRad(rad.dataset.pid); oppdaterLagre();
+});
+vs.addEventListener('change', e => {
+  if (e.target.dataset.felt !== 'fil') return;
+  const rad = e.target.closest('.punkt[data-pid]');
+  skjema.svar[rad.dataset.pid].fil = e.target.files[0] || null; oppdaterRad(rad.dataset.pid);
+});
+
+$('#view-historikk').addEventListener('click', e => {
+  if (e.target.closest('[data-act="hent"]')) visHistorikk();
+  if (e.target.closest('[data-act="skrivut"]')) { document.querySelectorAll('details.kontroll').forEach(d => d.open = true); window.print(); }
+});
+
+const va = $('#view-avvik');
+va.addEventListener('click', e => {
+  const kortEl = e.target.closest('[data-avvik]'); if (!kortEl) return;
+  const pb = e.target.closest('[data-lukkperson]');
+  if (pb) { lukk[kortEl.dataset.avvik] = pb.dataset.lukkperson; kortEl.querySelectorAll('[data-lukkperson]').forEach(x => x.setAttribute('aria-pressed', x === pb)); oppdaterLukk(kortEl); }
+  if (e.target.closest('[data-act="lukk"]')) lukkAvvik(kortEl);
+});
+va.addEventListener('input', e => { const k = e.target.closest('[data-avvik]'); if (k) oppdaterLukk(k); });
+
+$('#sluttSign').addEventListener('click', () => { slutt.neg = !slutt.neg; oppdaterSlutt(); });
+$('#sluttVerdi').addEventListener('input', e => { if (/^[-−]/.test(e.target.value)) { slutt.neg = true; e.target.value = e.target.value.slice(1); } oppdaterSlutt(); });
+$('#sluttPersoner').addEventListener('click', e => {
+  const b = e.target.closest('[data-person]'); if (!b) return;
+  slutt.person = b.dataset.person; $('#sluttPersoner').querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', x === b)); oppdaterSlutt();
+});
+$('#sluttAvbryt').addEventListener('click', () => $('#sluttDialog').close());
+$('#sluttLagre').addEventListener('click', lagreSlutt);
+
+// Oppdater nedkjølingstimer hvert minutt
+setInterval(() => { if (!$('#view-oversikt').classList.contains('hidden') && S.pagaende.length) visOversikt(); }, 60000);
+
+(async () => { $('#view-oversikt').innerHTML = '<p class="tom">Henter kontroller …</p>'; await lastAlt(); visOversikt(); })();
+</script>
+</body>
+</html>
