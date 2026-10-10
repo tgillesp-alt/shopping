@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<link rel="apple-touch-icon" href="logo.png">
+<title>Fager Bistro – Oppskrifter</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.1.0/pako.min.js"></script>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif; background: #f7f6f3; color: #1a1a1a; min-height: 100vh; }
+button, input, textarea, select { font-family: inherit; }
+
+header { background: #1a1a1a; padding: 1rem 1.25rem; padding-top: calc(1rem + env(safe-area-inset-top)); display: flex; align-items: center; gap: 0.75rem; position: sticky; top: 0; z-index: 100; }
+.back-btn { color: rgba(255,255,255,0.6); text-decoration: none; font-size: 0.85rem; display: flex; align-items: center; gap: 4px; flex-shrink: 0; background: none; border: none; cursor: pointer; padding: 0; }
+.header-title { font-size: 0.95rem; font-weight: 600; flex: 1; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.hbtn { background: rgba(255,255,255,0.12); color: rgba(255,255,255,0.9); border: none; border-radius: 8px; padding: 0.45rem 0.7rem; font-size: 0.78rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 5px; flex-shrink: 0; }
+.hbtn.light { background: #fff; color: #1a1a1a; }
+.hbtn.on { background: #EF9F27; color: #1a1a1a; }
+.hbtn i { font-size: 15px; }
+
+.wrap { max-width: 960px; margin: 0 auto; padding: 1rem 1.25rem; padding-bottom: calc(2.5rem + env(safe-area-inset-bottom)); }
+.view { display: none; }
+.view.active { display: block; }
+
+/* LISTE */
+.search { position: relative; margin-bottom: 0.75rem; }
+.search i { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #a8a59d; font-size: 17px; }
+.search input { width: 100%; padding: 0.75rem 2.4rem 0.75rem 2.4rem; border: 0.5px solid #e5e2da; border-radius: 12px; font-size: 16px; background: #fff; outline: none; color: #1a1a1a; }
+.search .clear { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); background: none; border: none; color: #a8a59d; font-size: 17px; cursor: pointer; display: none; padding: 4px; }
+.chips { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; margin-bottom: 0.75rem; scrollbar-width: none; }
+.chips::-webkit-scrollbar { display: none; }
+.chip { flex-shrink: 0; padding: 0.4rem 0.75rem; border-radius: 999px; font-size: 0.76rem; font-weight: 600; background: #fff; border: 0.5px solid #e5e2da; color: #6b6862; cursor: pointer; white-space: nowrap; }
+.chip.active { background: #1a1a1a; color: #fff; border-color: #1a1a1a; }
+.chip .n { opacity: 0.55; font-weight: 500; margin-left: 3px; }
+.list-meta { display: flex; justify-content: space-between; align-items: center; font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: #a8a59d; margin: 0.25rem 0 0.6rem; }
+.list-meta select { border: none; background: none; font-size: 0.72rem; font-weight: 600; color: #6b6862; text-transform: none; letter-spacing: 0; outline: none; }
+
+.grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+@media (min-width: 640px) { .grid { grid-template-columns: repeat(3, 1fr); } }
+@media (min-width: 900px) { .grid { grid-template-columns: repeat(4, 1fr); } }
+.card { background: #fff; border: 0.5px solid #e5e2da; border-radius: 12px; overflow: hidden; cursor: pointer; display: flex; flex-direction: column; text-align: left; padding: 0; transition: transform 0.12s; min-width: 0; }
+.card:active { transform: scale(0.98); }
+.card-img { aspect-ratio: 4 / 3; background: #efece5; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.card-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.card-img i { font-size: 30px; color: #cfcbc1; }
+.card-body { padding: 0.6rem 0.7rem 0.7rem; }
+.card-name { font-size: 0.82rem; font-weight: 600; line-height: 1.3; color: #1a1a1a; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.card-sub { font-size: 0.66rem; color: #8a8782; margin-top: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.stars { color: #EF9F27; letter-spacing: 1px; }
+
+.empty { text-align: center; padding: 3rem 1rem; color: #8a8782; font-size: 0.88rem; line-height: 1.5; }
+.empty i { font-size: 40px; color: #cfcbc1; display: block; margin-bottom: 0.75rem; }
+.empty .btn { margin-top: 1rem; }
+
+.btn { padding: 0.75rem 1rem; background: #1a1a1a; color: #fff; border: none; border-radius: 10px; font-size: 0.88rem; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+.btn.ghost { background: #fff; color: #1a1a1a; border: 0.5px solid #e5e2da; }
+.btn.danger { background: #fff; color: #B3261E; border: 0.5px solid #f0c9c6; }
+.btn:disabled { opacity: 0.45; cursor: default; }
+
+/* DETALJ */
+.hero { margin: -1rem -1.25rem 1rem; background: #efece5; max-height: 52vh; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+.hero img { width: 100%; max-height: 52vh; object-fit: cover; display: block; }
+@media (min-width: 900px) { .hero { margin: 0 0 1rem; border-radius: 14px; max-height: 380px; } .hero img { max-height: 380px; } }
+.r-title { font-size: 1.45rem; font-weight: 700; line-height: 1.2; letter-spacing: -0.01em; }
+.r-cats { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 0.55rem; }
+.r-cat { font-size: 0.68rem; font-weight: 600; padding: 0.22rem 0.55rem; border-radius: 999px; background: #FAEEDA; color: #854F0B; }
+.facts { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 0.85rem; }
+.fact { background: #fff; border: 0.5px solid #e5e2da; border-radius: 10px; padding: 0.45rem 0.7rem; font-size: 0.74rem; color: #6b6862; display: flex; align-items: center; gap: 5px; }
+.fact b { color: #1a1a1a; font-weight: 600; }
+.fact i { font-size: 15px; color: #a8a59d; }
+.cols { display: grid; gap: 1rem; margin-top: 1.25rem; }
+@media (min-width: 760px) { .cols { grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); align-items: start; } .cols .ing-panel { position: sticky; top: 76px; } }
+.panel { background: #fff; border: 0.5px solid #e5e2da; border-radius: 12px; padding: 1rem 1.1rem; }
+.panel-h { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 0.7rem; flex-wrap: wrap; }
+.panel-t { font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: #a8a59d; }
+.scale { display: flex; gap: 3px; background: #f2f0ea; border-radius: 8px; padding: 2px; }
+.scale button { border: none; background: none; font-size: 0.72rem; font-weight: 600; color: #6b6862; padding: 0.3rem 0.5rem; border-radius: 6px; cursor: pointer; }
+.scale button.on { background: #fff; color: #1a1a1a; box-shadow: 0 1px 2px rgba(0,0,0,0.08); }
+.scale-note { font-size: 0.7rem; color: #8a8782; margin: -0.3rem 0 0.6rem; }
+.ing { list-style: none; }
+.ing li { font-size: 0.9rem; line-height: 1.4; padding: 0.42rem 0; border-bottom: 0.5px solid #f0ede6; cursor: pointer; display: flex; gap: 8px; }
+.ing li:last-child { border-bottom: none; }
+.ing li .q { font-weight: 600; white-space: nowrap; }
+.ing li.done { color: #b8b4ab; text-decoration: line-through; }
+.ing li.head { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #854F0B; cursor: default; padding-top: 0.8rem; border-bottom: none; }
+.steps { list-style: none; counter-reset: s; }
+.steps li { counter-increment: s; font-size: 0.92rem; line-height: 1.55; padding: 0.6rem 0 0.6rem 2.2rem; position: relative; cursor: pointer; border-radius: 8px; }
+.steps li::before { content: counter(s); position: absolute; left: 0; top: 0.62rem; width: 1.55rem; height: 1.55rem; border-radius: 50%; background: #f2f0ea; color: #6b6862; font-size: 0.72rem; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+.steps li.cur { background: #FAEEDA; padding-right: 0.5rem; }
+.steps li.cur::before { background: #EF9F27; color: #1a1a1a; }
+.steps li.done { color: #b8b4ab; }
+.prose { font-size: 0.88rem; line-height: 1.55; white-space: pre-wrap; color: #3d3b37; }
+.r-actions { display: flex; gap: 8px; margin-top: 1.25rem; flex-wrap: wrap; }
+.src a { color: #185FA5; text-decoration: none; word-break: break-all; }
+
+body.cook .ing li { font-size: 1.1rem; padding: 0.6rem 0; }
+body.cook .steps li { font-size: 1.15rem; line-height: 1.6; }
+body.cook .hero { display: none; }
+
+/* SKJEMA */
+.form { display: flex; flex-direction: column; gap: 0.9rem; max-width: 680px; margin: 0 auto; }
+.fld label { display: block; font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: #a8a59d; margin-bottom: 0.35rem; }
+.fld input, .fld textarea, .fld select { width: 100%; padding: 0.7rem 0.85rem; border: 0.5px solid #e5e2da; border-radius: 10px; font-size: 16px; background: #fff; color: #1a1a1a; outline: none; }
+.fld textarea { resize: vertical; min-height: 120px; line-height: 1.45; }
+.fld .hint { font-size: 0.7rem; color: #a8a59d; margin-top: 0.3rem; }
+.row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.7rem; }
+.photo-pick { display: flex; gap: 0.8rem; align-items: center; }
+.photo-prev { width: 96px; height: 72px; border-radius: 10px; background: #efece5; overflow: hidden; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.photo-prev img { width: 100%; height: 100%; object-fit: cover; }
+.photo-prev i { font-size: 24px; color: #cfcbc1; }
+.rate { display: flex; gap: 4px; }
+.rate button { background: none; border: none; font-size: 24px; color: #d9d5cc; cursor: pointer; padding: 0 2px; }
+.rate button.on { color: #EF9F27; }
+.form-actions { display: flex; gap: 8px; justify-content: space-between; margin-top: 0.4rem; }
+
+/* ARK / DIALOG */
+.sheet-bg { position: fixed; inset: 0; background: rgba(26,26,26,0.45); z-index: 200; display: none; align-items: flex-end; justify-content: center; }
+.sheet-bg.open { display: flex; }
+.sheet { background: #f7f6f3; width: 100%; max-width: 520px; border-radius: 18px 18px 0 0; padding: 1.25rem 1.25rem calc(1.25rem + env(safe-area-inset-bottom)); max-height: 88vh; overflow-y: auto; }
+@media (min-width: 640px) { .sheet-bg { align-items: center; } .sheet { border-radius: 18px; } }
+.sheet h3 { font-size: 1.05rem; margin-bottom: 0.4rem; }
+.sheet p { font-size: 0.85rem; color: #6b6862; line-height: 1.5; margin-bottom: 0.8rem; }
+.sheet .btns { display: flex; gap: 8px; margin-top: 1rem; }
+.sheet .btns .btn { flex: 1; }
+.opt { display: flex; gap: 10px; align-items: flex-start; background: #fff; border: 0.5px solid #e5e2da; border-radius: 10px; padding: 0.7rem 0.85rem; margin-bottom: 6px; cursor: pointer; font-size: 0.84rem; line-height: 1.4; }
+.opt input { margin-top: 3px; accent-color: #1a1a1a; }
+.opt small { display: block; color: #8a8782; font-size: 0.74rem; }
+.bar { height: 8px; border-radius: 999px; background: #e5e2da; overflow: hidden; margin: 0.8rem 0 0.5rem; }
+.bar div { height: 100%; width: 0; background: #1D9E75; transition: width 0.2s; }
+.log { font-size: 0.78rem; color: #6b6862; min-height: 1.2em; }
+.menu-list button { display: flex; width: 100%; align-items: center; gap: 10px; background: #fff; border: 0.5px solid #e5e2da; border-radius: 10px; padding: 0.85rem 1rem; margin-bottom: 6px; font-size: 0.88rem; font-weight: 500; cursor: pointer; text-align: left; color: #1a1a1a; }
+.menu-list button i { font-size: 18px; color: #8a8782; }
+
+.toast { position: fixed; left: 50%; bottom: calc(1.25rem + env(safe-area-inset-bottom)); transform: translateX(-50%) translateY(150%); background: #1a1a1a; color: #fff; padding: 0.7rem 1.1rem; border-radius: 10px; font-size: 0.84rem; z-index: 300; transition: transform 0.25s, opacity 0.25s; opacity: 0; pointer-events: none; max-width: calc(100% - 2rem); }
+.toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+@media print { header, .r-actions, .scale, .hero { display: none !important; } body { background: #fff; } .panel { border: none; padding: 0.5rem 0; } .cols { grid-template-columns: 1fr 1fr !important; } }
+.loading { text-align: center; padding: 3rem; color: #a8a59d; font-size: 0.85rem; }
+</style>
+</head>
+<body>
+
+<header>
+  <a href="https://tgillesp-alt.github.io/shopping/portal.html" class="back-btn" id="back-portal">‹ Portal</a>
+  <button class="back-btn" id="back-list" style="display:none" onclick="gaTil('')">‹ Oppskrifter</button>
+  <div class="header-title" id="h-title">Oppskrifter</div>
+  <div id="h-actions" style="display:flex;gap:6px"></div>
+</header>
+
+<div class="wrap">
+  <!-- LISTE -->
+  <section class="view active" id="v-liste">
+    <div class="search">
+      <i class="ti ti-search"></i>
+      <input id="sok" type="search" placeholder="Søk i navn, ingredienser, kilde…" autocomplete="off">
+      <button class="clear" id="sok-x" aria-label="Tøm søk"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="chips" id="chips"></div>
+    <div class="list-meta">
+      <span id="antall"></span>
+      <select id="sortering" aria-label="Sortering">
+        <option value="navn">A–Å</option>
+        <option value="nyest">Nyest først</option>
+        <option value="vurdering">Best vurdert</option>
+      </select>
+    </div>
+    <div class="grid" id="grid"><div class="loading">Laster oppskrifter…</div></div>
+  </section>
+
+  <!-- DETALJ -->
+  <section class="view" id="v-detalj"></section>
+
+  <!-- SKJEMA -->
+  <section class="view" id="v-skjema"></section>
+</div>
+
+<div class="sheet-bg" id="sheet-bg"><div class="sheet" id="sheet"></div></div>
+<div class="toast" id="toast"></div>
+<input type="file" id="import-fil" accept=".paprikarecipes,.zip,application/zip,application/octet-stream" style="display:none">
+
+<script>
+const SUPABASE_URL = 'https://izdclsyuplghwznsjnom.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml6ZGNsc3l1cGxnaHd6bnNqbm9tIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE1MjY5MjksImV4cCI6MjA5NzEwMjkyOX0.GkjxcToCHZrLAm1pVGsBkcLapIOj7uSYd6IcDC0Lyzk';
+const BUCKET = 'oppskrifter';
+const UTEN_KAT = '__uten__';
+
+let oppskrifter = [];
+let aktivKat = '';
+let faktor = 1;
+let wakeLock = null;
+let skjemaBilde = null; // { blob, url } for nytt bilde i skjema
+
+// ---------- Supabase ----------
+const hdr = (extra = {}) => ({ apikey: SUPABASE_KEY, Authorization: 'Bearer ' + SUPABASE_KEY, ...extra });
+
+async function db(path, method = 'GET', body, prefer) {
+  const opts = { method, headers: hdr({ 'Content-Type': 'application/json', 'Cache-Control': 'no-cache' }) };
+  if (prefer) opts.headers.Prefer = prefer;
+  if (body !== undefined) opts.body = JSON.stringify(body);
+  const res = await fetch(SUPABASE_URL + '/rest/v1/' + path, opts);
+  if (!res.ok) {
+    const t = await res.text();
+    if (res.status === 404 || /relation .* does not exist|Could not find the table/i.test(t)) throw new Error('MANGLER_TABELL');
+    throw new Error(t || res.statusText);
+  }
+  const txt = await res.text();
+  return txt ? JSON.parse(txt) : null;
+}
+
+async function lastOppBilde(blob, navnHint) {
+  const fil = (slug(navnHint) || 'bilde') + '-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6) + '.jpg';
+  const res = await fetch(`${SUPABASE_URL}/storage/v1/object/${BUCKET}/${fil}`, {
+    method: 'POST',
+    headers: hdr({ 'Content-Type': blob.type || 'image/jpeg', 'x-upsert': 'true', 'cache-control': '31536000' }),
+    body: blob
+  });
+  if (!res.ok) throw new Error('Bildeopplasting feilet: ' + (await res.text()));
+  return `${SUPABASE_URL}/storage/v1/object/public/${BUCKET}/${fil}`;
+}
+
+// ---------- Hjelpere ----------
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const slug = s => String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/æ/g, 'ae').replace(/ø/g, 'o').replace(/å/g, 'a').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 40);
+const norm = s => String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+const stjerner = n => n > 0 ? '<span class="stars">' + '★'.repeat(n) + '</span>' : '';
+const tomt = s => !s || !String(s).trim() || String(s).trim() === '0';
+const $ = id => document.getElementById(id);
+
+function toast(msg, ms = 2600) {
+  const t = $('toast'); t.textContent = msg; t.classList.add('show');
+  clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove('show'), ms);
+}
+function apneArk(html) { $('sheet').innerHTML = html; $('sheet-bg').classList.add('open'); }
+function lukkArk() { $('sheet-bg').classList.remove('open'); }
+$('sheet-bg').addEventListener('click', e => { if (e.target.id === 'sheet-bg' && !importerer) lukkArk(); });
+
+function bekreft(tittel, tekst, jaTekst, farlig) {
+  return new Promise(resolve => {
+    apneArk(`<h3>${esc(tittel)}</h3><p>${esc(tekst)}</p>
+      <div class="btns"><button class="btn ghost" id="b-nei">Avbryt</button>
+      <button class="btn ${farlig ? 'danger' : ''}" id="b-ja">${esc(jaTekst)}</button></div>`);
+    $('b-nei').onclick = () => { lukkArk(); resolve(false); };
+    $('b-ja').onclick = () => { lukkArk(); resolve(true); };
+  });
+}
+
+// ---------- Mengdeskalering ----------
+const BROK = { '½': 0.5, '¼': 0.25, '¾': 0.75, '⅓': 1 / 3, '⅔': 2 / 3, '⅛': 0.125 };
+const TALL = '(?:\\d+\\s+\\d+\\/\\d+|\\d+\\s*[½¼¾⅓⅔⅛]|\\d+\\/\\d+|\\d+(?:[.,]\\d+)?|[½¼¾⅓⅔⅛])';
+const MENGDE_RE = new RegExp('^(\\s*)(' + TALL + ')(\\s*[-–]\\s*(' + TALL + '))?');
+
+function tilTall(s) {
+  s = s.trim();
+  let m;
+  if ((m = s.match(/^(\d+)\s+(\d+)\/(\d+)$/))) return +m[1] + m[2] / m[3];
+  if ((m = s.match(/^(\d+)\s*([½¼¾⅓⅔⅛])$/))) return +m[1] + BROK[m[2]];
+  if ((m = s.match(/^(\d+)\/(\d+)$/))) return m[1] / m[2];
+  if (BROK[s] !== undefined) return BROK[s];
+  return parseFloat(s.replace(',', '.'));
+}
+function formater(x) {
+  const hel = Math.floor(x + 1e-9), rest = x - hel;
+  const kandidater = [[0, ''], [0.25, '¼'], [1 / 3, '⅓'], [0.5, '½'], [2 / 3, '⅔'], [0.75, '¾'], [1, '']];
+  if (x < 10) {
+    for (const [v, sym] of kandidater) {
+      if (Math.abs(rest - v) < 0.03) {
+        const h = v === 1 ? hel + 1 : hel;
+        return sym ? (h ? h + sym : sym) : String(h);
+      }
+    }
+  }
+  const r = x >= 100 ? Math.round(x) : x >= 10 ? Math.round(x * 10) / 10 : Math.round(x * 100) / 100;
+  return String(r).replace('.', ',');
+}
+function skalerLinje(linje, f) {
+  const m = linje.match(MENGDE_RE);
+  if (!m) return { q: '', resten: linje.trim() };
+  const a = tilTall(m[2]);
+  let q = f === 1 ? m[2] : formater(a * f);
+  if (m[4]) q += '–' + (f === 1 ? m[4] : formater(tilTall(m[4]) * f));
+  return { q, resten: linje.slice(m[0].length).trim() };
+}
+const erOverskrift = l => /:\s*$/.test(l.trim()) && l.trim().length < 60 && !MENGDE_RE.test(l);
+
+// ---------- Ruting ----------
+function gaTil(hash) { location.hash = hash ? '#/' + hash : ''; }
+window.addEventListener('hashchange', ruter);
+
+function settHeader(tittel, visTilbake, knapper) {
+  $('h-title').textContent = tittel;
+  $('back-portal').style.display = visTilbake ? 'none' : '';
+  $('back-list').style.display = visTilbake ? '' : 'none';
+  $('h-actions').innerHTML = knapper || '';
+  $('back-list').onclick = () => gaTil('');
+}
+function visView(id) {
+  document.querySelectorAll('.view').forEach(v => v.classList.toggle('active', v.id === id));
+  window.scrollTo(0, 0);
+}
+
+function ruter() {
+  const h = location.hash.replace(/^#\/?/, '');
+  if (!h.startsWith('r/')) slaAvKokkemodus();
+  if (h.startsWith('r/')) return visDetalj(decodeURIComponent(h.slice(2)));
+  if (h === 'ny') return visSkjema(null);
+  if (h.startsWith('rediger/')) return visSkjema(decodeURIComponent(h.slice(8)));
+  visListe();
+}
+
+// ---------- Liste ----------
+async function hentAlle() {
+  try {
+    oppskrifter = await db('oppskrifter?select=*&order=navn.asc') || [];
+  } catch (e) {
+    oppskrifter = [];
+    if (e.message === 'MANGLER_TABELL') {
+      $('grid').innerHTML = `<div class="empty" style="grid-column:1/-1"><i class="ti ti-database-off"></i>
+        Tabellen «oppskrifter» finnes ikke i Supabase ennå.<br>Kjør <b>oppskrifter-oppsett.sql</b> i Supabase → SQL Editor først.</div>`;
+      return false;
+    }
+    $('grid').innerHTML = `<div class="empty" style="grid-column:1/-1"><i class="ti ti-wifi-off"></i>Kunne ikke laste oppskrifter.<br><small>${esc(e.message)}</small></div>`;
+    return false;
+  }
+  return true;
+}
+
+function visListe() {
+  settHeader('Oppskrifter', false,
+    `<button class="hbtn" onclick="visMeny()" aria-label="Mer"><i class="ti ti-dots"></i></button>
+     <button class="hbtn light" onclick="gaTil('ny')"><i class="ti ti-plus"></i>Ny</button>`);
+  visView('v-liste');
+  tegnChips();
+  tegnListe();
+}
+
+function tegnChips() {
+  const teller = {};
+  let uten = 0;
+  oppskrifter.forEach(o => { if (!o.kategorier?.length) uten++; (o.kategorier || []).forEach(k => teller[k] = (teller[k] || 0) + 1); });
+  const kats = Object.keys(teller).sort((a, b) => a.localeCompare(b, 'no'));
+  if (aktivKat && aktivKat !== UTEN_KAT && !teller[aktivKat]) aktivKat = '';
+  let html = `<button class="chip ${!aktivKat ? 'active' : ''}" data-k="">Alle<span class="n">${oppskrifter.length}</span></button>`;
+  html += `<button class="chip ${aktivKat === '__fav__' ? 'active' : ''}" data-k="__fav__">★ Favoritter</button>`;
+  kats.forEach(k => html += `<button class="chip ${aktivKat === k ? 'active' : ''}" data-k="${esc(k)}">${esc(k)}<span class="n">${teller[k]}</span></button>`);
+  if (uten && kats.length) html += `<button class="chip ${aktivKat === UTEN_KAT ? 'active' : ''}" data-k="${UTEN_KAT}">Uten kategori<span class="n">${uten}</span></button>`;
+  $('chips').innerHTML = html;
+  $('chips').querySelectorAll('.chip').forEach(c => c.onclick = () => { aktivKat = c.dataset.k; tegnChips(); tegnListe(); });
+}
+
+function filtrert() {
+  const q = norm($('sok').value.trim());
+  const ord = q.split(/\s+/).filter(Boolean);
+  let liste = oppskrifter.filter(o => {
+    if (aktivKat === UTEN_KAT && o.kategorier?.length) return false;
+    if (aktivKat === '__fav__' && !(o.vurdering >= 4)) return false;
+    if (aktivKat && aktivKat !== UTEN_KAT && aktivKat !== '__fav__' && !(o.kategorier || []).includes(aktivKat)) return false;
+    if (!ord.length) return true;
+    const tekst = norm([o.navn, o.ingredienser, o.kilde, (o.kategorier || []).join(' '), o.notater].join(' '));
+    return ord.every(w => tekst.includes(w));
+  });
+  const s = $('sortering').value;
+  if (s === 'nyest') liste.sort((a, b) => (b.opprettet || '').localeCompare(a.opprettet || ''));
+  else if (s === 'vurdering') liste.sort((a, b) => (b.vurdering || 0) - (a.vurdering || 0) || a.navn.localeCompare(b.navn, 'no'));
+  else liste.sort((a, b) => a.navn.localeCompare(b.navn, 'no'));
+  // treff i navn først ved søk
+  if (ord.length) liste.sort((a, b) => (ord.every(w => norm(b.navn).includes(w)) ? 1 : 0) - (ord.every(w => norm(a.navn).includes(w)) ? 1 : 0));
+  return liste;
+}
+
+function tegnListe() {
+  if (!oppskrifter.length) {
+    if ($('grid').querySelector('.ti-database-off, .ti-wifi-off')) return;
+    $('antall').textContent = '';
+    $('grid').innerHTML = `<div class="empty" style="grid-column:1/-1"><i class="ti ti-chef-hat"></i>
+      Ingen oppskrifter ennå.<br>Importer fra Paprika eller legg inn den første selv.<br>
+      <button class="btn" onclick="startImport()"><i class="ti ti-file-import"></i>Importer fra Paprika</button></div>`;
+    return;
+  }
+  const liste = filtrert();
+  $('antall').textContent = liste.length + (liste.length === 1 ? ' oppskrift' : ' oppskrifter');
+  $('sok-x').style.display = $('sok').value ? 'block' : 'none';
+  if (!liste.length) { $('grid').innerHTML = `<div class="empty" style="grid-column:1/-1"><i class="ti ti-search-off"></i>Ingen treff.</div>`; return; }
+  $('grid').innerHTML = liste.map(o => {
+    const sub = [stjerner(o.vurdering), esc((o.kategorier || []).join(', ') || o.kilde || '')].filter(Boolean).join(' ');
+    return `<button class="card" onclick="gaTil('r/${o.id}')">
+      <div class="card-img">${o.bilde_url ? `<img loading="lazy" src="${esc(o.bilde_url)}" alt="" onerror="this.replaceWith(Object.assign(document.createElement('i'),{className:'ti ti-chef-hat'}))">` : '<i class="ti ti-chef-hat"></i>'}</div>
+      <div class="card-body"><div class="card-name">${esc(o.navn)}</div>${sub ? `<div class="card-sub">${sub}</div>` : ''}</div>
+    </button>`;
+  }).join('');
+}
+
+let sokTimer;
+$('sok').addEventListener('input', () => { clearTimeout(sokTimer); sokTimer = setTimeout(tegnListe, 120); });
+$('sok-x').onclick = () => { $('sok').value = ''; tegnListe(); $('sok').focus(); };
+$('sortering').onchange = tegnListe;
+
+function visMeny() {
+  apneArk(`<h3>Oppskrifter</h3><div class="menu-list" style="margin-top:0.8rem">
+    <button onclick="lukkArk();startImport()"><i class="ti ti-file-import"></i>Importer fra Paprika</button>
+    <button onclick="lukkArk();gaTil('ny')"><i class="ti ti-plus"></i>Ny oppskrift</button>
+    <button onclick="lukkArk()"><i class="ti ti-x"></i>Lukk</button></div>`);
+}
+
+// ---------- Detalj ----------
+function visDetalj(id) {
+  const o = oppskrifter.find(x => x.id === id);
+  if (!o) { gaTil(''); return; }
+  faktor = 1;
+  settHeader(o.navn, true,
+    `<button class="hbtn ${document.body.classList.contains('cook') ? 'on' : ''}" id="cook-btn" onclick="byttKokkemodus()"><i class="ti ti-tools-kitchen-2"></i><span class="cook-l">Kjøkken</span></button>
+     <button class="hbtn light" onclick="gaTil('rediger/${o.id}')"><i class="ti ti-pencil"></i></button>`);
+  const fakta = [];
+  if (!tomt(o.porsjoner)) fakta.push(`<div class="fact"><i class="ti ti-users"></i><b>${esc(o.porsjoner)}</b> porsjoner</div>`);
+  if (!tomt(o.forberedelsestid)) fakta.push(`<div class="fact"><i class="ti ti-knife"></i>Forb. <b>${esc(o.forberedelsestid)}</b></div>`);
+  if (!tomt(o.tilberedningstid)) fakta.push(`<div class="fact"><i class="ti ti-flame"></i>Tilb. <b>${esc(o.tilberedningstid)}</b></div>`);
+  if (!tomt(o.vanskelighetsgrad)) fakta.push(`<div class="fact"><i class="ti ti-chart-bar"></i>${esc(o.vanskelighetsgrad)}</div>`);
+  if (o.vurdering > 0) fakta.push(`<div class="fact">${stjerner(o.vurdering)}</div>`);
+
+  const steg = String(o.fremgangsmaate || '').split(/\n+/).map(s => s.trim()).filter(Boolean);
+  const kildeHtml = o.kilde_url
+    ? `<a href="${esc(o.kilde_url)}" target="_blank" rel="noopener">${esc(o.kilde || o.kilde_url)}</a>`
+    : esc(o.kilde || '');
+
+  $('v-detalj').innerHTML = `
+    ${o.bilde_url ? `<div class="hero"><img src="${esc(o.bilde_url)}" alt="" onerror="this.parentNode.remove()"></div>` : ''}
+    <h1 class="r-title">${esc(o.navn)}</h1>
+    ${o.kategorier?.length ? `<div class="r-cats">${o.kategorier.map(k => `<span class="r-cat">${esc(k)}</span>`).join('')}</div>` : ''}
+    ${fakta.length ? `<div class="facts">${fakta.join('')}</div>` : ''}
+    <div class="cols">
+      <div class="panel ing-panel">
+        <div class="panel-h"><span class="panel-t">Ingredienser</span>
+          <div class="scale" id="scale">${[0.5, 1, 2, 3, 4].map(f => `<button data-f="${f}" class="${f === 1 ? 'on' : ''}">${f === 0.5 ? '½' : f}×</button>`).join('')}</div>
+        </div>
+        <div class="scale-note" id="scale-note"></div>
+        <ul class="ing" id="ing"></ul>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:1rem;min-width:0">
+        <div class="panel"><div class="panel-h"><span class="panel-t">Fremgangsmåte</span></div>
+          ${steg.length ? `<ol class="steps" id="steps">${steg.map(s => `<li>${esc(s)}</li>`).join('')}</ol>` : '<div class="prose" style="color:#a8a59d">Ingen fremgangsmåte lagt inn.</div>'}
+        </div>
+        ${o.notater ? `<div class="panel"><div class="panel-h"><span class="panel-t">Notater</span></div><div class="prose">${esc(o.notater)}</div></div>` : ''}
+        ${o.naeringsinnhold ? `<div class="panel"><div class="panel-h"><span class="panel-t">Næringsinnhold</span></div><div class="prose">${esc(o.naeringsinnhold)}</div></div>` : ''}
+        ${kildeHtml ? `<div class="panel src"><div class="panel-h"><span class="panel-t">Kilde</span></div><div class="prose">${kildeHtml}</div></div>` : ''}
+      </div>
+    </div>
+    <div class="r-actions">
+      <button class="btn ghost" onclick="gaTil('rediger/${o.id}')"><i class="ti ti-pencil"></i>Rediger</button>
+      <button class="btn ghost" onclick="window.print()"><i class="ti ti-printer"></i>Skriv ut</button>
+    </div>`;
+  tegnIngredienser(o);
+  $('scale').querySelectorAll('button').forEach(b => b.onclick = () => {
+    faktor = +b.dataset.f;
+    $('scale').querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b));
+    tegnIngredienser(o);
+  });
+  const st = $('steps');
+  if (st) st.querySelectorAll('li').forEach((li, i, alle) => li.onclick = () => {
+    const varCur = li.classList.contains('cur');
+    alle.forEach((x, j) => { x.classList.toggle('done', !varCur && j < i); x.classList.remove('cur'); });
+    if (!varCur) li.classList.add('cur');
+  });
+  visView('v-detalj');
+}
+
+function tegnIngredienser(o) {
+  const linjer = String(o.ingredienser || '').split('\n').map(l => l.trim()).filter(Boolean);
+  const p = parseFloat(String(o.porsjoner || '').replace(',', '.'));
+  $('scale-note').textContent = faktor !== 1 && p > 0 ? `Gir ca. ${formater(p * faktor)} porsjoner` : '';
+  if (!linjer.length) { $('ing').innerHTML = '<li style="color:#a8a59d;cursor:default">Ingen ingredienser lagt inn.</li>'; return; }
+  $('ing').innerHTML = linjer.map(l => {
+    if (erOverskrift(l)) return `<li class="head">${esc(l.replace(/:\s*$/, ''))}</li>`;
+    const { q, resten } = skalerLinje(l, faktor);
+    return `<li>${q ? `<span class="q">${esc(q)}</span>` : ''}<span>${esc(resten)}</span></li>`;
+  }).join('');
+  $('ing').querySelectorAll('li:not(.head)').forEach(li => li.onclick = () => li.classList.toggle('done'));
+}
+
+// ---------- Kjøkkenmodus ----------
+async function byttKokkemodus() {
+  if (document.body.classList.contains('cook')) return slaAvKokkemodus();
+  document.body.classList.add('cook');
+  $('cook-btn')?.classList.add('on');
+  try { if ('wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen'); } catch (e) {}
+  toast(wakeLock ? 'Kjøkkenmodus: skjermen holdes på' : 'Kjøkkenmodus på');
+}
+function slaAvKokkemodus() {
+  document.body.classList.remove('cook');
+  $('cook-btn')?.classList.remove('on');
+  try { wakeLock?.release(); } catch (e) {}
+  wakeLock = null;
+}
+document.addEventListener('visibilitychange', async () => {
+  if (document.visibilityState === 'visible' && document.body.classList.contains('cook') && 'wakeLock' in navigator) {
+    try { wakeLock = await navigator.wakeLock.request('screen'); } catch (e) {}
+  }
+});
+
+// ---------- Skjema ----------
+function visSkjema(id) {
+  const o = id ? oppskrifter.find(x => x.id === id) : {};
+  if (id && !o) { gaTil(''); return; }
+  skjemaBilde = null;
+  settHeader(id ? 'Rediger' : 'Ny oppskrift', true, '');
+  $('back-list').onclick = () => id ? gaTil('r/' + id) : gaTil('');
+  const alleKat = [...new Set(oppskrifter.flatMap(x => x.kategorier || []))].sort((a, b) => a.localeCompare(b, 'no'));
+  const v = k => esc(o[k] ?? '');
+  $('v-skjema').innerHTML = `
+  <form class="form" id="skjema" onsubmit="return false">
+    <div class="fld"><label>Navn</label><input id="f-navn" value="${v('navn')}" required placeholder="F.eks. Boeuf bourguignon"></div>
+    <div class="fld"><label>Bilde</label>
+      <div class="photo-pick">
+        <div class="photo-prev" id="f-prev">${o.bilde_url ? `<img src="${esc(o.bilde_url)}">` : '<i class="ti ti-photo"></i>'}</div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <label class="btn ghost" style="font-size:0.8rem;padding:0.55rem 0.8rem;text-transform:none;letter-spacing:0;color:#1a1a1a;margin:0">
+            <i class="ti ti-camera"></i>Velg / ta bilde<input type="file" accept="image/*" id="f-bilde" style="display:none"></label>
+          ${o.bilde_url ? `<button type="button" class="btn ghost" style="font-size:0.75rem;padding:0.45rem 0.7rem" id="f-fjern-bilde">Fjern bilde</button>` : ''}
+        </div>
+      </div>
+    </div>
+    <div class="fld"><label>Kategorier</label><input id="f-kat" value="${esc((o.kategorier || []).join(', '))}" list="kat-liste" placeholder="Desserts, Sauce …">
+      <datalist id="kat-liste">${alleKat.map(k => `<option value="${esc(k)}">`).join('')}</datalist>
+      <div class="hint">Skill med komma. Eksisterende: ${alleKat.map(esc).join(', ') || '–'}</div></div>
+    <div class="row2">
+      <div class="fld"><label>Porsjoner</label><input id="f-pors" value="${v('porsjoner')}" inputmode="decimal"></div>
+      <div class="fld"><label>Vanskelighetsgrad</label><input id="f-vansk" value="${v('vanskelighetsgrad')}" placeholder="Enkel / Middels"></div>
+    </div>
+    <div class="row2">
+      <div class="fld"><label>Forberedelse</label><input id="f-forb" value="${v('forberedelsestid')}" placeholder="20 min"></div>
+      <div class="fld"><label>Tilberedning</label><input id="f-tilb" value="${v('tilberedningstid')}" placeholder="1 t 30 min"></div>
+    </div>
+    <div class="fld"><label>Ingredienser</label><textarea id="f-ing" rows="10" placeholder="En ingrediens per linje&#10;200 g smør&#10;Saus:&#10;2 dl fløte">${v('ingredienser')}</textarea>
+      <div class="hint">En per linje. Linjer som slutter med kolon blir overskrift.</div></div>
+    <div class="fld"><label>Fremgangsmåte</label><textarea id="f-frem" rows="10" placeholder="Ett steg per linje">${v('fremgangsmaate')}</textarea></div>
+    <div class="fld"><label>Notater</label><textarea id="f-not" rows="4">${v('notater')}</textarea></div>
+    <div class="row2">
+      <div class="fld"><label>Kilde</label><input id="f-kilde" value="${v('kilde')}"></div>
+      <div class="fld"><label>Kilde-URL</label><input id="f-url" value="${v('kilde_url')}" inputmode="url"></div>
+    </div>
+    <div class="fld"><label>Vurdering</label><div class="rate" id="f-rate">${[1, 2, 3, 4, 5].map(n => `<button type="button" data-n="${n}" class="${(o.vurdering || 0) >= n ? 'on' : ''}">★</button>`).join('')}</div></div>
+    <div class="form-actions">
+      ${id ? `<button type="button" class="btn danger" id="f-slett"><i class="ti ti-trash"></i>Slett</button>` : '<span></span>'}
+      <button type="button" class="btn" id="f-lagre"><i class="ti ti-check"></i>Lagre</button>
+    </div>
+  </form>`;
+  let vurdering = o.vurdering || 0, fjernBilde = false;
+  $('f-rate').querySelectorAll('button').forEach(b => b.onclick = () => {
+    vurdering = vurdering === +b.dataset.n ? 0 : +b.dataset.n;
+    $('f-rate').querySelectorAll('button').forEach(x => x.classList.toggle('on', +x.dataset.n <= vurdering));
+  });
+  $('f-bilde').onchange = async e => {
+    const f = e.target.files[0]; if (!f) return;
+    try {
+      const blob = await krympBilde(f);
+      skjemaBilde = { blob, url: URL.createObjectURL(blob) };
+      fjernBilde = false;
+      $('f-prev').innerHTML = `<img src="${skjemaBilde.url}">`;
+    } catch (err) { toast('Kunne ikke lese bildet'); }
+  };
+  if ($('f-fjern-bilde')) $('f-fjern-bilde').onclick = () => { fjernBilde = true; skjemaBilde = null; $('f-prev').innerHTML = '<i class="ti ti-photo"></i>'; };
+  if ($('f-slett')) $('f-slett').onclick = async () => {
+    if (!await bekreft('Slette oppskrift?', `«${o.navn}» slettes permanent.`, 'Slett', true)) return;
+    try {
+      await db('oppskrifter?id=eq.' + id, 'DELETE');
+      oppskrifter = oppskrifter.filter(x => x.id !== id);
+      toast('Oppskriften er slettet'); gaTil('');
+    } catch (e) { toast('Sletting feilet: ' + e.message, 5000); }
+  };
+  $('f-lagre').onclick = async () => {
+    const navn = $('f-navn').value.trim();
+    if (!navn) { $('f-navn').focus(); toast('Oppskriften må ha et navn'); return; }
+    const btn = $('f-lagre'); btn.disabled = true; btn.innerHTML = '<i class="ti ti-loader-2"></i>Lagrer…';
+    try {
+      const rad = {
+        navn,
+        kategorier: $('f-kat').value.split(',').map(s => s.trim()).filter(Boolean),
+        porsjoner: $('f-pors').value.trim() || null,
+        vanskelighetsgrad: $('f-vansk').value.trim() || null,
+        forberedelsestid: $('f-forb').value.trim() || null,
+        tilberedningstid: $('f-tilb').value.trim() || null,
+        ingredienser: $('f-ing').value.trim() || null,
+        fremgangsmaate: $('f-frem').value.trim() || null,
+        notater: $('f-not').value.trim() || null,
+        kilde: $('f-kilde').value.trim() || null,
+        kilde_url: $('f-url').value.trim() || null,
+        vurdering
+      };
+      if (skjemaBilde) rad.bilde_url = await lastOppBilde(skjemaBilde.blob, navn);
+      else if (fjernBilde) rad.bilde_url = null;
+      let lagret;
+      if (id) [lagret] = await db('oppskrifter?id=eq.' + id, 'PATCH', rad, 'return=representation');
+      else [lagret] = await db('oppskrifter', 'POST', rad, 'return=representation');
+      const i = oppskrifter.findIndex(x => x.id === lagret.id);
+      if (i >= 0) oppskrifter[i] = lagret; else oppskrifter.push(lagret);
+      toast('Lagret');
+      gaTil('r/' + lagret.id);
+    } catch (e) {
+      btn.disabled = false; btn.innerHTML = '<i class="ti ti-check"></i>Lagre';
+      toast(e.message === 'MANGLER_TABELL' ? 'Kjør oppskrifter-oppsett.sql i Supabase først' : 'Lagring feilet: ' + e.message, 5000);
+    }
+  };
+  visView('v-skjema');
+}
+
+function krympBilde(fil, maks = 1600, kvalitet = 0.85) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => {
+      const s = Math.min(1, maks / Math.max(img.width, img.height));
+      const c = document.createElement('canvas');
+      c.width = Math.round(img.width * s); c.height = Math.round(img.height * s);
+      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+      c.toBlob(b => b ? resolve(b) : reject(new Error('toBlob')), 'image/jpeg', kvalitet);
+      URL.revokeObjectURL(img.src);
+    };
+    img.onerror = reject;
+    img.src = URL.createObjectURL(fil);
+  });
+}
+
+// ---------- Import fra Paprika ----------
+let importerer = false;
+function startImport() { $('import-fil').value = ''; $('import-fil').click(); }
+$('import-fil').addEventListener('change', async e => {
+  const fil = e.target.files[0]; if (!fil) return;
+  let liste;
+  apneArk(`<h3>Leser Paprika-fil…</h3><p>${esc(fil.name)}</p>`);
+  try { liste = await lesPaprika(fil); }
+  catch (err) { apneArk(`<h3>Kunne ikke lese filen</h3><p>Velg en .paprikarecipes-fil eksportert fra Paprika.<br><small>${esc(err.message)}</small></p><div class="btns"><button class="btn" onclick="lukkArk()">OK</button></div>`); return; }
+  const finnes = new Set(oppskrifter.map(o => o.paprika_uid).filter(Boolean));
+  const nye = liste.filter(r => !finnes.has(r.uid));
+  const medBilde = liste.filter(r => r.photo_data).length;
+  apneArk(`<h3>Importer fra Paprika</h3>
+    <p><b>${liste.length}</b> oppskrifter i filen, ${medBilde} med bilde. ${finnes.size ? `<b>${nye.length}</b> er nye, ${liste.length - nye.length} finnes fra før.` : ''}</p>
+    <label class="opt"><input type="radio" name="modus" value="nye" checked><span>Bare nye oppskrifter<small>Endringer du har gjort i portalen beholdes.</small></span></label>
+    <label class="opt"><input type="radio" name="modus" value="alle"><span>Alle, og overskriv eksisterende<small>Oppskrifter fra Paprika erstatter versjonen i portalen.</small></span></label>
+    <div class="btns"><button class="btn ghost" onclick="lukkArk()">Avbryt</button><button class="btn" id="imp-go"><i class="ti ti-file-import"></i>Importer</button></div>`);
+  $('imp-go').onclick = () => {
+    const modus = document.querySelector('input[name=modus]:checked').value;
+    kjorImport(modus === 'nye' ? nye : liste);
+  };
+});
+
+async function lesPaprika(fil) {
+  const zip = await JSZip.loadAsync(fil);
+  const filer = Object.values(zip.files).filter(f => !f.dir && /\.paprikarecipe$/i.test(f.name));
+  if (!filer.length) throw new Error('Fant ingen oppskrifter i filen.');
+  const ut = [];
+  for (const f of filer) {
+    const data = await f.async('uint8array');
+    let json;
+    try { json = pako.ungzip(data, { to: 'string' }); } catch (e) { json = new TextDecoder().decode(data); }
+    const r = JSON.parse(json);
+    if (r && r.name) ut.push(r);
+  }
+  return ut;
+}
+
+function b64TilBlob(b64, type = 'image/jpeg') {
+  const bin = atob(b64), arr = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+  return new Blob([arr], { type });
+}
+
+function paprikaTilRad(r, bildeUrl) {
+  const t = v => (v === null || v === undefined || String(v).trim() === '' || String(v).trim() === '0') ? null : String(v).trim();
+  let opprettet = null;
+  if (r.created) { const d = new Date(r.created.replace(' ', 'T')); if (!isNaN(d)) opprettet = d.toISOString(); }
+  return {
+    paprika_uid: r.uid,
+    navn: String(r.name).trim(),
+    kategorier: Array.isArray(r.categories) ? r.categories.filter(Boolean) : [],
+    ingredienser: t(r.ingredients),
+    fremgangsmaate: t(r.directions),
+    notater: t(r.notes),
+    porsjoner: t(r.servings),
+    forberedelsestid: t(r.prep_time),
+    tilberedningstid: t(r.cook_time),
+    vanskelighetsgrad: t(r.difficulty),
+    vurdering: Number.isFinite(+r.rating) ? Math.max(0, Math.min(5, +r.rating)) : 0,
+    kilde: t(r.source),
+    kilde_url: t(r.source_url),
+    naeringsinnhold: t(r.nutritional_info),
+    bilde_url: bildeUrl,
+    ...(opprettet ? { opprettet } : {})
+  };
+}
+
+async function kjorImport(liste) {
+  if (!liste.length) { apneArk(`<h3>Ingenting å importere</h3><p>Alle oppskriftene i filen finnes allerede.</p><div class="btns"><button class="btn" onclick="lukkArk()">OK</button></div>`); return; }
+  importerer = true;
+  apneArk(`<h3>Importerer…</h3><p>Ikke lukk siden før importen er ferdig.</p><div class="bar"><div id="imp-bar"></div></div><div class="log" id="imp-log"></div>`);
+  const sett = (i, tekst) => { $('imp-bar').style.width = Math.round(i / liste.length * 100) + '%'; $('imp-log').textContent = tekst; };
+  const rader = [], feil = [];
+  let ferdig = 0, bildeFeil = 0;
+
+  // Bilder: last opp med 4 parallelle
+  const ko = liste.slice();
+  async function arbeider() {
+    while (ko.length) {
+      const r = ko.shift();
+      let url = null;
+      try {
+        if (r.photo_data) url = await lastOppBilde(b64TilBlob(r.photo_data), r.name);
+        else if (r.image_url && /^data:image\//.test(r.image_url)) {
+          const [meta, b64] = r.image_url.split(',');
+          url = await lastOppBilde(b64TilBlob(b64, meta.slice(5).split(';')[0]), r.name);
+        } else if (r.image_url && /^https?:\/\//.test(r.image_url)) url = r.image_url;
+      } catch (e) { bildeFeil++; if (bildeFeil === 1) console.warn(e); }
+      rader.push(paprikaTilRad(r, url));
+      ferdig++;
+      sett(ferdig * 0.8, `Bilder og data: ${ferdig} av ${liste.length} – ${r.name}`);
+    }
+  }
+  await Promise.all([arbeider(), arbeider(), arbeider(), arbeider()]);
+
+  // Lagre i bolker
+  const bolk = 25;
+  for (let i = 0; i < rader.length; i += bolk) {
+    const del = rader.slice(i, i + bolk);
+    try {
+      await db('oppskrifter?on_conflict=paprika_uid', 'POST', del, 'resolution=merge-duplicates,return=minimal');
+    } catch (e) {
+      if (e.message === 'MANGLER_TABELL') { feil.push('Tabellen mangler – kjør oppskrifter-oppsett.sql i Supabase.'); break; }
+      // prøv én og én for å finne feilene
+      for (const r of del) {
+        try { await db('oppskrifter?on_conflict=paprika_uid', 'POST', [r], 'resolution=merge-duplicates,return=minimal'); }
+        catch (e2) { feil.push(r.navn + ': ' + e2.message); }
+      }
+    }
+    sett(liste.length * 0.8 + Math.min(i + bolk, rader.length) / rader.length * liste.length * 0.2, `Lagrer: ${Math.min(i + bolk, rader.length)} av ${rader.length}`);
+  }
+
+  importerer = false;
+  await hentAlle();
+  const ok = rader.length - feil.length;
+  apneArk(`<h3>${feil.length ? 'Import fullført med feil' : 'Import fullført'}</h3>
+    <p><b>${Math.max(0, ok)}</b> oppskrifter importert.${bildeFeil ? ` ${bildeFeil} bilder kunne ikke lastes opp (sjekk at bildelagringen er satt opp i Supabase).` : ''}</p>
+    ${feil.length ? `<p style="font-size:0.75rem;max-height:30vh;overflow:auto">${feil.slice(0, 20).map(esc).join('<br>')}</p>` : ''}
+    <div class="btns"><button class="btn" onclick="lukkArk();gaTil('');visListe()">Vis oppskriftene</button></div>`);
+}
+
+// ---------- Start ----------
+(async () => {
+  await hentAlle();
+  ruter();
+})();
+</script>
+</body>
+</html>
