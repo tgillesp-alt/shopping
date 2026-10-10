@@ -133,20 +133,20 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif
       <div class="menu-sub" id="meny-dato" style="font-size:0.62rem;color:#a8a59d;margin-top:1px;"></div>
     </a>
 
-    <a href="https://tgillesp-alt.github.io/shopping/oppskrifter.html" class="menu-btn c-amber">
-      <div class="menu-btn-left">
-        <div class="menu-icon"><i class="ti ti-chef-hat"></i></div>
-        <i class="ti ti-external-link menu-arrow"></i>
-      </div>
-      <div class="menu-label">Oppskrifter</div>
-    </a>
-
     <a href="https://my.gastroplanner.no/fager-bistro/index.php?controller=AdminBookings&amp;action=schedule" class="menu-btn c-green" target="_blank" rel="noopener">
       <div class="menu-btn-left">
         <div class="menu-icon"><i class="ti ti-checklist"></i></div>
         <i class="ti ti-external-link menu-arrow"></i>
       </div>
       <div class="menu-label">Gastroplanner</div>
+    </a>
+
+    <a href="https://tgillesp-alt.github.io/shopping/oppskrifter.html" class="menu-btn c-amber">
+      <div class="menu-btn-left">
+        <div class="menu-icon"><i class="ti ti-chef-hat"></i></div>
+        <i class="ti ti-external-link menu-arrow"></i>
+      </div>
+      <div class="menu-label">Oppskrifter</div>
     </a>
 
     <a href="https://no.gastrofix.com/client/#/dashboard/1" class="menu-btn c-coral" target="_blank" rel="noopener">
@@ -180,14 +180,6 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif
       </div>
       <div class="menu-label">IK-Mat</div>
     </a>
-
-    <button class="menu-btn c-blue" onclick="visPage('kontakter')">
-      <div class="menu-btn-left">
-        <div class="menu-icon"><i class="ti ti-address-book"></i></div>
-        <i class="ti ti-chevron-right menu-arrow"></i>
-      </div>
-      <div class="menu-label">Kontakter</div>
-    </button>
 
     <a href="https://tgillesp-alt.github.io/shopping/kjokkenprosent.html" class="menu-btn c-purple">
       <div class="menu-btn-left">
@@ -275,6 +267,10 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif
     <div class="sub-title">Diverse</div>
   </div>
   <div class="sub-content">
+    <div class="row" onclick="visPage('kontakter')" style="cursor:pointer;">
+      <div class="row-left"><i class="ti ti-address-book row-icon"></i><span class="row-name">Kontakter</span></div>
+      <i class="ti ti-chevron-right row-ext"></i>
+    </div>
     <div class="row" onclick="visPage('leverandorer')" style="cursor:pointer;">
       <div class="row-left"><i class="ti ti-truck row-icon"></i><span class="row-name">Leverandører</span></div>
       <i class="ti ti-chevron-right row-ext"></i>
@@ -317,7 +313,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif
 <!-- KONTAKTER -->
 <div id="kontakter" class="page">
   <div class="sub-header">
-    <button class="back-btn" onclick="visPage('home')"><i class="ti ti-chevron-left"></i> Portal</button>
+    <button class="back-btn" onclick="visPage('diverse')"><i class="ti ti-chevron-left"></i> Diverse</button>
     <div class="sub-title">Kontakter</div>
   </div>
   <div class="sub-content">
