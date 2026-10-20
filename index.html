@@ -197,7 +197,7 @@ header { background: var(--dark); color: #fff; padding: 0.9rem 1.25rem; padding-
       <option>Kjøtt</option><option>Fugl</option><option>Fisk & Fond</option>
       <option>Frukt & Grønt</option><option>Meieri/Ost/Egg</option><option>Tørrvare/Olje/Krydder</option>
       <option>Hygiene & Forbruksmateriell</option><option>Annet</option>
-      <option>Vin</option><option>Sprit</option><option>Øl</option><option>Mineralvann</option>
+      <option>Vin</option><option>Sprit</option><option>Øl</option><option>Mineralvann</option><option>Privat</option>
     </select>
     <select id="f-lev" onchange="render()">
       <option value="">Alle lev.</option>
@@ -216,7 +216,7 @@ header { background: var(--dark); color: #fff; padding: 0.9rem 1.25rem; padding-
         <option>Kjøtt</option><option>Fugl</option><option>Fisk & Fond</option>
         <option>Frukt & Grønt</option><option>Meieri/Ost/Egg</option><option>Tørrvare/Olje/Krydder</option>
         <option>Hygiene & Forbruksmateriell</option><option>Annet</option>
-        <option>Vin</option><option>Sprit</option><option>Øl</option><option>Mineralvann</option>
+        <option>Vin</option><option>Sprit</option><option>Øl</option><option>Mineralvann</option><option>Privat</option>
       </select>
       <select id="ny-lev">
         <option value="">Leverandør (valgfritt)</option>
@@ -251,7 +251,7 @@ header { background: var(--dark); color: #fff; padding: 0.9rem 1.25rem; padding-
       <option>Kjøtt</option><option>Fugl</option><option>Fisk & Fond</option>
       <option>Frukt & Grønt</option><option>Meieri/Ost/Egg</option><option>Tørrvare/Olje/Krydder</option>
       <option>Hygiene & Forbruksmateriell</option><option>Annet</option>
-      <option>Vin</option><option>Sprit</option><option>Øl</option><option>Mineralvann</option>
+      <option>Vin</option><option>Sprit</option><option>Øl</option><option>Mineralvann</option><option>Privat</option>
     </select>
     <select id="edit-lev">
       <option value="">Leverandør (valgfritt)</option>
@@ -277,7 +277,7 @@ const WORKER_URL = 'https://fager-push.thomas-0e8.workers.dev';
 const VAPID_PUBLIC = 'BBugd5BD_AJbVUv9lfD-2tfp3apULExDnMQ8xVQZ9oUMmG8nUXwG-ADhCojwp4DDMI3XybLCIBe_951RA5_PHUs';
 const PASSORD = 'fager2026';
 const normKat = k => (k==='Meieri/Ost'||k==='Ost') ? 'Meieri/Ost/Egg' : (k||'Annet');
-const KAT_ORDER = ['Kjøtt','Fugl','Fisk & Fond','Frukt & Grønt','Meieri/Ost/Egg','Tørrvare/Olje/Krydder','Hygiene & Forbruksmateriell','Annet','Vin','Sprit','Øl','Mineralvann'];
+const KAT_ORDER = ['Kjøtt','Fugl','Fisk & Fond','Frukt & Grønt','Meieri/Ost/Egg','Tørrvare/Olje/Krydder','Hygiene & Forbruksmateriell','Annet','Vin','Sprit','Øl','Mineralvann','Privat'];
 const VARSLE = ['Thomas','Marcus'];
 
 let bruker = '', varer = [], aktivTab = 'aktive', redigerId = null;
