@@ -279,6 +279,9 @@ const PASSORD = 'fager2026';
 const normKat = k => (k==='Meieri/Ost'||k==='Ost') ? 'Meieri/Ost/Egg' : (k||'Annet');
 const KAT_ORDER = ['Kjøtt','Fugl','Fisk & Fond','Frukt & Grønt','Meieri/Ost/Egg','Tørrvare/Olje/Krydder','Hygiene & Forbruksmateriell','Annet','Vin','Sprit','Øl','Mineralvann','Privat'];
 const VARSLE = ['Thomas','Marcus'];
+// Kategorien «Privat» vises bare for disse brukerne
+const PRIVAT_TILGANG = ['Thomas','Christine'];
+const kanSePrivat = () => PRIVAT_TILGANG.includes(bruker);
 
 let bruker = '', varer = [], aktivTab = 'aktive', redigerId = null;
 
@@ -295,6 +298,7 @@ function loggInn() {
   document.getElementById('login-screen').style.display = 'none';
   document.getElementById('app').style.display = 'block';
   document.getElementById('header-bruker').textContent = bruker;
+  if (!kanSePrivat()) document.querySelectorAll('option').forEach(o => { if (o.value === 'Privat' || o.textContent === 'Privat') o.remove(); });
   hent();
   setInterval(hent, 15000);
   if (VARSLE.includes(bruker)) registrerPush();
@@ -310,6 +314,7 @@ async function api(method, path, body) {
 
 async function hent() {
   varer = await api('GET', 'varer?order=created_at.desc&select=*');
+  if (!kanSePrivat()) varer = varer.filter(v => v.kategori !== 'Privat');
   render();
 }
 
@@ -390,7 +395,7 @@ async function leggTil() {
   document.getElementById('ny-mengde').value = '';
   document.getElementById('ny-enhet').value = '';
   hent();
-  fetch(`${WORKER_URL}/notify`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({fra:bruker,vare:navn,kategori:kat}) }).catch(()=>{});
+  if (kat !== 'Privat') fetch(`${WORKER_URL}/notify`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({fra:bruker,vare:navn,kategori:kat}) }).catch(()=>{});
 }
 
 async function toggleBestilt(id, checked) {
