@@ -71,6 +71,18 @@ header { background: #1a1a1a; padding: 1rem 1.25rem; padding-top: calc(1rem + en
 .btn-lagre { background: #1a1a1a; color: #fff; }
 .btn-avbryt { background: #f7f6f3; color: #1a1a1a; border: 0.5px solid #e5e2da !important; }
 
+.btn-sort.on { background: #EF9F27; color: #1a1a1a; }
+.drag-handle { display: none; font-size: 1.15rem; color: #b0aca2; cursor: grab; padding: 0.15rem 0.35rem; touch-action: none; user-select: none; -webkit-user-select: none; flex-shrink: 0; }
+.seksjon-header .drag-handle { font-size: 0.95rem; padding: 0 0.4rem 0 0; }
+body.sortering .drag-handle { display: inline-block; }
+body.sortering .item-actions, body.sortering .check-custom { display: none; }
+body.sortering .person-tag { pointer-events: none; }
+body.sortering .prepp-item { user-select: none; -webkit-user-select: none; }
+body.sortering .seksjon { background: #efece5; border-radius: 14px; padding: 0.6rem 0.6rem 0.2rem; }
+body.sortering .seksjon-header { display: flex; align-items: center; color: #6b6862; }
+.sort-ghost { opacity: 0.35; }
+.sort-hint { display: none; background: #FAEEDA; color: #854F0B; font-size: 0.8rem; line-height: 1.4; border-radius: 10px; padding: 0.6rem 0.8rem; margin-bottom: 1rem; }
+body.sortering .sort-hint { display: block; }
 @media print {
   @page { size: A4; margin: 12mm 14mm; }
   body { background: #fff; }
@@ -97,6 +109,7 @@ header { background: #1a1a1a; padding: 1rem 1.25rem; padding-top: calc(1rem + en
   <div class="header-title" id="header-title">Kjøkken MEP</div>
   <div class="header-actions">
     <button class="btn-sm btn-reset" onclick="window.print()">🖨 Print</button>
+    <button class="btn-sm btn-reset btn-sort" id="btn-sort" onclick="byttSortering()">↕ Sorter</button>
     <button class="btn-sm btn-reset" onclick="nullstill()">Nullstill</button>
     <button class="btn-sm btn-add" onclick="apneNy()">+ Legg til</button>
   </div>
@@ -113,6 +126,7 @@ header { background: #1a1a1a; padding: 1rem 1.25rem; padding-top: calc(1rem + en
 <div class="main">
   <div class="progress-label" id="progress-label">0 / 0 gjort</div>
   <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+  <div class="sort-hint">Dra i ≡ for å flytte oppgaver innenfor en rett, eller rettene innenfor en kategori. Trykk «Ferdig» når du er ferdig.</div>
   <div id="liste"></div>
 </div>
 
@@ -147,6 +161,7 @@ header { background: #1a1a1a; padding: 1rem 1.25rem; padding-top: calc(1rem + en
   </div>
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.2/Sortable.min.js"></script>
 <script>
 const SUPABASE_URL = 'https://izdclsyuplghwznsjnom.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml6ZGNsc3l1cGxnaHd6bnNqbm9tIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE1MjY5MjksImV4cCI6MjA5NzEwMjkyOX0.GkjxcToCHZrLAm1pVGsBkcLapIOj7uSYd6IcDC0Lyzk';
@@ -174,6 +189,7 @@ const KATEGORI_ORDER = ['FORRETTER', 'HOVEDRETTER', 'DESSERTER', 'DIVERSE'];
 let aktivPerson = 'alle';
 
 function settPerson(p) {
+  if (sorteringPa && p !== 'alle') return;
   aktivPerson = p;
   document.querySelectorAll('.person-btn').forEach(b => b.classList.toggle('active', b.dataset.person === p));
   render();
@@ -245,11 +261,14 @@ function render() {
   document.getElementById('liste').innerHTML = orderedKategorier.map(kat => `
     <div class="kategori-block">
       <div class="kategori-header">${kat}</div>
+      <div class="seksjon-liste" data-kat="${kat}">
       ${Object.entries(byKategori[kat]).map(([seksjon, its]) => `
-        <div class="seksjon">
-          <div class="seksjon-header">${seksjon}</div>
+        <div class="seksjon" data-seksjon="${seksjon}">
+          <div class="seksjon-header"><span class="drag-handle">≡</span>${seksjon}</div>
+          <div class="item-liste">
           ${its.map(i => `
-            <div class="prepp-item ${i.ferdig ? 'ferdig' : ''}" id="item-${i.id}">
+            <div class="prepp-item ${i.ferdig ? 'ferdig' : ''}" id="item-${i.id}" data-id="${i.id}">
+              <span class="drag-handle">≡</span>
               <div class="check-custom ${i.ferdig ? 'checked' : ''}" onclick="toggleFerdig('${i.id}', ${i.ferdig ? 'false' : 'true'})"></div>
               <span class="prepp-tekst">${i.tekst}</span>
               <div class="person-tag ${i.person ? 'assigned person-' + i.person : ''}" onclick="syklePerson('${i.id}')">${i.person ? PERSON_LABEL[i.person] : '–'}</div>
@@ -259,10 +278,13 @@ function render() {
               </div>
             </div>
           `).join('')}
+          </div>
         </div>
       `).join('')}
+      </div>
     </div>
   `).join('');
+  if (sorteringPa) aktiverSortable();
 
   requestAnimationFrame(() => requestAnimationFrame(() => window.scrollTo(0, _scrollPos)));
 }
@@ -385,7 +407,8 @@ async function lagreItem() {
       }
     }
   } else {
-    await api('POST', 'prepp', { side: SIDE, tidspunkt: TIDSPUNKT, kategori, seksjon, tekst, ferdig: false, person });
+    const nesteSort = items.reduce((m, i) => Math.max(m, i.sort_order || 0), 0) + 1;
+    await api('POST', 'prepp', { side: SIDE, tidspunkt: TIDSPUNKT, kategori, seksjon, tekst, ferdig: false, person, sort_order: nesteSort });
   }
   lukkModal();
   hent();
@@ -426,8 +449,57 @@ window.addEventListener('afterprint', () => {
   document.querySelectorAll('.seksjon, .kategori-block').forEach(el => el.style.display = '');
 });
 
+// ---------- Sortering ----------
+let sorteringPa = false;
+let sortables = [];
+function byttSortering() {
+  sorteringPa = !sorteringPa;
+  document.body.classList.toggle('sortering', sorteringPa);
+  const b = document.getElementById('btn-sort');
+  b.classList.toggle('on', sorteringPa);
+  b.textContent = sorteringPa ? '✓ Ferdig' : '↕ Sorter';
+  if (sorteringPa) {
+    if (aktivPerson !== 'alle') { settPerson('alle'); return; }
+    aktiverSortable();
+  } else {
+    sortables.forEach(x => x.destroy()); sortables = [];
+    hent();
+  }
+}
+function aktiverSortable() {
+  sortables.forEach(x => x.destroy()); sortables = [];
+  if (typeof Sortable === 'undefined') { alert('Kunne ikke laste sorteringsverktøyet. Sjekk nettet og last siden på nytt.'); return; }
+  const opts = { handle: '.drag-handle', animation: 150, ghostClass: 'sort-ghost', delay: 0, onEnd: lagreRekkefolge };
+  document.querySelectorAll('.item-liste').forEach(el => sortables.push(Sortable.create(el, opts)));
+  document.querySelectorAll('.seksjon-liste').forEach(el => sortables.push(Sortable.create(el, { ...opts, draggable: '.seksjon', handle: '.seksjon-header .drag-handle' })));
+}
+let lagreKo = Promise.resolve();
+function lagreRekkefolge() {
+  // Rekkefølgen kodes i sort_order: kategori × 10000 + rett × 100 + oppgave.
+  // Rettenes rekkefølge følger dermed av oppgavenes sort_order, slik render() allerede grupperer.
+  const endringer = [];
+  document.querySelectorAll('.kategori-block').forEach((kb, k) => {
+    kb.querySelectorAll('.seksjon').forEach((sek, si) => {
+      sek.querySelectorAll('.prepp-item').forEach((el, ti) => {
+        const id = el.dataset.id;
+        const ny = (k + 1) * 10000 + (si + 1) * 100 + ti;
+        const it = items.find(i => i.id === id);
+        if (it && it.sort_order !== ny) { it.sort_order = ny; endringer.push([id, ny]); }
+      });
+    });
+  });
+  if (!endringer.length) return;
+  lagreKo = lagreKo.then(async () => {
+    try {
+      for (let n = 0; n < endringer.length; n += 8) {
+        await Promise.all(endringer.slice(n, n + 8).map(([id, so]) => api('PATCH', `prepp?id=eq.${id}`, { sort_order: so })));
+      }
+    } catch (e) { alert('Kunne ikke lagre rekkefølgen. Prøv igjen.'); }
+  });
+}
+
 hent();
-setInterval(hent, 20000);
+setInterval(() => { if (!sorteringPa) hent(); }, 20000);
 </script>
 </body>
 </html>
