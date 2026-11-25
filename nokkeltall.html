@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Nøkkeltall – Fager Bistro</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root{
+    --page:#f7f6f3; --surface:#fcfcfb; --card:#ffffff; --line:#e5e2da;
+    --ink:#1a1a1a; --ink2:#5a5855; --muted:#a8a59d;
+    --s1:#2a78d6; --good:#0ca30c; --crit:#d03b3b;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font:15px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:var(--page);color:var(--ink)}
+  header{background:#1a1a1a;color:#fff;padding:1rem 1.25rem;display:flex;align-items:center;gap:1rem;flex-wrap:wrap}
+  header a{color:rgba(255,255,255,.6);text-decoration:none;font-size:.85rem}
+  h1{font-size:1rem;font-weight:700;letter-spacing:.05em;margin:0;flex:1}
+  header .status{color:rgba(255,255,255,.55);width:100%;order:3}
+  main{padding-top:14px !important}
+  main{padding:0 16px 40px;max-width:980px;margin:0 auto}
+  .bar{display:flex;align-items:center;gap:8px;margin:6px 0 14px;flex-wrap:wrap}
+  .bar .mnd{font-weight:600;min-width:150px;text-align:center}
+  button{font:inherit;border:1px solid var(--line);background:var(--card);border-radius:8px;padding:7px 12px;cursor:pointer;color:var(--ink)}
+  button.primary{background:var(--ink);color:#fff;border-color:var(--ink)}
+  button:disabled{opacity:.5}
+  .status{font-size:13px;color:var(--muted)}
+  .tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+  .tile{background:var(--card);border:.5px solid var(--line);border-radius:16px;padding:12px 14px}
+  .tile .lbl{font-size:13px;color:var(--ink2)}
+  .tile .val{font-size:26px;font-weight:650;letter-spacing:-.01em;margin-top:2px}
+  .tile .sub{font-size:12.5px;color:var(--ink2);margin-top:2px}
+  .up{color:var(--good)} .down{color:var(--crit)}
+  section{background:var(--card);border:.5px solid var(--line);border-radius:16px;padding:14px;margin-top:14px}
+  section h2{font-size:15px;margin:0 0 10px}
+  .chart{position:relative;height:190px;display:flex;align-items:flex-end;gap:2px;border-bottom:1px solid var(--line);padding-top:8px}
+  .chart .col{flex:1;display:flex;align-items:flex-end;height:100%;position:relative;cursor:default}
+  .chart .col i{display:block;width:100%;background:var(--s1);border-radius:4px 4px 0 0;min-height:1px}
+  .chart .col.helg i{opacity:.75}
+  .chart .col:hover i{background:#1c5cab}
+  .axis{display:flex;gap:2px;font-size:10.5px;color:var(--muted);margin-top:3px}
+  .axis span{flex:1;text-align:center}
+  .grid{position:absolute;left:0;right:0;border-top:1px dashed #eeede8;font-size:10.5px;color:var(--muted)}
+  .grid span{position:absolute;right:0;top:-14px;background:var(--card);padding-left:4px}
+  #tip{position:fixed;pointer-events:none;background:var(--ink);color:#fff;font-size:12.5px;padding:7px 9px;border-radius:7px;display:none;z-index:9;white-space:nowrap}
+  table{width:100%;border-collapse:collapse;font-size:14px}
+  th,td{padding:7px 6px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
+  th:first-child,td:first-child{text-align:left}
+  th{font-weight:600;color:var(--ink2);font-size:12.5px}
+  .scroll{overflow-x:auto}
+  .login{max-width:340px;margin:60px auto;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px}
+  .login input{width:100%;font:inherit;padding:9px;border:1px solid var(--line);border-radius:8px;margin:6px 0 10px}
+  .note{font-size:12.5px;color:var(--ink2);margin-top:8px}
+  .hidden{display:none}
+</style>
+</head>
+<body>
+<div id="tip"></div>
+
+<div id="loginView" class="login hidden">
+  <h2 style="margin-top:0">Logg inn</h2>
+  <label>E-post<input id="email" type="email" autocomplete="username"></label>
+  <label>Passord<input id="pw" type="password" autocomplete="current-password"></label>
+  <button class="primary" id="loginBtn">Logg inn</button>
+  <div class="note" id="loginMsg"></div>
+</div>
+
+<div id="appView" class="hidden">
+<header>
+  <a href="portal.html">‹ Portal</a>
+  <h1>Nøkkeltall</h1>
+  <span class="status" id="syncStatus"></span>
+</header>
+<main>
+  <div class="bar">
+    <button id="prev" aria-label="Forrige måned">‹</button>
+    <span class="mnd" id="mndLabel"></span>
+    <button id="next" aria-label="Neste måned">›</button>
+    <span style="flex:1"></span>
+    <button id="syncBtn">Oppdater nå</button>
+  </div>
+
+  <div class="tiles" id="tiles"></div>
+
+  <section>
+    <h2 id="dagTittel">Omsetning per dag</h2>
+    <div class="chart" id="chart"></div>
+    <div class="axis" id="axis"></div>
+  </section>
+
+  <section>
+    <h2>Per kategori</h2>
+    <div class="scroll"><table id="katTab"></table></div>
+    <div class="note">Varekost per kategori forutsetter at salgs- og innkjøpskontoene har samme kategori i tabellen <code>fiken_kontoer</code>.</div>
+  </section>
+
+  <section>
+    <h2>Siste 13 måneder</h2>
+    <div class="scroll"><table id="mndTab"></table></div>
+  </section>
+
+  <section>
+    <h2>Historikk</h2>
+    <div class="note" style="margin-top:0">Hent alle dager fra 1. januar i fjor. Kjøres én gang; tar noen minutter.</div>
+    <div class="bar" style="margin:10px 0 0"><button id="histBtn">Hent historikk</button><span class="status" id="histStatus"></span></div>
+  </section>
+</main>
+</div>
+
+<script>
+const SUPABASE_URL = "https://izdclsyuplghwznsjnom.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml6ZGNsc3l1cGxnaHd6bnNqbm9tIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE1MjY5MjksImV4cCI6MjA5NzEwMjkyOX0.GkjxcToCHZrLAm1pVGsBkcLapIOj7uSYd6IcDC0Lyzk";
+
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const $ = (id) => document.getElementById(id);
+const kr = (v) => v == null ? "–" : Math.round(v).toLocaleString("nb-NO") + " kr";
+const kkr = (v) => v == null ? "–" : (Math.abs(v) >= 100000 ? (v/1000).toLocaleString("nb-NO",{maximumFractionDigits:0}) + "k" : Math.round(v).toLocaleString("nb-NO"));
+const pct = (v) => v == null || !isFinite(v) ? "–" : (v*100).toLocaleString("nb-NO",{maximumFractionDigits:1}) + " %";
+const MND = ["januar","februar","mars","april","mai","juni","juli","august","september","oktober","november","desember"];
+const iso = (d) => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+
+let valgt = new Date(); valgt.setDate(1);
+let maned = [];   // rader fra fiken_maned
+
+async function start(){
+  const { data:{ session } } = await sb.auth.getSession();
+  if (!session){ $("loginView").classList.remove("hidden"); return; }
+  $("appView").classList.remove("hidden");
+  await lastAlt();
+}
+
+$("loginBtn").onclick = async () => {
+  $("loginMsg").textContent = "";
+  const { error } = await sb.auth.signInWithPassword({ email:$("email").value.trim(), password:$("pw").value });
+  if (error){ $("loginMsg").textContent = "Feil: " + error.message; return; }
+  $("loginView").classList.add("hidden"); start();
+};
+
+async function lastAlt(){
+  const fra = new Date(valgt.getFullYear()-1, valgt.getMonth()-12, 1);
+  const { data, error } = await sb.from("fiken_maned").select("*").gte("maned", iso(fra));
+  if (error){ $("syncStatus").textContent = "Feil: " + error.message; return; }
+  maned = data || [];
+  const { data: logg } = await sb.from("fiken_synklogg").select("*").order("kjort",{ascending:false}).limit(1);
+  if (logg && logg[0]){
+    const l = logg[0], t = new Date(l.kjort);
+    $("syncStatus").textContent = l.feil ? "Siste synk feilet: " + l.feil
+      : "Oppdatert " + t.toLocaleString("nb-NO",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"});
+  } else $("syncStatus").textContent = "Ingen data ennå – trykk «Hent historikk»";
+  await tegn();
+}
+
+function sumMnd(ym, gruppe, kategori){
+  return maned.filter(r => r.maned.slice(0,7) === ym && r.gruppe === gruppe && (!kategori || r.kategori === kategori))
+              .reduce((s,r) => s + Number(r.belop_kr||0), 0);
+}
+const ymOf = (d) => iso(d).slice(0,7);
+
+async function tegn(){
+  const ym = ymOf(valgt);
+  const iFjor = ymOf(new Date(valgt.getFullYear()-1, valgt.getMonth(), 1));
+  $("mndLabel").textContent = MND[valgt.getMonth()] + " " + valgt.getFullYear();
+  const idag = new Date(); idag.setDate(1);
+  $("next").disabled = valgt >= idag;
+
+  const oms = sumMnd(ym,"salg"), vk = sumMnd(ym,"varekost"), lonn = sumMnd(ym,"lonn");
+  const omsF = sumMnd(iFjor,"salg");
+  const endr = omsF ? (oms-omsF)/omsF : null;
+  const pagar = ym === ymOf(new Date());
+  $("tiles").innerHTML = [
+    tile("Omsetning" + (pagar ? " hittil" : ""), kr(oms),
+      endr == null ? "Ingen tall i fjor" : `<span class="${endr>=0?"up":"down"}">${endr>=0?"▲":"▼"} ${pct(Math.abs(endr))}</span> mot i fjor (${kkr(omsF)})`),
+    tile("Varekost", pct(oms ? vk/oms : null), kr(vk)),
+    tile("Lønnskost", pct(oms ? lonn/oms : null), kr(lonn)),
+    tile("Prime cost", pct(oms ? (vk+lonn)/oms : null), "Varekost + lønn"),
+  ].join("");
+
+  await tegnDager();
+  tegnKategorier(ym);
+  tegnManeder();
+}
+const tile = (l,v,s) => `<div class="tile"><div class="lbl">${l}</div><div class="val">${v}</div><div class="sub">${s}</div></div>`;
+
+async function tegnDager(){
+  const fra = new Date(valgt), til = new Date(valgt.getFullYear(), valgt.getMonth()+1, 0);
+  const { data } = await sb.from("fiken_daglig").select("dato,kategori,belop_kr")
+    .eq("gruppe","salg").gte("dato", iso(fra)).lte("dato", iso(til));
+  const perDag = {};
+  (data||[]).forEach(r => { (perDag[r.dato] ??= {})[r.kategori] = (perDag[r.dato][r.kategori]||0) + Number(r.belop_kr||0); });
+  const dager = til.getDate();
+  const tot = []; for (let d=1; d<=dager; d++){ const k = iso(new Date(valgt.getFullYear(), valgt.getMonth(), d)); const o = perDag[k]||{}; tot.push({k, o, sum:Object.values(o).reduce((a,b)=>a+b,0)}); }
+  const max = Math.max(1, ...tot.map(t => t.sum));
+  const steg = niceStep(max);
+  let html = "";
+  for (let g = steg; g <= max; g += steg) html += `<div class="grid" style="bottom:${g/max*100}%"><span>${kkr(g)}</span></div>`;
+  html += tot.map(t => {
+    const dow = new Date(t.k).getDay();
+    return `<div class="col ${dow===0||dow===6?"helg":""}" data-k="${t.k}"><i style="height:${Math.max(0,t.sum)/max*100}%"></i></div>`;
+  }).join("");
+  $("chart").innerHTML = html;
+  $("axis").innerHTML = tot.map((t,i) => `<span>${(i+1)%5===1||i+1===dager ? i+1 : ""}</span>`).join("");
+  $("dagTittel").textContent = "Omsetning per dag";
+  const tip = $("tip");
+  $("chart").querySelectorAll(".col").forEach(el => {
+    const t = tot.find(x => x.k === el.dataset.k);
+    const vis = (e) => {
+      const d = new Date(t.k);
+      const linjer = Object.entries(t.o).filter(([,v]) => Math.abs(v) >= 1).sort((a,b)=>b[1]-a[1])
+        .map(([k,v]) => `${k}: ${kr(v)}`).join("<br>");
+      tip.innerHTML = `<b>${d.toLocaleDateString("nb-NO",{weekday:"short",day:"numeric",month:"short"})}: ${kr(t.sum)}</b>${linjer?"<br>"+linjer:""}`;
+      tip.style.display = "block";
+      const x = Math.min(e.clientX + 12, innerWidth - tip.offsetWidth - 8);
+      tip.style.left = x + "px"; tip.style.top = (e.clientY - tip.offsetHeight - 12) + "px";
+    };
+    el.addEventListener("pointermove", vis); el.addEventListener("pointerdown", vis);
+    el.addEventListener("pointerleave", () => tip.style.display = "none");
+  });
+}
+function niceStep(max){ const r = max/4, p = Math.pow(10, Math.floor(Math.log10(r))); const n = r/p; return (n<1.5?1:n<3.5?2:n<7.5?5:10)*p; }
+
+function tegnKategorier(ym){
+  const kat = [...new Set(maned.filter(r => r.maned.slice(0,7)===ym && r.gruppe==="salg").map(r => r.kategori))];
+  const rader = kat.map(k => ({ k, oms:sumMnd(ym,"salg",k), vk:sumMnd(ym,"varekost",k) })).sort((a,b)=>b.oms-a.oms);
+  const tot = rader.reduce((s,r)=>s+r.oms,0);
+  $("katTab").innerHTML = `<tr><th>Kategori</th><th>Omsetning</th><th>Andel</th><th>Varekost</th><th>Varekost %</th></tr>` +
+    rader.map(r => `<tr><td>${r.k}</td><td>${kr(r.oms)}</td><td>${pct(tot?r.oms/tot:null)}</td><td>${r.vk?kr(r.vk):"–"}</td><td>${r.vk&&r.oms?pct(r.vk/r.oms):"–"}</td></tr>`).join("") +
+    `<tr><td><b>Totalt</b></td><td><b>${kr(tot)}</b></td><td></td><td></td><td></td></tr>`;
+}
+
+function tegnManeder(){
+  let html = `<tr><th>Måned</th><th>Omsetning</th><th>Mot i fjor</th><th>Varekost %</th><th>Lønn %</th><th>Prime %</th></tr>`;
+  for (let i=0; i<13; i++){
+    const d = new Date(valgt.getFullYear(), valgt.getMonth()-i, 1), ym = ymOf(d);
+    const f = ymOf(new Date(d.getFullYear()-1, d.getMonth(), 1));
+    const oms = sumMnd(ym,"salg"), omsF = sumMnd(f,"salg"), vk = sumMnd(ym,"varekost"), l = sumMnd(ym,"lonn");
+    const e = omsF ? (oms-omsF)/omsF : null;
+    html += `<tr><td>${MND[d.getMonth()].slice(0,3)} ${d.getFullYear()}</td><td>${oms?kr(oms):"–"}</td>
+      <td>${e==null||!oms?"–":`<span class="${e>=0?"up":"down"}">${e>=0?"+":"−"}${pct(Math.abs(e))}</span>`}</td>
+      <td>${oms?pct(vk/oms):"–"}</td><td>${oms?pct(l/oms):"–"}</td><td>${oms?pct((vk+l)/oms):"–"}</td></tr>`;
+  }
+  $("mndTab").innerHTML = html;
+}
+
+async function synk(body){
+  const { data, error } = await sb.functions.invoke("fiken-sync", { body: body || {} });
+  if (error) {
+    let msg = error.message;
+    try { const j = await error.context.json(); msg = j.feil || msg; } catch {}
+    throw new Error(msg);
+  }
+  if (!data.ok) throw new Error(data.feil);
+  return data;
+}
+
+$("syncBtn").onclick = async () => {
+  const b = $("syncBtn"); b.disabled = true; b.textContent = "Henter…";
+  try { await synk(); await lastAlt(); }
+  catch(e){ alertLinje(e.message); }
+  b.disabled = false; b.textContent = "Oppdater nå";
+};
+function alertLinje(m){ $("syncStatus").textContent = "Feil: " + m; }
+
+$("histBtn").onclick = async () => {
+  const b = $("histBtn"); b.disabled = true;
+  const idag = new Date();
+  let d = new Date(idag.getFullYear()-1, 0, 1);
+  try {
+    while (d <= idag){
+      const slutt = new Date(d.getFullYear(), d.getMonth()+1, 0);
+      $("histStatus").textContent = `Henter ${MND[d.getMonth()]} ${d.getFullYear()}…`;
+      await synk({ fra: iso(d), til: iso(slutt < idag ? slutt : idag) });
+      d = new Date(d.getFullYear(), d.getMonth()+1, 1);
+    }
+    $("histStatus").textContent = "Ferdig.";
+    await lastAlt();
+  } catch(e){ $("histStatus").textContent = "Stoppet: " + e.message + " – trykk igjen for å fortsette."; }
+  b.disabled = false;
+};
+
+$("prev").onclick = () => { valgt = new Date(valgt.getFullYear(), valgt.getMonth()-1, 1); lastAlt(); };
+$("next").onclick = () => { valgt = new Date(valgt.getFullYear(), valgt.getMonth()+1, 1); lastAlt(); };
+
+start();
+</script>
+</body>
+</html>
