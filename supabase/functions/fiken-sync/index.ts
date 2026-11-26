@@ -1,6 +1,7 @@
 // Supabase Edge Function: fiken-sync
 // Henter saldo per resultatkonto (3000–7999) fra Fiken for hver dato i et
-// intervall og lagrer i tabellen fiken_saldo.
+// intervall og lagrer i tabellen fiken_saldo. Henter også innkjøp
+// (leverandørfakturaer) i samme intervall til tabellen fiken_innkjop.
 //
 // Kall:  POST /functions/v1/fiken-sync           → siste 40 dager (nattlig)
 //        POST /functions/v1/fiken-sync  {"fra":"2025-01-01","til":"2025-01-31"}
@@ -131,8 +132,41 @@ Deno.serve(async (req) => {
       dager++;
     }
 
+    // Innkjøp (leverandørfakturaer og kontantkjøp) i samme periode
+    const linjer: any[] = [];
+    for (let side = 0; side < 50; side++) {
+      const kjop: any[] = await fiken(
+        `/companies/${slug}/purchases?dateGe=${fra}&dateLe=${til}&page=${side}&pageSize=100`,
+      );
+      await sleep(260);
+      for (const p of kjop) {
+        if (p.deleted) continue;
+        let full = p;
+        if (!Array.isArray(p.lines)) { full = await fiken(`/companies/${slug}/purchases/${p.purchaseId}`); await sleep(260); }
+        (full.lines ?? []).forEach((l: any, i: number) => linjer.push({
+          kjop_id: full.purchaseId,
+          linje: i,
+          dato: full.date,
+          leverandor: full.supplier?.name ?? (full.kind === "cash_purchase" ? "Kontantkjøp" : "Ukjent"),
+          leverandor_id: full.supplier?.contactId ?? null,
+          konto: l.account ? String(l.account).split(":")[0] : null,
+          beskrivelse: l.description ?? null,
+          netto_ore: Math.round(l.netPrice ?? 0),
+        }));
+      }
+      if (kjop.length < 100) break;
+    }
+    {
+      const { error: delErr } = await db.from("fiken_innkjop").delete().gte("dato", fra).lte("dato", til);
+      if (delErr) throw delErr;
+      for (let i = 0; i < linjer.length; i += 500) {
+        const { error } = await db.from("fiken_innkjop").upsert(linjer.slice(i, i + 500), { onConflict: "kjop_id,linje" });
+        if (error) throw error;
+      }
+    }
+
     await db.from("fiken_synklogg").insert({ fra, til, dager });
-    return svar({ ok: true, selskap: selskap.name, fra, til, dager });
+    return svar({ ok: true, selskap: selskap.name, fra, til, dager, innkjopslinjer: linjer.length });
   } catch (e) {
     const feil = e instanceof Error ? e.message : String(e);
     await db.from("fiken_synklogg").insert({ fra: fra || null, til: til || null, dager: 0, feil });
