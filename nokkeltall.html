@@ -55,6 +55,10 @@
   .login input{width:100%;font:inherit;padding:9px;border:1px solid var(--line);border-radius:8px;margin:6px 0 10px}
   .note{font-size:12.5px;color:var(--ink2);margin-top:8px}
   .hidden{display:none}
+  .faner{position:sticky;top:0;z-index:5;display:flex;gap:6px;overflow-x:auto;background:var(--page);padding:12px 0 8px;margin-top:6px;-webkit-overflow-scrolling:touch}
+  .faner button{flex:0 0 auto;border-radius:999px;padding:7px 14px}
+  .faner button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+  section.skjult{display:none}
   .seg{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--card)}
   .seg button{border:0;border-radius:0;padding:7px 12px;background:transparent}
   .seg button+button{border-left:1px solid var(--line)}
@@ -103,6 +107,13 @@
   <div class="periode" id="periodeTekst"></div>
 
   <div class="tiles" id="tiles"></div>
+
+  <nav class="faner" id="faner">
+    <button data-fane="oversikt" class="on">Oversikt</button>
+    <button data-fane="varekost">Varekost</button>
+    <button data-fane="adk">ADK</button>
+    <button data-fane="verktoy">Verktøy</button>
+  </nav>
 
   <section>
     <h2 id="dagTittel">Omsetning per dag</h2>
@@ -483,6 +494,29 @@ document.querySelectorAll("#modus button").forEach(b => b.onclick = () => { modu
 $("prev").onclick = () => { valgtMnd = new Date(valgtMnd.getFullYear(), valgtMnd.getMonth()-1, 1); lastAlt(); };
 $("next").onclick = () => { valgtMnd = new Date(valgtMnd.getFullYear(), valgtMnd.getMonth()+1, 1); lastAlt(); };
 $("visBtn").onclick = () => lastAlt();
+
+// ---- Faner ----
+const FANE_FOR = [
+  [/^Omsetning per|^Siste 13/, "oversikt"],
+  [/^Per kategori|^Innkjøp per|^Matkost/, "varekost"],
+  [/^Andre driftskostnader/, "adk"],
+];
+let aktivFane = "oversikt";
+try { aktivFane = localStorage.getItem("nokkeltall-fane") || "oversikt"; } catch {}
+function visFane(f){
+  aktivFane = f;
+  try { localStorage.setItem("nokkeltall-fane", f); } catch {}
+  document.querySelectorAll("#faner button").forEach(b => b.classList.toggle("on", b.dataset.fane === f));
+  document.querySelectorAll("main > section").forEach(sec => {
+    if (!sec.dataset.fane){
+      const t = (sec.querySelector("h2")?.textContent || "").trim();
+      sec.dataset.fane = (FANE_FOR.find(([re]) => re.test(t)) || [null, "verktoy"])[1];
+    }
+    sec.classList.toggle("skjult", sec.dataset.fane !== f);
+  });
+}
+document.querySelectorAll("#faner button").forEach(b => b.onclick = () => visFane(b.dataset.fane));
+visFane(aktivFane);
 
 start();
 </script>
