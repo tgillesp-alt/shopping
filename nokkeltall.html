@@ -181,7 +181,7 @@ const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 const $ = (id) => document.getElementById(id);
 const kr = (v) => v == null ? "–" : Math.round(v).toLocaleString("nb-NO") + " kr";
-const kkr = (v) => v == null ? "–" : (Math.abs(v) >= 100000 ? (v/1000).toLocaleString("nb-NO",{maximumFractionDigits:0}) + "k" : Math.round(v).toLocaleString("nb-NO"));
+const kkr = (v) => v == null ? "–" : Math.abs(v) >= 1e6 ? (v/1e6).toLocaleString("nb-NO",{maximumFractionDigits:1}) + " mill." : (Math.abs(v) >= 100000 ? (v/1000).toLocaleString("nb-NO",{maximumFractionDigits:0}) + "k" : Math.round(v).toLocaleString("nb-NO"));
 const pct = (v) => v == null || !isFinite(v) ? "–" : (v*100).toLocaleString("nb-NO",{maximumFractionDigits:1}) + " %";
 const MND = ["januar","februar","mars","april","mai","juni","juli","august","september","oktober","november","desember"];
 const iso = (d) => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
@@ -305,6 +305,8 @@ async function tegn(){
 }
 const tile = (l,v,s) => `<div class="tile"><div class="lbl">${l}</div><div class="val">${v}</div><div class="sub">${s}</div></div>`;
 
+let grafModus = null;
+try { grafModus = localStorage.getItem("nokkeltall-graf"); } catch {}
 async function tegnSerie(fra, til){
   const dager = dagerMellom(fra, til);
   const perMnd = dager > 62;
@@ -323,9 +325,10 @@ async function tegnSerie(fra, til){
   else { for (let d = new Date(fra); d <= til; d = new Date(d.getFullYear(), d.getMonth(), d.getDate()+1)) keys.push(iso(d)); }
   const fjorKey = (k) => { const d = parse(k); return perMnd ? iso(new Date(d.getFullYear()-1, d.getMonth(), 1)) : iso(ettAarFor(d)); };
   let a = keys.map(k => A[k] || 0), b = keys.map(k => B[fjorKey(k)] || 0);
-  if (!perMnd){ let x = 0, y = 0; a = a.map(v => x += v); b = b.map(v => y += v); }
+  const akk = grafModus ? grafModus === "akk" : !perMnd;
+  if (akk){ let x = 0, y = 0; a = a.map(v => x += v); b = b.map(v => y += v); }
   const diff = (x, y) => y ? (x - y) / y : null;
-  $("dagTittel").textContent = perMnd ? "Omsetning per måned mot i fjor" : "Omsetning akkumulert mot i fjor";
+  $("dagTittel").textContent = akk ? "Omsetning akkumulert mot i fjor" : (perMnd ? "Omsetning per måned mot i fjor" : "Omsetning per dag mot i fjor");
 
   // Geometri
   const el = $("chart");
@@ -353,7 +356,11 @@ async function tegnSerie(fra, til){
     <div style="display:flex;gap:14px;font-size:12.5px;color:var(--ink2);margin:-4px 0 6px;flex-wrap:wrap">
       <span><i style="display:inline-block;width:14px;height:2px;background:${C_NA};vertical-align:middle;margin-right:5px"></i>${fra.getFullYear()}</span>
       <span><i style="display:inline-block;width:14px;height:0;border-top:2px dashed ${C_FJ};vertical-align:middle;margin-right:5px"></i>${ettAarFor(fra).getFullYear()}</span>
-      ${!perMnd ? `<span style="margin-left:auto">Hittil: <b>${kr(sisteA)}</b> · ${diff(sisteA,sisteB)==null?"–":`<span class="${sisteA>=sisteB?"up":"down"}">${sisteA>=sisteB?"+":"−"}${pct(Math.abs(diff(sisteA,sisteB)))}</span>`} mot i fjor</span>` : ""}
+      <span class="seg" id="grafModus" style="margin-left:auto">
+        <button data-g="per" class="${akk?"":"on"}" style="padding:4px 10px;font-size:12.5px">${perMnd ? "Per måned" : "Per dag"}</button>
+        <button data-g="akk" class="${akk?"on":""}" style="padding:4px 10px;font-size:12.5px">Akkumulert</button>
+      </span>
+      ${akk ? `<span style="width:100%">Hittil: <b>${kr(sisteA)}</b> · ${diff(sisteA,sisteB)==null?"–":`<span class="${sisteA>=sisteB?"up":"down"}">${sisteA>=sisteB?"+":"−"}${pct(Math.abs(diff(sisteA,sisteB)))}</span>`} mot i fjor</span>` : ""}
     </div>
     <svg viewBox="0 0 ${W} ${H}" width="100%" height="${H}" style="display:block;touch-action:pan-y" id="linjeSvg">
       ${g}
@@ -363,7 +370,7 @@ async function tegnSerie(fra, til){
       <line id="kryss" y1="${pt}" y2="${H-pb}" stroke="#5a5855" stroke-width="1" visibility="hidden"/>
     </svg>`;
   // Prosentrad per måned
-  $("axis").innerHTML = perMnd ? `<div style="position:relative;height:16px;width:100%">${keys.map((k,i) => {
+  $("axis").innerHTML = perMnd && !akk ? `<div style="position:relative;height:16px;width:100%">${keys.map((k,i) => {
       const dd = diff(a[i], b[i]); if (dd == null || !a[i]) return "";
       return `<span style="position:absolute;left:${(X(i)/W*100).toFixed(2)}%;transform:translateX(-50%);font-size:${W<520?9.5:11}px;white-space:nowrap" class="${dd>=0?"up":"down"}">${dd>=0?"+":"−"}${Math.round(Math.abs(dd)*100)}%</span>`;
     }).join("")}</div>` : "";
@@ -376,12 +383,18 @@ async function tegnSerie(fra, til){
     i = Math.max(0, Math.min(keys.length-1, i));
     kryss.setAttribute("x1", X(i)); kryss.setAttribute("x2", X(i)); kryss.setAttribute("visibility", "visible");
     const d = parse(keys[i]), dd = diff(a[i], b[i]);
-    const navn = perMnd ? MND[d.getMonth()] + " " + d.getFullYear() : "Til og med " + d.toLocaleDateString("nb-NO",{day:"numeric",month:"short"});
+    const navn = akk ? "Til og med " + (perMnd ? MND[d.getMonth()] + " " + d.getFullYear() : d.toLocaleDateString("nb-NO",{day:"numeric",month:"short"}))
+                     : (perMnd ? MND[d.getMonth()] + " " + d.getFullYear() : d.toLocaleDateString("nb-NO",{weekday:"short",day:"numeric",month:"short"}));
     tip.innerHTML = `<b>${navn}</b><br>${d.getFullYear()}: ${kr(a[i])}<br>${d.getFullYear()-1}: ${kr(b[i])}<br>Endring: ${dd==null?"–":(dd>=0?"+":"−")+pct(Math.abs(dd))}`;
     tip.style.display = "block";
     tip.style.left = Math.min(e.clientX + 12, innerWidth - tip.offsetWidth - 8) + "px";
     tip.style.top = (e.clientY - tip.offsetHeight - 12) + "px";
   };
+  document.querySelectorAll("#grafModus button").forEach(btn => btn.onclick = () => {
+    grafModus = btn.dataset.g;
+    try { localStorage.setItem("nokkeltall-graf", grafModus); } catch {}
+    tegnSerie(fra, til);
+  });
   svg.addEventListener("pointermove", vis); svg.addEventListener("pointerdown", vis);
   svg.addEventListener("pointerleave", () => { tip.style.display = "none"; kryss.setAttribute("visibility","hidden"); });
 }
