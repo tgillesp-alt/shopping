@@ -154,6 +154,19 @@
   </section>
 
   <section>
+    <h2>Lagerendring</h2>
+    <div class="note" style="margin-top:0">Lagerendring er ikke bokført i Fiken gjennom året. Registrer endringen her etter varetelling: positivt beløp = lageret har økt (varekosten går ned), negativt = lageret har gått ned. Beløpet gjelder fra datoen du velger.</div>
+    <div class="bar" style="margin:10px 0">
+      <input type="date" id="lgDato">
+      <select id="lgKat" style="font:inherit;border:1px solid var(--line);border-radius:8px;padding:6px 8px;background:var(--card)"></select>
+      <input type="number" id="lgBelop" placeholder="Beløp kr" step="1" style="font:inherit;border:1px solid var(--line);border-radius:8px;padding:6px 8px;width:130px">
+      <input type="text" id="lgMerk" placeholder="Merknad (valgfritt)" style="font:inherit;border:1px solid var(--line);border-radius:8px;padding:6px 8px;flex:1;min-width:140px">
+      <button class="primary" id="lgLagre">Legg til</button>
+    </div>
+    <div class="scroll"><table id="lgTab"></table></div>
+  </section>
+
+  <section>
     <h2>Historikk</h2>
     <div class="note" style="margin-top:0">Hent alle dager fra 1. januar i fjor. Kjøres én gang; tar noen minutter.</div>
     <div class="bar" style="margin:10px 0 0"><button id="histBtn">Hent historikk</button><span class="status" id="histStatus"></span></div>
@@ -288,6 +301,7 @@ async function tegn(){
   await tegnLeverandorer(na, fjor);
   await tegnSerie(fra, til);
   await tegnManeder(til);
+  await tegnLager();
 }
 const tile = (l,v,s) => `<div class="tile"><div class="lbl">${l}</div><div class="val">${v}</div><div class="sub">${s}</div></div>`;
 
@@ -354,8 +368,10 @@ function tegnKategorier(na, fjor){
 }
 
 let levKat = "Mat";
+let varekostKats = [];
 async function tegnLeverandorer(na, fjor){
   const kats = [...new Set(na.filter(r => r.gruppe === "varekost").map(r => r.kategori))].sort();
+  varekostKats = kats;
   if (!kats.includes(levKat) && levKat !== "") levKat = kats.includes("Mat") ? "Mat" : "";
   $("levKat").innerHTML = `<option value="">All varekost</option>` + kats.map(k => `<option ${k===levKat?"selected":""}>${k}</option>`).join("");
   const { fra, til } = periode;
@@ -454,6 +470,33 @@ function tegnMatkost(slutt, ymOf){
   }
   $("matTab").innerHTML = html + `<tr><td colspan="7" class="note" style="text-align:left;border:0">* Måneden er ikke ferdig.</td></tr>`;
 }
+
+async function tegnLager(){
+  const valgt = $("lgKat").value;
+  const kats = varekostKats.length ? varekostKats : ["Mat","Vin"];
+  $("lgKat").innerHTML = kats.map(k => `<option ${k===(valgt||"Mat")?"selected":""}>${k}</option>`).join("");
+  if (!$("lgDato").value) $("lgDato").value = iso(idag());
+  const { data, error } = await sb.from("fiken_lagerendring").select("*").order("dato",{ascending:false});
+  if (error){ $("lgTab").innerHTML = `<tr><td class="note">Ikke tilgjengelig ennå: ${error.message}</td></tr>`; return; }
+  if (!data.length){ $("lgTab").innerHTML = `<tr><td class="note">Ingen lagerendringer registrert.</td></tr>`; return; }
+  $("lgTab").innerHTML = `<tr><th>Dato</th><th>Kategori</th><th>Endring</th><th>Merknad</th><th></th></tr>` +
+    data.map(r => `<tr><td>${fmtDato(parse(r.dato))}</td><td>${r.kategori}</td><td>${Number(r.belop_kr)>0?"+":""}${kr(Number(r.belop_kr))}</td><td>${r.merknad||""}</td><td><button data-slett="${r.id}" style="padding:3px 9px">Slett</button></td></tr>`).join("");
+  $("lgTab").querySelectorAll("[data-slett]").forEach(b => b.onclick = async () => {
+    if (!confirm("Slette denne lagerendringen?")) return;
+    const { error } = await sb.from("fiken_lagerendring").delete().eq("id", Number(b.dataset.slett));
+    if (error) alert("Feil: " + error.message); else tegn();
+  });
+}
+$("lgLagre").onclick = async () => {
+  const belop = Number($("lgBelop").value);
+  if (!$("lgDato").value || !belop){ alert("Fyll inn dato og beløp."); return; }
+  const { error } = await sb.from("fiken_lagerendring").insert({
+    dato: $("lgDato").value, kategori: $("lgKat").value, belop_kr: belop, merknad: $("lgMerk").value.trim() || null,
+  });
+  if (error){ alert("Feil: " + error.message); return; }
+  $("lgBelop").value = ""; $("lgMerk").value = "";
+  tegn();
+};
 
 async function synk(body){
   const { data, error } = await sb.functions.invoke("fiken-sync", { body: body || {} });
