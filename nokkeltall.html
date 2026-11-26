@@ -182,7 +182,10 @@ function beregnPeriode(){
     periode = { fra: new Date(t.getFullYear(), 0, 1), til: t };
   } else {
     const f = $("fraDato").value, ti = $("tilDato").value;
-    if (f && ti && f <= ti) periode = { fra: parse(f), til: parse(ti) };
+    if (f && ti && f <= ti){
+      const tilD = parse(ti);
+      periode = { fra: parse(f), til: tilD > t ? t : tilD, avkortet: tilD > t };
+    }
   }
 }
 
@@ -234,7 +237,8 @@ async function tegn(){
 
   const { fra, til } = periode;
   const fraF = ettAarFor(fra), tilF = ettAarFor(til);
-  $("periodeTekst").textContent = `${fmtDato(fra)} – ${fmtDato(til)} · sammenlignet med ${fmtDato(fraF)} – ${fmtDato(tilF)}`;
+  $("periodeTekst").textContent = `${fmtDato(fra)} – ${fmtDato(til)} · sammenlignet med ${fmtDato(fraF)} – ${fmtDato(tilF)}`
+    + (periode.avkortet ? " · Perioden går frem i tid, så tallene gjelder til og med i dag." : "");
 
   let na, fjor;
   try {
