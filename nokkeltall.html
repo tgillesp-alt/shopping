@@ -340,7 +340,19 @@ async function tegnSerie(fra, til){
   el.style.cssText = "display:block;height:auto;border:0;padding:0";
   const W = Math.max(300, el.clientWidth || 600), H = 220, pl = 42, pr = 16, pt = 14, pb = 22;
   const max = Math.max(1, ...a.filter(v => v != null), ...b.filter(v => v != null)) * 1.08, steg = niceStep(max / 1.08);
-  const X = (i) => pl + (keys.length === 1 ? (W-pl-pr)/2 : i * (W-pl-pr) / (keys.length-1));
+  const soyler = !perMnd && !akk;
+  const band = (W-pl-pr) / keys.length;
+  const X = soyler ? (i) => pl + band * (i + 0.5)
+                   : (i) => pl + (keys.length === 1 ? (W-pl-pr)/2 : i * (W-pl-pr) / (keys.length-1));
+  const soyleSvg = () => {
+    const bw = Math.max(2, Math.min(14, band * 0.4)), gap = 2;
+    const bar = (v, x, c) => {
+      if (v == null || v <= 0) return "";
+      const y = Y(v), h = Y(0) - y, r = Math.min(4, bw/2, h);
+      return `<path d="M${x},${Y(0)} V${y+r} Q${x},${y} ${x+r},${y} H${x+bw-r} Q${x+bw},${y} ${x+bw},${y+r} V${Y(0)} Z" fill="${c}"/>`;
+    };
+    return keys.map((k,i) => bar(b[i], X(i) - bw - gap/2, C_FJ) + bar(a[i], X(i) + gap/2, C_NA)).join("");
+  };
   const Y = (v) => pt + (H-pt-pb) * (1 - v / max);
   const sti = (arr) => { let p = "", ny = true; arr.forEach((v,i) => { if (v == null){ ny = true; return; } p += `${ny?"M":"L"}${X(i).toFixed(1)},${Y(v).toFixed(1)}`; ny = false; }); return p; };
   const C_NA = "#2a78d6", C_FJ = "#a8a59d";
@@ -359,8 +371,8 @@ async function tegnSerie(fra, til){
   const sisteA = a[a.length-1], sisteB = b[b.length-1];
   el.innerHTML = `
     <div style="display:flex;gap:14px;font-size:12.5px;color:var(--ink2);margin:-4px 0 6px;flex-wrap:wrap">
-      <span><i style="display:inline-block;width:14px;height:2px;background:${C_NA};vertical-align:middle;margin-right:5px"></i>${fra.getFullYear()}</span>
-      <span><i style="display:inline-block;width:14px;height:0;border-top:2px dashed ${C_FJ};vertical-align:middle;margin-right:5px"></i>${ettAarFor(fra).getFullYear()}</span>
+      <span><i style="display:inline-block;width:14px;height:${soyler?10:2}px;background:${C_NA};border-radius:${soyler?2:0}px;vertical-align:middle;margin-right:5px"></i>${fra.getFullYear()}</span>
+      <span><i style="display:inline-block;width:14px;${soyler?`height:10px;background:${C_FJ};border-radius:2px`:`height:0;border-top:2px dashed ${C_FJ}`};vertical-align:middle;margin-right:5px"></i>${ettAarFor(fra).getFullYear()}</span>
       <span class="seg" id="grafModus" style="margin-left:auto">
         <button data-g="per" class="${akk?"":"on"}" style="padding:4px 10px;font-size:12.5px">${perMnd ? "Per måned" : "Per dag"}</button>
         <button data-g="akk" class="${akk?"on":""}" style="padding:4px 10px;font-size:12.5px">Akkumulert</button>
@@ -370,9 +382,10 @@ async function tegnSerie(fra, til){
     </div>
     <svg viewBox="0 0 ${W} ${H}" width="100%" height="${H}" style="display:block;touch-action:pan-y" id="linjeSvg">
       ${g}
+      ${soyler ? soyleSvg() : `
       <path d="${sti(b)}" fill="none" stroke="${C_FJ}" stroke-width="2" stroke-dasharray="5 4"/>
       <path d="${sti(a)}" fill="none" stroke="${C_NA}" stroke-width="2"/>
-      ${markører(b, C_FJ)}${markører(a, C_NA)}
+      ${markører(b, C_FJ)}${markører(a, C_NA)}`}
       <line id="kryss" y1="${pt}" y2="${H-pb}" stroke="#5a5855" stroke-width="1" visibility="hidden"/>
     </svg>`;
   // Prosentrad per måned
@@ -385,7 +398,7 @@ async function tegnSerie(fra, til){
   const svg = $("linjeSvg"), tip = $("tip"), kryss = $("kryss");
   const vis = (e) => {
     const r = svg.getBoundingClientRect(), x = (e.clientX - r.left) / r.width * W;
-    let i = Math.round((x - pl) / ((W-pl-pr) / Math.max(1, keys.length-1)));
+    let i = soyler ? Math.floor((x - pl) / band) : Math.round((x - pl) / ((W-pl-pr) / Math.max(1, keys.length-1)));
     i = Math.max(0, Math.min(keys.length-1, i));
     kryss.setAttribute("x1", X(i)); kryss.setAttribute("x2", X(i)); kryss.setAttribute("visibility", "visible");
     const d = parse(keys[i]), dd = diff(a[i], b[i]);
