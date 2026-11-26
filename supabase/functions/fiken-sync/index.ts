@@ -165,6 +165,12 @@ Deno.serve(async (req) => {
       }
     }
 
+    // Regn ut dagstallene på nytt (materialisert visning)
+    {
+      const { error } = await db.rpc("fiken_oppdater_daglig");
+      if (error) throw error;
+    }
+
     await db.from("fiken_synklogg").insert({ fra, til, dager });
     return svar({ ok: true, selskap: selskap.name, fra, til, dager, innkjopslinjer: linjer.length });
   } catch (e) {
