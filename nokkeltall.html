@@ -128,7 +128,7 @@
   <section>
     <h2>Andre driftskostnader (ADK)</h2>
     <div class="scroll"><table id="adkTab"></table></div>
-    <div class="note">Konto 6000–7999 for valgt periode, mot samme periode i fjor. Driftsresultatet er før finansposter (konto 8000-serien).</div>
+    <div class="note">Konto 6000–7999 for valgt periode, mot samme periode i fjor. Driftsresultatet er før finansposter; «Etter finans» tar med konto 8000–8799 og skal stemme med resultatet i Fiken.</div>
   </section>
 
   <section>
@@ -254,6 +254,7 @@ async function tegn(){
   const adkAv = (r) => sumG(r,"annet") - sumG(r,"annet","Tips");
   const adk = adkAv(na), adkF = adkAv(fjor);
   const res = oms - vk - lonn - adk, resF = omsF - vkF - lonnF - adkF;
+  const fin = sumG(na,"finans"), finF = sumG(fjor,"finans");
   const endr = omsF ? (oms-omsF)/omsF : null;
   const pp = (a, b) => (a == null || b == null) ? "" : ` · i fjor ${pct(b)}`;
   $("tiles").innerHTML = [
@@ -263,7 +264,8 @@ async function tegn(){
     tile("Lønnskost", pct(oms ? lonn/oms : null), kr(lonn) + pp(oms, omsF ? lonnF/omsF : null)),
     tile("Prime cost", pct(oms ? (vk+lonn)/oms : null), "Varekost + lønn" + pp(oms, omsF ? (vkF+lonnF)/omsF : null)),
     tile("ADK", pct(oms ? adk/oms : null), kr(adk) + pp(oms, omsF ? adkF/omsF : null)),
-    tile("Driftsresultat", kr(res), pct(oms ? res/oms : null) + " av omsetning" + pp(oms, omsF ? resF/omsF : null)),
+    tile("Driftsresultat", kr(res), pct(oms ? res/oms : null) + " av omsetning" + pp(oms, omsF ? resF/omsF : null)
+      + `<br>Etter finans: <b>${kr(res - fin)}</b> · finansposter ${kr(-fin)} · i fjor ${kr(resF - finF)}`),
   ].join("");
 
   tegnKategorier(na, fjor);
