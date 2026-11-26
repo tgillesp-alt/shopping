@@ -18,7 +18,7 @@ create index if not exists fiken_innkjop_dato on public.fiken_innkjop (dato);
 alter table public.fiken_innkjop enable row level security;
 drop policy if exists "les innkjop" on public.fiken_innkjop;
 create policy "les innkjop" on public.fiken_innkjop for select to authenticated
-  using ((auth.jwt() ->> 'email') in ('thomas@gillespie.no'));
+  using ((select auth.jwt() ->> 'email') in ('thomas@gillespie.no'));
 
 -- Innkjøp per leverandør i en periode, for én kategori (f.eks. 'Mat') eller alle varekostkontoer
 create or replace function public.fiken_leverandorer(fra date, til date, kat text default null)

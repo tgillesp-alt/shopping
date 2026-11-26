@@ -233,7 +233,12 @@ async function tegn(){
       rpc("fiken_periode", { fra: iso(fra), til: iso(til) }),
       rpc("fiken_periode", { fra: iso(fraF), til: iso(tilF) }),
     ]);
-  } catch(e){ $("syncStatus").textContent = "Feil: " + e.message; return; }
+  } catch(e){
+    $("syncStatus").textContent = "Feil: " + e.message;
+    $("tiles").innerHTML = `<div class="tile"><div class="lbl">Kunne ikke hente tallene</div><div class="sub">${e.message}</div></div>`;
+    ["chart","axis","katTab","levTab","matTab","mndTab"].forEach(id => $(id).innerHTML = "");
+    return;
+  }
 
   const oms = sumG(na,"salg"), vk = sumG(na,"varekost"), lonn = sumG(na,"lonn");
   const omsF = sumG(fjor,"salg"), vkF = sumG(fjor,"varekost"), lonnF = sumG(fjor,"lonn");
@@ -352,8 +357,8 @@ $("levKat").onchange = (e) => { levKat = e.target.value; tegn(); };
 async function tegnManeder(til){
   const slutt = new Date(til.getFullYear(), til.getMonth(), 1);
   const fra = new Date(slutt.getFullYear()-1, slutt.getMonth()-12, 1);
-  const { data } = await sb.from("fiken_maned").select("*").gte("maned", iso(fra));
-  maned = data || [];
+  try { maned = (await rpc("fiken_maneder", { fra: iso(fra) })).map(r => ({ ...r, maned: String(r.maned) })); }
+  catch(e){ maned = []; $("mndTab").innerHTML = `<tr><td class="note">Feil: ${e.message}</td></tr>`; return; }
   const sumMnd = (ym, g) => maned.filter(r => r.maned.slice(0,7) === ym && r.gruppe === g).reduce((s,r) => s + Number(r.belop_kr||0), 0);
   const ymOf = (d) => iso(d).slice(0,7);
   let html = `<tr><th>Måned</th><th>Omsetning</th><th>Mot i fjor</th><th>Varekost %</th><th>Lønn %</th><th>Prime %</th></tr>`;
