@@ -114,6 +114,12 @@
   </section>
 
   <section>
+    <h2>Matkost per måned</h2>
+    <div class="scroll"><table id="matTab"></table></div>
+    <div class="note">Varekost mat delt på matomsetning. Enkeltmåneder svinger med når fakturaene bokføres, så følg helst snittet for siste 3 måneder. Pp = prosentpoeng.</div>
+  </section>
+
+  <section>
     <h2>Siste 13 måneder</h2>
     <div class="scroll"><table id="mndTab"></table></div>
   </section>
@@ -318,6 +324,28 @@ async function tegnManeder(til){
       <td>${oms?pct(vk/oms):"–"}</td><td>${oms?pct(l/oms):"–"}</td><td>${oms?pct((vk+l)/oms):"–"}</td></tr>`;
   }
   $("mndTab").innerHTML = html;
+  tegnMatkost(slutt, ymOf);
+}
+
+function tegnMatkost(slutt, ymOf){
+  const KAT = "Mat";
+  const v = (ym, g) => maned.filter(r => r.maned.slice(0,7) === ym && r.gruppe === g && r.kategori === KAT)
+    .reduce((s,r) => s + Number(r.belop_kr||0), 0);
+  const mnd = (i) => new Date(slutt.getFullYear(), slutt.getMonth()-i, 1);
+  const andel = (o, k) => o ? k/o : null;
+  const pp = (a, b) => (a == null || b == null) ? "–"
+    : `<span class="${a<=b?"up":"down"}">${a<=b?"−":"+"}${Math.abs((a-b)*100).toLocaleString("nb-NO",{maximumFractionDigits:1})} pp</span>`;
+  const iDag = ymOf(new Date());
+  let html = `<tr><th>Måned</th><th>Matomsetning</th><th>Matinnkjøp</th><th>Matkost %</th><th>I fjor</th><th>Endring</th><th>Snitt 3 mnd</th></tr>`;
+  for (let i=0; i<13; i++){
+    const d = mnd(i), ym = ymOf(d), f = ymOf(new Date(d.getFullYear()-1, d.getMonth(), 1));
+    const o = v(ym,"salg"), k = v(ym,"varekost"), oF = v(f,"salg"), kF = v(f,"varekost");
+    let o3 = 0, k3 = 0; for (let j=0; j<3; j++){ const y = ymOf(mnd(i+j)); o3 += v(y,"salg"); k3 += v(y,"varekost"); }
+    const a = andel(o,k), aF = andel(oF,kF);
+    html += `<tr><td>${MND[d.getMonth()].slice(0,3)} ${d.getFullYear()}${ym===iDag?" *":""}</td><td>${o?kr(o):"–"}</td><td>${k?kr(k):"–"}</td>
+      <td><b>${pct(a)}</b></td><td>${pct(aF)}</td><td>${pp(a,aF)}</td><td>${pct(andel(o3,k3))}</td></tr>`;
+  }
+  $("matTab").innerHTML = html + `<tr><td colspan="7" class="note" style="text-align:left;border:0">* Måneden er ikke ferdig.</td></tr>`;
 }
 
 async function synk(body){
