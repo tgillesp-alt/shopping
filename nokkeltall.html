@@ -114,6 +114,15 @@
   </section>
 
   <section>
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px">
+      <h2 style="margin:0;flex:1">Innkjøp per leverandør</h2>
+      <select id="levKat" style="font:inherit;border:1px solid var(--line);border-radius:8px;padding:6px 8px;background:var(--card)"></select>
+    </div>
+    <div class="scroll"><table id="levTab"></table></div>
+    <div class="note">Beløp eks. mva for valgt periode, mot samme periode i fjor. Bygger på leverandørfakturaer og kontantkjøp i Fiken.</div>
+  </section>
+
+  <section>
     <h2>Matkost per måned</h2>
     <div class="scroll"><table id="matTab"></table></div>
     <div class="note">Varekost mat delt på matomsetning. Enkeltmåneder svinger med når fakturaene bokføres, så følg helst snittet for siste 3 måneder. Pp = prosentpoeng.</div>
@@ -239,6 +248,7 @@ async function tegn(){
   ].join("");
 
   tegnKategorier(na, fjor);
+  await tegnLeverandorer(na, fjor);
   await tegnSerie(fra, til);
   await tegnManeder(til);
 }
@@ -305,6 +315,39 @@ function tegnKategorier(na, fjor){
     rader.map(r => `<tr><td>${r.k}</td><td>${kr(r.oms)}</td><td>${pct(tot?r.oms/tot:null)}</td><td>${endr(r.oms,r.omsF)}</td><td>${r.vk?kr(r.vk):"–"}</td><td>${r.vk&&r.oms?pct(r.vk/r.oms):"–"}</td></tr>`).join("") +
     `<tr><td><b>Totalt</b></td><td><b>${kr(tot)}</b></td><td></td><td>${endr(tot,totF)}</td><td></td><td></td></tr>`;
 }
+
+let levKat = "Mat";
+async function tegnLeverandorer(na, fjor){
+  const kats = [...new Set(na.filter(r => r.gruppe === "varekost").map(r => r.kategori))].sort();
+  if (!kats.includes(levKat) && levKat !== "") levKat = kats.includes("Mat") ? "Mat" : "";
+  $("levKat").innerHTML = `<option value="">All varekost</option>` + kats.map(k => `<option ${k===levKat?"selected":""}>${k}</option>`).join("");
+  const { fra, til } = periode;
+  let na2, fj2;
+  try {
+    [na2, fj2] = await Promise.all([
+      rpc("fiken_leverandorer", { fra: iso(fra), til: iso(til), kat: levKat || null }),
+      rpc("fiken_leverandorer", { fra: iso(ettAarFor(fra)), til: iso(ettAarFor(til)), kat: levKat || null }),
+    ]);
+  } catch(e){ $("levTab").innerHTML = `<tr><td class="note">Ikke tilgjengelig ennå: ${e.message}</td></tr>`; return; }
+  const sumLev = (rader) => { const m = {}; rader.forEach(r => { const x = (m[r.leverandor] ??= { b:0, f:0 }); x.b += Number(r.belop_kr||0); x.f += Number(r.fakturaer||0); }); return m; };
+  const a = sumLev(na2), b = sumLev(fj2);
+  const navn = [...new Set([...Object.keys(a), ...Object.keys(b)])].sort((x,y) => (a[y]?.b||0) - (a[x]?.b||0));
+  const tot = Object.values(a).reduce((s,x)=>s+x.b,0), totF = Object.values(b).reduce((s,x)=>s+x.b,0);
+  const endr = (x,y) => !y ? "–" : `<span class="${x<=y?"up":"down"}">${x>=y?"+":"−"}${pct(Math.abs((x-y)/y))}</span>`;
+  const vis = navn.slice(0, 15), rest = navn.slice(15);
+  let html = `<tr><th>Leverandør</th><th>Innkjøp</th><th>Andel</th><th>I fjor</th><th>Endring</th><th>Fakturaer</th></tr>`;
+  html += vis.map(n => { const x = a[n]||{b:0,f:0}, y = b[n]||{b:0}; return `<tr><td>${n}</td><td>${x.b?kr(x.b):"–"}</td><td>${pct(tot?x.b/tot:null)}</td><td>${y.b?kr(y.b):"–"}</td><td>${endr(x.b,y.b)}</td><td>${x.f||"–"}</td></tr>`; }).join("");
+  if (rest.length){
+    const rb = rest.reduce((s,n)=>s+(a[n]?.b||0),0), rf = rest.reduce((s,n)=>s+(b[n]?.b||0),0);
+    html += `<tr><td>${rest.length} andre</td><td>${kr(rb)}</td><td>${pct(tot?rb/tot:null)}</td><td>${kr(rf)}</td><td>${endr(rb,rf)}</td><td></td></tr>`;
+  }
+  html += `<tr><td><b>Sum leverandører</b></td><td><b>${kr(tot)}</b></td><td></td><td>${kr(totF)}</td><td>${endr(tot,totF)}</td><td></td></tr>`;
+  const bokfort = sumG(na, "varekost", levKat || null);
+  const diff = bokfort - tot;
+  if (Math.abs(diff) >= 1) html += `<tr><td colspan="6" class="note" style="text-align:left">Bokført varekost${levKat?" ("+levKat+")":""} er ${kr(bokfort)}. Differansen på ${kr(diff)} er bilag uten leverandør, f.eks. lagerendring eller manuelle posteringer.</td></tr>`;
+  $("levTab").innerHTML = html;
+}
+$("levKat").onchange = (e) => { levKat = e.target.value; tegn(); };
 
 async function tegnManeder(til){
   const slutt = new Date(til.getFullYear(), til.getMonth(), 1);
