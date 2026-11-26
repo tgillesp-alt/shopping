@@ -52,6 +52,12 @@
   .login input{width:100%;font:inherit;padding:9px;border:1px solid var(--line);border-radius:8px;margin:6px 0 10px}
   .note{font-size:12.5px;color:var(--ink2);margin-top:8px}
   .hidden{display:none}
+  .seg{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--card)}
+  .seg button{border:0;border-radius:0;padding:7px 12px;background:transparent}
+  .seg button+button{border-left:1px solid var(--line)}
+  .seg button.on{background:var(--ink);color:#fff}
+  input[type=date]{font:inherit;border:1px solid var(--line);border-radius:8px;padding:6px 8px;background:var(--card);color:var(--ink)}
+  .periode{font-size:13px;color:var(--ink2);margin:-6px 0 12px}
 </style>
 </head>
 <body>
@@ -73,12 +79,25 @@
 </header>
 <main>
   <div class="bar">
-    <button id="prev" aria-label="Forrige måned">‹</button>
-    <span class="mnd" id="mndLabel"></span>
-    <button id="next" aria-label="Neste måned">›</button>
+    <div class="seg" id="modus">
+      <button data-m="mnd" class="on">Måned</button>
+      <button data-m="aar">Hittil i år</button>
+      <button data-m="egen">Velg periode</button>
+    </div>
     <span style="flex:1"></span>
     <button id="syncBtn">Oppdater nå</button>
   </div>
+  <div class="bar" id="mndNav">
+    <button id="prev" aria-label="Forrige">‹</button>
+    <span class="mnd" id="mndLabel"></span>
+    <button id="next" aria-label="Neste">›</button>
+  </div>
+  <div class="bar hidden" id="egenNav">
+    <label>Fra <input type="date" id="fraDato"></label>
+    <label>Til <input type="date" id="tilDato"></label>
+    <button class="primary" id="visBtn">Vis</button>
+  </div>
+  <div class="periode" id="periodeTekst"></div>
 
   <div class="tiles" id="tiles"></div>
 
@@ -118,14 +137,38 @@ const kkr = (v) => v == null ? "–" : (Math.abs(v) >= 100000 ? (v/1000).toLocal
 const pct = (v) => v == null || !isFinite(v) ? "–" : (v*100).toLocaleString("nb-NO",{maximumFractionDigits:1}) + " %";
 const MND = ["januar","februar","mars","april","mai","juni","juli","august","september","oktober","november","desember"];
 const iso = (d) => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+const parse = (s) => { const [y,m,d] = s.split("-").map(Number); return new Date(y, m-1, d); };
+const fmtDato = (d) => d.toLocaleDateString("nb-NO",{day:"numeric",month:"short",year:"numeric"});
+const ettAarFor = (d) => { const x = new Date(d.getFullYear()-1, d.getMonth(), d.getDate()); if (x.getMonth() !== d.getMonth()) x.setDate(0); return x; };
+const dagerMellom = (a,b) => Math.round((b - a) / 86400000) + 1;
 
-let valgt = new Date(); valgt.setDate(1);
-let maned = [];   // rader fra fiken_maned
+let modus = "mnd";
+let valgtMnd = new Date(); valgtMnd.setDate(1);
+let periode = null;   // { fra: Date, til: Date }
+let maned = [];       // rader fra fiken_maned (13-månedstabellen)
+
+function idag(){ const d = new Date(); d.setHours(0,0,0,0); return d; }
+
+function beregnPeriode(){
+  const t = idag();
+  if (modus === "mnd"){
+    const fra = new Date(valgtMnd), slutt = new Date(valgtMnd.getFullYear(), valgtMnd.getMonth()+1, 0);
+    periode = { fra, til: slutt < t ? slutt : t };
+  } else if (modus === "aar"){
+    periode = { fra: new Date(t.getFullYear(), 0, 1), til: t };
+  } else {
+    const f = $("fraDato").value, ti = $("tilDato").value;
+    if (f && ti && f <= ti) periode = { fra: parse(f), til: parse(ti) };
+  }
+}
 
 async function start(){
   const { data:{ session } } = await sb.auth.getSession();
   if (!session){ $("loginView").classList.remove("hidden"); return; }
   $("appView").classList.remove("hidden");
+  const t = idag();
+  $("fraDato").value = iso(new Date(t.getFullYear(), 0, 1));
+  $("tilDato").value = iso(t);
   await lastAlt();
 }
 
@@ -137,10 +180,7 @@ $("loginBtn").onclick = async () => {
 };
 
 async function lastAlt(){
-  const fra = new Date(valgt.getFullYear()-1, valgt.getMonth()-12, 1);
-  const { data, error } = await sb.from("fiken_maned").select("*").gte("maned", iso(fra));
-  if (error){ $("syncStatus").textContent = "Feil: " + error.message; return; }
-  maned = data || [];
+  beregnPeriode();
   const { data: logg } = await sb.from("fiken_synklogg").select("*").order("kjort",{ascending:false}).limit(1);
   if (logg && logg[0]){
     const l = logg[0], t = new Date(l.kjort);
@@ -150,64 +190,96 @@ async function lastAlt(){
   await tegn();
 }
 
-function sumMnd(ym, gruppe, kategori){
-  return maned.filter(r => r.maned.slice(0,7) === ym && r.gruppe === gruppe && (!kategori || r.kategori === kategori))
-              .reduce((s,r) => s + Number(r.belop_kr||0), 0);
+async function rpc(navn, args){
+  const { data, error } = await sb.rpc(navn, args);
+  if (error) throw new Error(error.message);
+  return data || [];
 }
-const ymOf = (d) => iso(d).slice(0,7);
+const sumG = (rader, gruppe, kategori) => rader.filter(r => r.gruppe === gruppe && (!kategori || r.kategori === kategori))
+  .reduce((s,r) => s + Number(r.belop_kr||0), 0);
 
 async function tegn(){
-  const ym = ymOf(valgt);
-  const iFjor = ymOf(new Date(valgt.getFullYear()-1, valgt.getMonth(), 1));
-  $("mndLabel").textContent = MND[valgt.getMonth()] + " " + valgt.getFullYear();
-  const idag = new Date(); idag.setDate(1);
-  $("next").disabled = valgt >= idag;
+  // navigasjon
+  $("mndNav").classList.toggle("hidden", modus !== "mnd");
+  $("egenNav").classList.toggle("hidden", modus !== "egen");
+  document.querySelectorAll("#modus button").forEach(b => b.classList.toggle("on", b.dataset.m === modus));
+  $("mndLabel").textContent = MND[valgtMnd.getMonth()] + " " + valgtMnd.getFullYear();
+  const t = idag(); const denne = new Date(t.getFullYear(), t.getMonth(), 1);
+  $("next").disabled = valgtMnd >= denne;
+  if (!periode){ $("periodeTekst").textContent = "Velg fra- og til-dato."; return; }
 
-  const oms = sumMnd(ym,"salg"), vk = sumMnd(ym,"varekost"), lonn = sumMnd(ym,"lonn");
-  const omsF = sumMnd(iFjor,"salg");
+  const { fra, til } = periode;
+  const fraF = ettAarFor(fra), tilF = ettAarFor(til);
+  $("periodeTekst").textContent = `${fmtDato(fra)} – ${fmtDato(til)} · sammenlignet med ${fmtDato(fraF)} – ${fmtDato(tilF)}`;
+
+  let na, fjor;
+  try {
+    [na, fjor] = await Promise.all([
+      rpc("fiken_periode", { fra: iso(fra), til: iso(til) }),
+      rpc("fiken_periode", { fra: iso(fraF), til: iso(tilF) }),
+    ]);
+  } catch(e){ $("syncStatus").textContent = "Feil: " + e.message; return; }
+
+  const oms = sumG(na,"salg"), vk = sumG(na,"varekost"), lonn = sumG(na,"lonn");
+  const omsF = sumG(fjor,"salg"), vkF = sumG(fjor,"varekost"), lonnF = sumG(fjor,"lonn");
   const endr = omsF ? (oms-omsF)/omsF : null;
-  const pagar = ym === ymOf(new Date());
+  const pp = (a, b) => (a == null || b == null) ? "" : ` · i fjor ${pct(b)}`;
   $("tiles").innerHTML = [
-    tile("Omsetning" + (pagar ? " hittil" : ""), kr(oms),
+    tile("Omsetning", kr(oms),
       endr == null ? "Ingen tall i fjor" : `<span class="${endr>=0?"up":"down"}">${endr>=0?"▲":"▼"} ${pct(Math.abs(endr))}</span> mot i fjor (${kkr(omsF)})`),
-    tile("Varekost", pct(oms ? vk/oms : null), kr(vk)),
-    tile("Lønnskost", pct(oms ? lonn/oms : null), kr(lonn)),
-    tile("Prime cost", pct(oms ? (vk+lonn)/oms : null), "Varekost + lønn"),
+    tile("Varekost", pct(oms ? vk/oms : null), kr(vk) + pp(oms, omsF ? vkF/omsF : null)),
+    tile("Lønnskost", pct(oms ? lonn/oms : null), kr(lonn) + pp(oms, omsF ? lonnF/omsF : null)),
+    tile("Prime cost", pct(oms ? (vk+lonn)/oms : null), "Varekost + lønn" + pp(oms, omsF ? (vkF+lonnF)/omsF : null)),
   ].join("");
 
-  await tegnDager();
-  tegnKategorier(ym);
-  tegnManeder();
+  tegnKategorier(na, fjor);
+  await tegnSerie(fra, til);
+  await tegnManeder(til);
 }
 const tile = (l,v,s) => `<div class="tile"><div class="lbl">${l}</div><div class="val">${v}</div><div class="sub">${s}</div></div>`;
 
-async function tegnDager(){
-  const fra = new Date(valgt), til = new Date(valgt.getFullYear(), valgt.getMonth()+1, 0);
-  const { data } = await sb.from("fiken_daglig").select("dato,kategori,belop_kr")
-    .eq("gruppe","salg").gte("dato", iso(fra)).lte("dato", iso(til));
-  const perDag = {};
-  (data||[]).forEach(r => { (perDag[r.dato] ??= {})[r.kategori] = (perDag[r.dato][r.kategori]||0) + Number(r.belop_kr||0); });
-  const dager = til.getDate();
-  const tot = []; for (let d=1; d<=dager; d++){ const k = iso(new Date(valgt.getFullYear(), valgt.getMonth(), d)); const o = perDag[k]||{}; tot.push({k, o, sum:Object.values(o).reduce((a,b)=>a+b,0)}); }
+async function tegnSerie(fra, til){
+  const dager = dagerMellom(fra, til);
+  const perMnd = dager > 62;
+  $("dagTittel").textContent = perMnd ? "Omsetning per måned" : "Omsetning per dag";
+  let rader = [];
+  try { rader = await rpc("fiken_salg_serie", { fra: iso(fra), til: iso(til), intervall: perMnd ? "month" : "day" }); }
+  catch(e){ $("chart").innerHTML = `<div class="note">Feil: ${e.message}</div>`; return; }
+  const per = {};
+  rader.forEach(r => { const k = String(r.periode).slice(0,10); (per[k] ??= {})[r.kategori] = (per[k][r.kategori]||0) + Number(r.belop_kr||0); });
+
+  const punkter = [];
+  if (perMnd){
+    for (let d = new Date(fra.getFullYear(), fra.getMonth(), 1); d <= til; d = new Date(d.getFullYear(), d.getMonth()+1, 1)) punkter.push(iso(d));
+  } else {
+    for (let d = new Date(fra); d <= til; d = new Date(d.getFullYear(), d.getMonth(), d.getDate()+1)) punkter.push(iso(d));
+  }
+  const tot = punkter.map(k => { const o = per[k]||{}; return { k, o, sum:Object.values(o).reduce((a,b)=>a+b,0) }; });
   const max = Math.max(1, ...tot.map(t => t.sum));
   const steg = niceStep(max);
   let html = "";
   for (let g = steg; g <= max; g += steg) html += `<div class="grid" style="bottom:${g/max*100}%"><span>${kkr(g)}</span></div>`;
   html += tot.map(t => {
-    const dow = new Date(t.k).getDay();
-    return `<div class="col ${dow===0||dow===6?"helg":""}" data-k="${t.k}"><i style="height:${Math.max(0,t.sum)/max*100}%"></i></div>`;
+    const dow = parse(t.k).getDay();
+    return `<div class="col ${!perMnd && (dow===0||dow===6)?"helg":""}" data-k="${t.k}"><i style="height:${Math.max(0,t.sum)/max*100}%"></i></div>`;
   }).join("");
   $("chart").innerHTML = html;
-  $("axis").innerHTML = tot.map((t,i) => `<span>${(i+1)%5===1||i+1===dager ? i+1 : ""}</span>`).join("");
-  $("dagTittel").textContent = "Omsetning per dag";
+  const hver = Math.ceil(tot.length / 12);
+  $("axis").innerHTML = tot.map((t,i) => {
+    const d = parse(t.k);
+    const lbl = perMnd ? MND[d.getMonth()].slice(0,3) + (d.getMonth()===0 || i===0 ? " " + String(d.getFullYear()).slice(2) : "") : d.getDate();
+    return `<span>${i % hver === 0 || i === tot.length-1 ? lbl : ""}</span>`;
+  }).join("");
+
   const tip = $("tip");
   $("chart").querySelectorAll(".col").forEach(el => {
     const t = tot.find(x => x.k === el.dataset.k);
     const vis = (e) => {
-      const d = new Date(t.k);
+      const d = parse(t.k);
+      const navn = perMnd ? MND[d.getMonth()] + " " + d.getFullYear() : d.toLocaleDateString("nb-NO",{weekday:"short",day:"numeric",month:"short"});
       const linjer = Object.entries(t.o).filter(([,v]) => Math.abs(v) >= 1).sort((a,b)=>b[1]-a[1])
         .map(([k,v]) => `${k}: ${kr(v)}`).join("<br>");
-      tip.innerHTML = `<b>${d.toLocaleDateString("nb-NO",{weekday:"short",day:"numeric",month:"short"})}: ${kr(t.sum)}</b>${linjer?"<br>"+linjer:""}`;
+      tip.innerHTML = `<b>${navn}: ${kr(t.sum)}</b>${linjer?"<br>"+linjer:""}`;
       tip.style.display = "block";
       const x = Math.min(e.clientX + 12, innerWidth - tip.offsetWidth - 8);
       tip.style.left = x + "px"; tip.style.top = (e.clientY - tip.offsetHeight - 12) + "px";
@@ -218,19 +290,26 @@ async function tegnDager(){
 }
 function niceStep(max){ const r = max/4, p = Math.pow(10, Math.floor(Math.log10(r))); const n = r/p; return (n<1.5?1:n<3.5?2:n<7.5?5:10)*p; }
 
-function tegnKategorier(ym){
-  const kat = [...new Set(maned.filter(r => r.maned.slice(0,7)===ym && r.gruppe==="salg").map(r => r.kategori))];
-  const rader = kat.map(k => ({ k, oms:sumMnd(ym,"salg",k), vk:sumMnd(ym,"varekost",k) })).sort((a,b)=>b.oms-a.oms);
-  const tot = rader.reduce((s,r)=>s+r.oms,0);
-  $("katTab").innerHTML = `<tr><th>Kategori</th><th>Omsetning</th><th>Andel</th><th>Varekost</th><th>Varekost %</th></tr>` +
-    rader.map(r => `<tr><td>${r.k}</td><td>${kr(r.oms)}</td><td>${pct(tot?r.oms/tot:null)}</td><td>${r.vk?kr(r.vk):"–"}</td><td>${r.vk&&r.oms?pct(r.vk/r.oms):"–"}</td></tr>`).join("") +
-    `<tr><td><b>Totalt</b></td><td><b>${kr(tot)}</b></td><td></td><td></td><td></td></tr>`;
+function tegnKategorier(na, fjor){
+  const kat = [...new Set(na.filter(r => r.gruppe==="salg").map(r => r.kategori))];
+  const rader = kat.map(k => ({ k, oms:sumG(na,"salg",k), vk:sumG(na,"varekost",k), omsF:sumG(fjor,"salg",k) })).sort((a,b)=>b.oms-a.oms);
+  const tot = rader.reduce((s,r)=>s+r.oms,0), totF = sumG(fjor,"salg");
+  const endr = (a,b) => !b ? "–" : `<span class="${a>=b?"up":"down"}">${a>=b?"+":"−"}${pct(Math.abs((a-b)/b))}</span>`;
+  $("katTab").innerHTML = `<tr><th>Kategori</th><th>Omsetning</th><th>Andel</th><th>Mot i fjor</th><th>Varekost</th><th>Varekost %</th></tr>` +
+    rader.map(r => `<tr><td>${r.k}</td><td>${kr(r.oms)}</td><td>${pct(tot?r.oms/tot:null)}</td><td>${endr(r.oms,r.omsF)}</td><td>${r.vk?kr(r.vk):"–"}</td><td>${r.vk&&r.oms?pct(r.vk/r.oms):"–"}</td></tr>`).join("") +
+    `<tr><td><b>Totalt</b></td><td><b>${kr(tot)}</b></td><td></td><td>${endr(tot,totF)}</td><td></td><td></td></tr>`;
 }
 
-function tegnManeder(){
+async function tegnManeder(til){
+  const slutt = new Date(til.getFullYear(), til.getMonth(), 1);
+  const fra = new Date(slutt.getFullYear()-1, slutt.getMonth()-12, 1);
+  const { data } = await sb.from("fiken_maned").select("*").gte("maned", iso(fra));
+  maned = data || [];
+  const sumMnd = (ym, g) => maned.filter(r => r.maned.slice(0,7) === ym && r.gruppe === g).reduce((s,r) => s + Number(r.belop_kr||0), 0);
+  const ymOf = (d) => iso(d).slice(0,7);
   let html = `<tr><th>Måned</th><th>Omsetning</th><th>Mot i fjor</th><th>Varekost %</th><th>Lønn %</th><th>Prime %</th></tr>`;
   for (let i=0; i<13; i++){
-    const d = new Date(valgt.getFullYear(), valgt.getMonth()-i, 1), ym = ymOf(d);
+    const d = new Date(slutt.getFullYear(), slutt.getMonth()-i, 1), ym = ymOf(d);
     const f = ymOf(new Date(d.getFullYear()-1, d.getMonth(), 1));
     const oms = sumMnd(ym,"salg"), omsF = sumMnd(f,"salg"), vk = sumMnd(ym,"varekost"), l = sumMnd(ym,"lonn");
     const e = omsF ? (oms-omsF)/omsF : null;
@@ -255,20 +334,19 @@ async function synk(body){
 $("syncBtn").onclick = async () => {
   const b = $("syncBtn"); b.disabled = true; b.textContent = "Henter…";
   try { await synk(); await lastAlt(); }
-  catch(e){ alertLinje(e.message); }
+  catch(e){ $("syncStatus").textContent = "Feil: " + e.message; }
   b.disabled = false; b.textContent = "Oppdater nå";
 };
-function alertLinje(m){ $("syncStatus").textContent = "Feil: " + m; }
 
 $("histBtn").onclick = async () => {
   const b = $("histBtn"); b.disabled = true;
-  const idag = new Date();
-  let d = new Date(idag.getFullYear()-1, 0, 1);
+  const t = new Date();
+  let d = new Date(t.getFullYear()-1, 0, 1);
   try {
-    while (d <= idag){
+    while (d <= t){
       const slutt = new Date(d.getFullYear(), d.getMonth()+1, 0);
       $("histStatus").textContent = `Henter ${MND[d.getMonth()]} ${d.getFullYear()}…`;
-      await synk({ fra: iso(d), til: iso(slutt < idag ? slutt : idag) });
+      await synk({ fra: iso(d), til: iso(slutt < t ? slutt : t) });
       d = new Date(d.getFullYear(), d.getMonth()+1, 1);
     }
     $("histStatus").textContent = "Ferdig.";
@@ -277,8 +355,10 @@ $("histBtn").onclick = async () => {
   b.disabled = false;
 };
 
-$("prev").onclick = () => { valgt = new Date(valgt.getFullYear(), valgt.getMonth()-1, 1); lastAlt(); };
-$("next").onclick = () => { valgt = new Date(valgt.getFullYear(), valgt.getMonth()+1, 1); lastAlt(); };
+document.querySelectorAll("#modus button").forEach(b => b.onclick = () => { modus = b.dataset.m; lastAlt(); });
+$("prev").onclick = () => { valgtMnd = new Date(valgtMnd.getFullYear(), valgtMnd.getMonth()-1, 1); lastAlt(); };
+$("next").onclick = () => { valgtMnd = new Date(valgtMnd.getFullYear(), valgtMnd.getMonth()+1, 1); lastAlt(); };
+$("visBtn").onclick = () => lastAlt();
 
 start();
 </script>
