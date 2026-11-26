@@ -1,5 +1,5 @@
 // Supabase Edge Function: fiken-sync
-// Henter saldo per resultatkonto (3000–7999) fra Fiken for hver dato i et
+// Henter saldo per resultatkonto (3000–8799) fra Fiken for hver dato i et
 // intervall og lagrer i tabellen fiken_saldo. Henter også innkjøp
 // (leverandørfakturaer) i samme intervall til tabellen fiken_innkjop.
 //
@@ -48,12 +48,14 @@ function gjettGruppe(konto: string): string {
   if (n >= 3000 && n < 4000) return "salg";
   if (n >= 4000 && n < 5000) return "varekost";
   if (n >= 5000 && n < 6000) return "lonn";
+  if (n >= 8000 && n < 9000) return "finans";
   return "annet";
 }
 
 function gjettKategori(navn: string, gruppe: string): string | null {
   if (gruppe === "lonn") return "Lønn";
   if (gruppe === "annet") return "Andre driftskostnader";
+  if (gruppe === "finans") return "Finansposter";
   const t = ` ${navn.toLowerCase()} `;
   const ord = (w: string) => new RegExp(`(^|[^a-zæøå])${w}([^a-zæøå]|$)`).test(t);
   if (/alkoholfri|mineral|brus|kaffe|te\b|juice/.test(t)) return "Alkoholfritt";
@@ -99,7 +101,7 @@ Deno.serve(async (req) => {
       const rader: any[] = [];
       for (let side = 0; side < 20; side++) {
         const del: any[] = await fiken(
-          `/companies/${slug}/accountBalances?date=${dato}&fromAccount=3000&toAccount=7999&page=${side}&pageSize=100`,
+          `/companies/${slug}/accountBalances?date=${dato}&fromAccount=3000&toAccount=8799&page=${side}&pageSize=100`,
         );
         rader.push(...del);
         await sleep(260);
