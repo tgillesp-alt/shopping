@@ -25,7 +25,8 @@
   button.primary{background:var(--ink);color:#fff;border-color:var(--ink)}
   button:disabled{opacity:.5}
   .status{font-size:13px;color:var(--muted)}
-  .tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+  .tiles{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+  @media (min-width:720px){ .tiles{grid-template-columns:repeat(3,1fr)} }
   .tile{background:var(--card);border:.5px solid var(--line);border-radius:16px;padding:12px 14px}
   .tile .lbl{font-size:13px;color:var(--ink2)}
   .tile .val{font-size:26px;font-weight:650;letter-spacing:-.01em;margin-top:2px}
@@ -120,6 +121,12 @@
     </div>
     <div class="scroll"><table id="levTab"></table></div>
     <div class="note">Beløp eks. mva for valgt periode, mot samme periode i fjor. Bygger på leverandørfakturaer og kontantkjøp i Fiken.</div>
+  </section>
+
+  <section>
+    <h2>Andre driftskostnader (ADK)</h2>
+    <div class="scroll"><table id="adkTab"></table></div>
+    <div class="note">Konto 6000–7999 for valgt periode, mot samme periode i fjor. Driftsresultatet er før finansposter (konto 8000-serien).</div>
   </section>
 
   <section>
@@ -236,12 +243,15 @@ async function tegn(){
   } catch(e){
     $("syncStatus").textContent = "Feil: " + e.message;
     $("tiles").innerHTML = `<div class="tile"><div class="lbl">Kunne ikke hente tallene</div><div class="sub">${e.message}</div></div>`;
-    ["chart","axis","katTab","levTab","matTab","mndTab"].forEach(id => $(id).innerHTML = "");
+    ["chart","axis","katTab","levTab","matTab","mndTab","adkTab"].forEach(id => $(id).innerHTML = "");
     return;
   }
 
   const oms = sumG(na,"salg"), vk = sumG(na,"varekost"), lonn = sumG(na,"lonn");
   const omsF = sumG(fjor,"salg"), vkF = sumG(fjor,"varekost"), lonnF = sumG(fjor,"lonn");
+  const adkAv = (r) => sumG(r,"annet") - sumG(r,"annet","Tips");
+  const adk = adkAv(na), adkF = adkAv(fjor);
+  const res = oms - vk - lonn - adk, resF = omsF - vkF - lonnF - adkF;
   const endr = omsF ? (oms-omsF)/omsF : null;
   const pp = (a, b) => (a == null || b == null) ? "" : ` · i fjor ${pct(b)}`;
   $("tiles").innerHTML = [
@@ -250,9 +260,12 @@ async function tegn(){
     tile("Varekost", pct(oms ? vk/oms : null), kr(vk) + pp(oms, omsF ? vkF/omsF : null)),
     tile("Lønnskost", pct(oms ? lonn/oms : null), kr(lonn) + pp(oms, omsF ? lonnF/omsF : null)),
     tile("Prime cost", pct(oms ? (vk+lonn)/oms : null), "Varekost + lønn" + pp(oms, omsF ? (vkF+lonnF)/omsF : null)),
+    tile("ADK", pct(oms ? adk/oms : null), kr(adk) + pp(oms, omsF ? adkF/omsF : null)),
+    tile("Driftsresultat", kr(res), pct(oms ? res/oms : null) + " av omsetning" + pp(oms, omsF ? resF/omsF : null)),
   ].join("");
 
   tegnKategorier(na, fjor);
+  await tegnAdk(oms, omsF);
   await tegnLeverandorer(na, fjor);
   await tegnSerie(fra, til);
   await tegnManeder(til);
@@ -354,6 +367,32 @@ async function tegnLeverandorer(na, fjor){
 }
 $("levKat").onchange = (e) => { levKat = e.target.value; tegn(); };
 
+async function tegnAdk(oms, omsF){
+  const { fra, til } = periode;
+  let a, b;
+  try {
+    [a, b] = await Promise.all([
+      rpc("fiken_adk", { fra: iso(fra), til: iso(til) }),
+      rpc("fiken_adk", { fra: iso(ettAarFor(fra)), til: iso(ettAarFor(til)) }),
+    ]);
+  } catch(e){ $("adkTab").innerHTML = `<tr><td class="note">Ikke tilgjengelig ennå: ${e.message}</td></tr>`; return; }
+  const m = {};
+  a.forEach(r => { (m[r.konto] ??= { navn:r.navn, na:0, fj:0 }).na += Number(r.belop_kr||0); });
+  b.forEach(r => { (m[r.konto] ??= { navn:r.navn, na:0, fj:0 }).fj += Number(r.belop_kr||0); });
+  const rader = Object.entries(m).filter(([,x]) => Math.abs(x.na) >= 1 || Math.abs(x.fj) >= 1).sort((x,y) => y[1].na - x[1].na);
+  const tot = rader.reduce((s,[,x])=>s+x.na,0), totF = rader.reduce((s,[,x])=>s+x.fj,0);
+  const endr = (x,y) => !y ? "–" : `<span class="${x<=y?"up":"down"}">${x>=y?"+":"−"}${kr(Math.abs(x-y))}</span>`;
+  const vis = rader.slice(0, 15), rest = rader.slice(15);
+  let html = `<tr><th>Konto</th><th>I år</th><th>% av oms.</th><th>I fjor</th><th>Endring</th></tr>`;
+  html += vis.map(([k,x]) => `<tr><td>${k} ${x.navn||""}</td><td>${kr(x.na)}</td><td>${pct(oms?x.na/oms:null)}</td><td>${x.fj?kr(x.fj):"–"}</td><td>${endr(x.na,x.fj)}</td></tr>`).join("");
+  if (rest.length){
+    const rn = rest.reduce((s,[,x])=>s+x.na,0), rf = rest.reduce((s,[,x])=>s+x.fj,0);
+    html += `<tr><td>${rest.length} andre kontoer</td><td>${kr(rn)}</td><td>${pct(oms?rn/oms:null)}</td><td>${kr(rf)}</td><td>${endr(rn,rf)}</td></tr>`;
+  }
+  html += `<tr><td><b>Sum ADK</b></td><td><b>${kr(tot)}</b></td><td><b>${pct(oms?tot/oms:null)}</b></td><td>${kr(totF)}</td><td>${endr(tot,totF)}</td></tr>`;
+  $("adkTab").innerHTML = html;
+}
+
 async function tegnManeder(til){
   const slutt = new Date(til.getFullYear(), til.getMonth(), 1);
   const fra = new Date(slutt.getFullYear()-1, slutt.getMonth()-12, 1);
@@ -361,15 +400,16 @@ async function tegnManeder(til){
   catch(e){ maned = []; $("mndTab").innerHTML = `<tr><td class="note">Feil: ${e.message}</td></tr>`; return; }
   const sumMnd = (ym, g) => maned.filter(r => r.maned.slice(0,7) === ym && r.gruppe === g).reduce((s,r) => s + Number(r.belop_kr||0), 0);
   const ymOf = (d) => iso(d).slice(0,7);
-  let html = `<tr><th>Måned</th><th>Omsetning</th><th>Mot i fjor</th><th>Varekost %</th><th>Lønn %</th><th>Prime %</th></tr>`;
+  let html = `<tr><th>Måned</th><th>Omsetning</th><th>Mot i fjor</th><th>Varekost %</th><th>Lønn %</th><th>Prime %</th><th>ADK %</th><th>Resultat %</th></tr>`;
   for (let i=0; i<13; i++){
     const d = new Date(slutt.getFullYear(), slutt.getMonth()-i, 1), ym = ymOf(d);
     const f = ymOf(new Date(d.getFullYear()-1, d.getMonth(), 1));
     const oms = sumMnd(ym,"salg"), omsF = sumMnd(f,"salg"), vk = sumMnd(ym,"varekost"), l = sumMnd(ym,"lonn");
+    const a = sumMnd(ym,"annet") - maned.filter(r => r.maned.slice(0,7) === ym && r.gruppe === "annet" && r.kategori === "Tips").reduce((s,r) => s + Number(r.belop_kr||0), 0);
     const e = omsF ? (oms-omsF)/omsF : null;
     html += `<tr><td>${MND[d.getMonth()].slice(0,3)} ${d.getFullYear()}</td><td>${oms?kr(oms):"–"}</td>
       <td>${e==null||!oms?"–":`<span class="${e>=0?"up":"down"}">${e>=0?"+":"−"}${pct(Math.abs(e))}</span>`}</td>
-      <td>${oms?pct(vk/oms):"–"}</td><td>${oms?pct(l/oms):"–"}</td><td>${oms?pct((vk+l)/oms):"–"}</td></tr>`;
+      <td>${oms?pct(vk/oms):"–"}</td><td>${oms?pct(l/oms):"–"}</td><td>${oms?pct((vk+l)/oms):"–"}</td><td>${oms?pct(a/oms):"–"}</td><td>${oms?pct((oms-vk-l-a)/oms):"–"}</td></tr>`;
   }
   $("mndTab").innerHTML = html;
   tegnMatkost(slutt, ymOf);
