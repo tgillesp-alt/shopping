@@ -59,6 +59,8 @@
   .faner button{flex:0 0 auto;border-radius:999px;padding:7px 14px}
   .faner button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
   section.skjult{display:none}
+  #bdTab input{font:inherit;width:100%;min-width:90px;border:1px solid var(--line);border-radius:6px;padding:4px 6px;text-align:right;background:var(--card)}
+  #bdTab td{padding:4px}
   .seg{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--card)}
   .seg button{border:0;border-radius:0;padding:7px 12px;background:transparent}
   .seg button+button{border-left:1px solid var(--line)}
@@ -112,6 +114,7 @@
     <button data-fane="oversikt" class="on">Oversikt</button>
     <button data-fane="varekost">Varekost</button>
     <button data-fane="adk">ADK</button>
+    <button data-fane="budsjett">Budsjett</button>
     <button data-fane="verktoy">Verktøy</button>
   </nav>
 
@@ -164,6 +167,28 @@
       <button class="primary" id="lgLagre">Legg til</button>
     </div>
     <div class="scroll"><table id="lgTab"></table></div>
+  </section>
+
+  <section>
+    <h2>Budsjett mot faktisk</h2>
+    <div class="scroll"><table id="bmfTab"></table></div>
+    <div class="note">Inneværende måned sammenlignes med budsjettet fordelt på dagene som har gått. Lønn er uten tips, ADK er konto 6000–7999.</div>
+  </section>
+
+  <section>
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px">
+      <h2 style="margin:0;flex:1">Budsjett</h2>
+      <select id="bdAar" style="font:inherit;border:1px solid var(--line);border-radius:8px;padding:6px 8px;background:var(--card)"></select>
+    </div>
+    <div class="bar" style="margin:0 0 10px">
+      <span class="note" style="margin:0">Fyll ut fra fjoråret med</span>
+      <input type="number" id="bdVekst" value="5" step="0.5" style="font:inherit;border:1px solid var(--line);border-radius:8px;padding:5px 8px;width:70px"> <span class="note" style="margin:0">% vekst</span>
+      <button id="bdFyll">Fyll ut</button>
+      <span style="flex:1"></span>
+      <button class="primary" id="bdLagre">Lagre budsjett</button>
+    </div>
+    <div class="scroll"><table id="bdTab"></table></div>
+    <div class="note" id="bdStatus">Beløp i kroner eks. mva. «Fyll ut» bruker fjorårets faktiske tall per måned og legger på veksten for alle linjene. Juster deretter enkeltmåneder og trykk Lagre.</div>
   </section>
 
   <section>
@@ -284,16 +309,25 @@ async function tegn(){
   const res = oms - vk - lonn - adk, resF = omsF - vkF - lonnF - adkF;
   const fin = sumG(na,"finans"), finF = sumG(fjor,"finans");
   const endr = omsF ? (oms-omsF)/omsF : null;
+  const bud = await budsjettFor(fra, til);
+  const bRes = bud ? bud.salg - bud.varekost - bud.lonn - bud.adk : null;
+  const bLinje = (faktisk, b, erKost) => {
+    if (!bud || !b) return "";
+    const av = (faktisk - b) / Math.abs(b), bra = erKost ? av <= 0 : av >= 0;
+    return `<br>Budsjett ${kr(b)} · <span class="${bra?"up":"down"}">${av>=0?"+":"−"}${pct(Math.abs(av))}</span>`;
+  };
+  const bPst = (faktisk, b) => (!bud || !b || !bud.salg || !oms) ? "" : `<br>Budsjett ${pct(b/bud.salg)} · <span class="${faktisk/oms <= b/bud.salg ? "up" : "down"}">${faktisk/oms <= b/bud.salg ? "−" : "+"}${(Math.abs(faktisk/oms - b/bud.salg)*100).toLocaleString("nb-NO",{maximumFractionDigits:1})} pp</span>`;
   const pp = (a, b) => (a == null || b == null) ? "" : ` · i fjor ${pct(b)}`;
   $("tiles").innerHTML = [
     tile("Omsetning", kr(oms),
-      endr == null ? "Ingen tall i fjor" : `<span class="${endr>=0?"up":"down"}">${endr>=0?"▲":"▼"} ${pct(Math.abs(endr))}</span> mot i fjor (${kkr(omsF)})`),
-    tile("Varekost", pct(oms ? vk/oms : null), kr(vk) + pp(oms, omsF ? vkF/omsF : null)),
-    tile("Lønnskost", pct(oms ? lonn/oms : null), kr(lonn) + pp(oms, omsF ? lonnF/omsF : null)),
+      endr == null ? "Ingen tall i fjor" : `<span class="${endr>=0?"up":"down"}">${endr>=0?"▲":"▼"} ${pct(Math.abs(endr))}</span> mot i fjor (${kkr(omsF)})` + bLinje(oms, bud?.salg, false)),
+    tile("Varekost", pct(oms ? vk/oms : null), kr(vk) + pp(oms, omsF ? vkF/omsF : null) + bPst(vk, bud?.varekost)),
+    tile("Lønnskost", pct(oms ? lonn/oms : null), kr(lonn) + pp(oms, omsF ? lonnF/omsF : null) + bPst(lonn, bud?.lonn)),
     tile("Prime cost", pct(oms ? (vk+lonn)/oms : null), "Varekost + lønn" + pp(oms, omsF ? (vkF+lonnF)/omsF : null)),
-    tile("ADK", pct(oms ? adk/oms : null), kr(adk) + pp(oms, omsF ? adkF/omsF : null)),
+    tile("ADK", pct(oms ? adk/oms : null), kr(adk) + pp(oms, omsF ? adkF/omsF : null) + bPst(adk, bud?.adk)),
     tile("Driftsresultat", kr(res), pct(oms ? res/oms : null) + " av omsetning" + pp(oms, omsF ? resF/omsF : null)
-      + `<br>Etter finans: <b>${kr(res - fin)}</b> · finansposter ${kr(-fin)} · i fjor ${kr(resF - finF)}`),
+      + `<br>Etter finans: <b>${kr(res - fin)}</b> · finansposter ${kr(-fin)} · i fjor ${kr(resF - finF)}`
+      + (bud ? `<br>Budsjett ${kr(bRes)} · <span class="${res>=bRes?"up":"down"}">${res>=bRes?"+":"−"}${kr(Math.abs(res-bRes))}</span>` : "")),
   ].join("");
 
   tegnKategorier(na, fjor);
@@ -302,6 +336,7 @@ async function tegn(){
   await tegnSerie(fra, til);
   await tegnManeder(til);
   await tegnLager();
+  await tegnBudsjett();
 }
 const tile = (l,v,s) => `<div class="tile"><div class="lbl">${l}</div><div class="val">${v}</div><div class="sub">${s}</div></div>`;
 
@@ -602,11 +637,127 @@ $("prev").onclick = () => { valgtMnd = new Date(valgtMnd.getFullYear(), valgtMnd
 $("next").onclick = () => { valgtMnd = new Date(valgtMnd.getFullYear(), valgtMnd.getMonth()+1, 1); lastAlt(); };
 $("visBtn").onclick = () => lastAlt();
 
+
+// ---- Budsjett ----
+let budsjett = null;     // rader fra fiken_budsjett
+const BD_GRUPPER = [["salg","Omsetning"],["varekost","Varekost"],["lonn","Lønn"],["adk","ADK"]];
+let bdAarValgt = new Date().getFullYear();
+async function lastBudsjett(){
+  const { data, error } = await sb.from("fiken_budsjett").select("*");
+  budsjett = error ? null : (data || []);
+  return error;
+}
+const dagerIMnd = (y, m) => new Date(y, m+1, 0).getDate();
+// Budsjett for en periode: hele måneder teller fullt, delvise måneder fordeles på dager
+async function budsjettFor(fra, til){
+  if (budsjett === null) await lastBudsjett();
+  if (!budsjett || !budsjett.length) return null;
+  const sum = { salg:0, varekost:0, lonn:0, adk:0 }; let funnet = false;
+  for (let d = new Date(fra.getFullYear(), fra.getMonth(), 1); d <= til; d = new Date(d.getFullYear(), d.getMonth()+1, 1)){
+    const y = d.getFullYear(), m = d.getMonth(), n = dagerIMnd(y, m);
+    const start = Math.max(1, (y === fra.getFullYear() && m === fra.getMonth()) ? fra.getDate() : 1);
+    const slutt = (y === til.getFullYear() && m === til.getMonth()) ? til.getDate() : n;
+    const andel = (slutt - start + 1) / n;
+    budsjett.filter(r => r.aar === y && r.maned === m+1).forEach(r => { sum[r.gruppe] += Number(r.belop_kr||0) * andel; funnet = true; });
+  }
+  return funnet ? sum : null;
+}
+
+async function tegnBudsjett(){
+  const naa = new Date().getFullYear();
+  $("bdAar").innerHTML = [naa-1, naa, naa+1].map(y => `<option ${y===bdAarValgt?"selected":""}>${y}</option>`).join("");
+  if (budsjett === null){ const e = await lastBudsjett(); if (e){ $("bdTab").innerHTML = `<tr><td class="note">Ikke tilgjengelig ennå: ${e.message}</td></tr>`; $("bmfTab").innerHTML = ""; return; } }
+  const y = bdAarValgt;
+  const verdi = (m, g) => { const r = budsjett.find(r => r.aar === y && r.maned === m && r.gruppe === g); return r ? Math.round(Number(r.belop_kr)) : ""; };
+  let html = `<tr><th>Måned</th>${BD_GRUPPER.map(([,n]) => `<th>${n}</th>`).join("")}<th>Resultat</th></tr>`;
+  for (let m = 1; m <= 12; m++){
+    html += `<tr><td>${MND[m-1].slice(0,3)}</td>${BD_GRUPPER.map(([g]) => `<td><input type="number" step="1000" data-m="${m}" data-g="${g}" value="${verdi(m,g)}"></td>`).join("")}<td class="bdRes" data-m="${m}"></td></tr>`;
+  }
+  html += `<tr><td><b>Sum</b></td>${BD_GRUPPER.map(([g]) => `<td class="bdSum" data-g="${g}" style="text-align:right;font-weight:600"></td>`).join("")}<td class="bdSum" data-g="res" style="text-align:right;font-weight:600"></td></tr>`;
+  $("bdTab").innerHTML = html;
+  $("bdTab").querySelectorAll("input").forEach(i => i.oninput = bdSummer);
+  bdSummer();
+  await tegnBudsjettMotFaktisk();
+}
+function bdLes(){
+  const v = {}; $("bdTab").querySelectorAll("input").forEach(i => { (v[i.dataset.m] ??= {})[i.dataset.g] = i.value === "" ? null : Number(i.value); });
+  return v;
+}
+function bdSummer(){
+  const v = bdLes(), tot = { salg:0, varekost:0, lonn:0, adk:0, res:0 };
+  for (let m = 1; m <= 12; m++){
+    const r = v[m] || {}, res = (r.salg||0) - (r.varekost||0) - (r.lonn||0) - (r.adk||0);
+    BD_GRUPPER.forEach(([g]) => tot[g] += r[g] || 0); tot.res += res;
+    const c = $("bdTab").querySelector(`.bdRes[data-m="${m}"]`);
+    c.textContent = (r.salg != null) ? kr(res) : ""; c.style.textAlign = "right";
+  }
+  $("bdTab").querySelectorAll(".bdSum").forEach(c => {
+    const g = c.dataset.g, t = tot[g];
+    c.innerHTML = kr(t) + (g !== "salg" && tot.salg ? `<br><span class="note" style="font-weight:400">${pct(t/tot.salg)}</span>` : "");
+  });
+}
+$("bdAar").onchange = (e) => { bdAarValgt = Number(e.target.value); tegnBudsjett(); };
+$("bdFyll").onclick = async () => {
+  const y = bdAarValgt, vekst = 1 + Number($("bdVekst").value || 0) / 100;
+  let rader;
+  try { rader = await rpc("fiken_maneder", { fra: `${y-1}-01-01` }); } catch(e){ alert("Feil: " + e.message); return; }
+  const v = (m, g) => rader.filter(r => String(r.maned).slice(0,7) === `${y-1}-${String(m).padStart(2,"0")}` && r.gruppe === g).reduce((s,r) => s + Number(r.belop_kr||0), 0);
+  let tomt = true;
+  for (let m = 1; m <= 12; m++){
+    const tall = { salg: v(m,"salg"), varekost: v(m,"varekost"), lonn: v(m,"lonn"),
+                   adk: v(m,"annet") - rader.filter(r => String(r.maned).slice(0,7) === `${y-1}-${String(m).padStart(2,"0")}` && r.gruppe === "annet" && r.kategori === "Tips").reduce((s,r)=>s+Number(r.belop_kr||0),0) };
+    BD_GRUPPER.forEach(([g]) => {
+      const inp = $("bdTab").querySelector(`input[data-m="${m}"][data-g="${g}"]`);
+      if (tall[g]) { inp.value = Math.round(tall[g] * vekst / 1000) * 1000; tomt = false; }
+    });
+  }
+  bdSummer();
+  $("bdStatus").textContent = tomt ? `Fant ingen tall for ${y-1}.` : `Fylt ut fra ${y-1} med ${$("bdVekst").value} % vekst. Husk å trykke Lagre budsjett.`;
+};
+$("bdLagre").onclick = async () => {
+  const y = bdAarValgt, v = bdLes(), rader = [], slett = [];
+  for (let m = 1; m <= 12; m++) BD_GRUPPER.forEach(([g]) => {
+    const b = v[m]?.[g];
+    if (b == null) slett.push({ m, g }); else rader.push({ aar: y, maned: m, gruppe: g, belop_kr: b, endret: new Date().toISOString() });
+  });
+  const { error } = await sb.from("fiken_budsjett").upsert(rader, { onConflict: "aar,maned,gruppe" });
+  if (error){ alert("Feil: " + error.message); return; }
+  for (const s of slett) await sb.from("fiken_budsjett").delete().eq("aar", y).eq("maned", s.m).eq("gruppe", s.g);
+  budsjett = null;
+  $("bdStatus").textContent = "Budsjettet er lagret.";
+  tegn();
+};
+
+async function tegnBudsjettMotFaktisk(){
+  const y = bdAarValgt, t = idag();
+  const harBud = budsjett.some(r => r.aar === y);
+  if (!harBud){ $("bmfTab").innerHTML = `<tr><td class="note">Ingen budsjett for ${y} ennå. Legg det inn under.</td></tr>`; return; }
+  let rader;
+  try { rader = await rpc("fiken_maneder", { fra: `${y}-01-01` }); } catch(e){ $("bmfTab").innerHTML = `<tr><td class="note">Feil: ${e.message}</td></tr>`; return; }
+  const f = (m, g, kat) => rader.filter(r => String(r.maned).slice(0,7) === `${y}-${String(m).padStart(2,"0")}` && r.gruppe === g && (!kat || r.kategori === kat)).reduce((s,r) => s + Number(r.belop_kr||0), 0);
+  const b = (m, g) => Number(budsjett.find(r => r.aar === y && r.maned === m && r.gruppe === g)?.belop_kr || 0);
+  const avv = (x, y2, kost) => !y2 ? "–" : (() => { const a = (x - y2) / Math.abs(y2), bra = kost ? a <= 0 : a >= 0; return `<span class="${bra?"up":"down"}">${a>=0?"+":"−"}${pct(Math.abs(a))}</span>`; })();
+  let html = `<tr><th>Måned</th><th>Omsetning</th><th>Budsjett</th><th>Avvik</th><th>Resultat</th><th>Budsjett</th><th>Avvik</th></tr>`;
+  const sum = { o:0, bo:0, r:0, br:0 };
+  for (let m = 1; m <= 12; m++){
+    const start = new Date(y, m-1, 1);
+    if (start > t) break;
+    const n = dagerIMnd(y, m-1), del = (y === t.getFullYear() && m-1 === t.getMonth()) ? t.getDate() / n : 1;
+    const o = f(m,"salg"), res = o - f(m,"varekost") - f(m,"lonn") - (f(m,"annet") - f(m,"annet","Tips"));
+    const bo = b(m,"salg") * del, br = (b(m,"salg") - b(m,"varekost") - b(m,"lonn") - b(m,"adk")) * del;
+    sum.o += o; sum.bo += bo; sum.r += res; sum.br += br;
+    html += `<tr><td>${MND[m-1].slice(0,3)}${del<1?" *":""}</td><td>${kr(o)}</td><td>${bo?kr(bo):"–"}</td><td>${avv(o,bo,false)}</td><td>${kr(res)}</td><td>${br?kr(br):"–"}</td><td>${br ? `<span class="${res>=br?"up":"down"}">${res>=br?"+":"−"}${kr(Math.abs(res-br))}</span>` : "–"}</td></tr>`;
+  }
+  html += `<tr><td><b>Hittil</b></td><td><b>${kr(sum.o)}</b></td><td><b>${kr(sum.bo)}</b></td><td>${avv(sum.o,sum.bo,false)}</td><td><b>${kr(sum.r)}</b></td><td><b>${kr(sum.br)}</b></td><td>${sum.br ? `<span class="${sum.r>=sum.br?"up":"down"}">${sum.r>=sum.br?"+":"−"}${kr(Math.abs(sum.r-sum.br))}</span>` : "–"}</td></tr>`;
+  $("bmfTab").innerHTML = html;
+}
+
 // ---- Faner ----
 const FANE_FOR = [
   [/^Omsetning per|^Siste 13/, "oversikt"],
   [/^Per kategori|^Innkjøp per|^Matkost/, "varekost"],
   [/^Andre driftskostnader/, "adk"],
+  [/^Budsjett/, "budsjett"],
 ];
 let aktivFane = "oversikt";
 try { aktivFane = localStorage.getItem("nokkeltall-fane") || "oversikt"; } catch {}
