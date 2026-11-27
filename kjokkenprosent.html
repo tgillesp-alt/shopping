@@ -130,7 +130,6 @@ textarea { width: 100%; padding: 0.7rem 0.85rem; border: 0.5px solid #e5e2da; bo
 
 <div class="tabs">
   <button class="tab active" id="tab-middag" onclick="visTab('middag')">Middag</button>
-  <button class="tab" id="tab-lunsj" onclick="visTab('lunsj')">Lunsj</button>
   <button class="tab" id="tab-priser" onclick="visTab('priser')">Priser</button>
   <button class="tab" id="tab-batcher" onclick="visTab('batcher')">Batcher</button>
   <button class="tab" id="tab-innstillinger" onclick="visTab('innstillinger')">Innstillinger</button>
@@ -140,10 +139,6 @@ textarea { width: 100%; padding: 0.7rem 0.85rem; border: 0.5px solid #e5e2da; bo
 
   <div class="view active" id="view-middag">
     <div id="liste-middag"></div>
-  </div>
-
-  <div class="view" id="view-lunsj">
-    <div id="liste-lunsj"></div>
   </div>
 
   <div class="view" id="view-innstillinger">
@@ -547,7 +542,6 @@ async function hentAlt() {
     document.getElementById('inn-mva').value = Math.round(innstillinger.mva_sats * 1000) / 10;
     document.getElementById('inn-buffer').value = Math.round(innstillinger.buffer_prosent * 1000) / 10;
     renderListe('middag');
-    renderListe('lunsj');
     renderPriser();
     renderBatcher();
     if (aktivBatchId) renderBatchModal();
@@ -912,7 +906,6 @@ async function lagreInnstillinger() {
   }
   innstillinger = { mva_sats: mva, buffer_prosent: buffer };
   renderListe('middag');
-  renderListe('lunsj');
   alert('Lagret');
 }
 
