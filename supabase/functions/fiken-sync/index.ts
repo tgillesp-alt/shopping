@@ -92,6 +92,32 @@ Deno.serve(async (req) => {
     if (!selskap) throw new Error(`Fant ikke selskap med org.nr ${ORGNR} blant ${selskaper.length} selskaper`);
     const slug = selskap.slug;
 
+    // Diagnose: hvilke vedlegg (PDF/EHF-XML) har de siste innkjøpene?
+    if (input.vedleggtest) {
+      const kjop: any[] = await fiken(`/companies/${slug}/purchases?dateGe=${leggTil(idag, -10)}&page=0&pageSize=100`);
+      kjop.sort((a, b) => String(b.date).localeCompare(String(a.date)));
+      kjop.splice(Math.min(Number(input.antall) || 5, 10));
+      const ut: any[] = [];
+      for (const p of kjop) {
+        await sleep(260);
+        const vedlegg: any[] = await fiken(`/companies/${slug}/purchases/${p.purchaseId}/attachments`).catch((e) => [{ feil: String(e) }]);
+        const info: any[] = [];
+        for (const v of vedlegg) {
+          const url = v.downloadUrl;
+          let innhold: any = null;
+          if (url) {
+            await sleep(260);
+            const r = await fetch(url, { headers: { Authorization: `Bearer ${KEY}` } });
+            const tekst = await r.text();
+            innhold = { status: r.status, contentType: r.headers.get("content-type"), disposition: r.headers.get("content-disposition"), lengde: tekst.length, start: tekst.slice(0, 300) };
+          }
+          info.push({ identifier: v.identifier, type: v.type, comment: v.comment, innhold });
+        }
+        ut.push({ purchaseId: p.purchaseId, dato: p.date, leverandor: p.supplier?.name, kind: p.kind, vedlegg: info });
+      }
+      return svar({ ok: true, vedleggtest: ut });
+    }
+
     const kjenteKontoer = new Set<string>(
       ((await db.from("fiken_kontoer").select("konto")).data ?? []).map((r: any) => r.konto),
     );
