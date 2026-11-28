@@ -747,6 +747,14 @@ async function tegnPriser(){
     const fs = forslagFaktor(p, v);
     if (d === null || Math.abs(d) > 0.005) endringer.push({ p, k, v, f, ny, gml, d, mistenkelig, fs: fs && Math.abs(fs - f) > 1e-9 ? fs : null });
   });
+  // Flere fakturalinjer kan være koblet til samme prislistevare – bruk bare den nyeste
+  const nyesteAv = {};
+  vPriser.forEach(p => {
+    const k = kobAv[p.leverandor + "|" + p.varenr]; if (!k || k.kalkyle_vare_id === "-") return;
+    const n = nyesteAv[k.kalkyle_vare_id];
+    if (!n || String(p.siste_dato || "") > String(n.siste_dato || "")) nyesteAv[k.kalkyle_vare_id] = p;
+  });
+  for (let i = endringer.length - 1; i >= 0; i--) if (nyesteAv[endringer[i].v.id] !== endringer[i].p && nyesteAv[String(endringer[i].v.id)] !== endringer[i].p) endringer.splice(i, 1);
   endringer.sort((a, b) => Math.abs(b.d ?? 1) - Math.abs(a.d ?? 1));
   const tid = (d) => d ? fmtDato(parse(String(d))) : "–";
   $("prTab").innerHTML = !endringer.length
@@ -766,8 +774,9 @@ async function tegnPriser(){
   const trygge = endringer.filter(e => !e.mistenkelig);
   $("prAlle").classList.toggle("hidden", trygge.length < 2);
   const oppdater = async (e) => {
-    const { error } = await sb.from("kalkyle_varer").update({ innkjopspris: Math.round(e.ny * 100) / 100 }).eq("id", e.v.id);
+    const { data, error } = await sb.from("kalkyle_varer").update({ innkjopspris: Math.round(e.ny * 100) / 100 }).eq("id", e.v.id).select("id");
     if (error) throw new Error(error.message);
+    if (!data || !data.length) throw new Error("Prislisten ble ikke endret – innloggingen din mangler skrivetilgang til prislisten (kalkyle_varer). Kjør SQL-en kalkyle-tilgang.sql i Supabase.");
   };
   $("prTab").querySelectorAll("[data-oppd]").forEach(b => b.onclick = async () => {
     const e = endringer[Number(b.dataset.oppd)];
