@@ -178,13 +178,19 @@
     </div>
     <div class="note" id="prStatus" style="margin:0 0 8px"></div>
     <div class="scroll"><table id="prTab"></table></div>
-    <div class="note">Fakturapris er netto etter rabatt, eks. mva, omregnet til enheten i prislisten. Viser varer der prisen har endret seg mer enn 0,5 %.</div>
+    <div class="note">Fakturapris er netto etter rabatt, eks. mva, delt på faktor slik at den står i prislistens enhet. Faktor = hvor mange prisliste-enheter én fakturaenhet er (smør 500 g og prisliste i kg = 0,5; kanne 5 L og prisliste i liter = 5). ⚠ betyr over 40 % avvik – sjekk faktoren før du oppdaterer. Slike rader tas ikke med i «Oppdater alle».</div>
   </section>
 
   <section>
     <h2>Prisvarer uten kobling</h2>
     <div class="note" style="margin-top:0">Varer fra fakturaene som ikke er koblet til prislisten i Kjøkkenprosent. Velg riktig vare og hvor mange prisliste-enheter én fakturaenhet tilsvarer (f.eks. kartong à 9 kg = 9). Største innkjøp står øverst.</div>
     <div class="scroll"><table id="ukTab"></table></div>
+  </section>
+
+  <section>
+    <h2>Koblede varer</h2>
+    <div class="note" style="margin-top:0">Alle koblinger mellom fakturalinjer og prislisten. Endre faktor her, eller fjern koblingen for å koble på nytt.</div>
+    <div class="scroll"><table id="kbTab"></table></div>
   </section>
 
   <section>
@@ -670,6 +676,49 @@ function bestGjett(navn){
   (kalkVarer || []).forEach(v => { const p = ordAv(v.navn).filter(w => o.has(w)).length; if (p > poeng){ poeng = p; best = v; } });
   return best;
 }
+// Mengde i et navn, f.eks. "500 g", "5 L", "10x1kg", "brett à 30 stk" → { dim, mengde } i g / ml / stk
+function mengdeI(navn){
+  const t = String(navn || "").toLowerCase().replace(/(\d),(\d)/g, "$1.$2");
+  const re = /(?:(\d+)\s*[x×]\s*)?(\d+(?:\.\d+)?)\s*-?\s*(kg|kilo|gr|g|ltr|liter|l|dl|cl|ml|stk|pk|pkn|pakn)(?![a-zæøå])/g;
+  let m, siste = null;
+  while ((m = re.exec(t))) siste = m;
+  if (!siste) return null;
+  const n = (siste[1] ? Number(siste[1]) : 1) * Number(siste[2]);
+  const u = siste[3];
+  if (u === "kg" || u === "kilo") return { dim: "g", mengde: n * 1000 };
+  if (u === "g" || u === "gr") return { dim: "g", mengde: n };
+  if (u === "l" || u === "ltr" || u === "liter") return { dim: "ml", mengde: n * 1000 };
+  if (u === "dl") return { dim: "ml", mengde: n * 100 };
+  if (u === "cl") return { dim: "ml", mengde: n * 10 };
+  if (u === "ml") return { dim: "ml", mengde: n };
+  return { dim: "stk", mengde: n };
+}
+const ENHET = { kg:["g",1000], kilo:["g",1000], g:["g",1], gr:["g",1], l:["ml",1000], ltr:["ml",1000], liter:["ml",1000], dl:["ml",100], cl:["ml",10], ml:["ml",1], stk:["stk",1] };
+// Forslag til faktor: hvor mange prisliste-enheter én fakturaenhet inneholder
+function forslagFaktor(p, v){
+  if (!v) return null;
+  const lu = String(v.innkjopsenhet || "").toLowerCase().replace(/\.$/, "");
+  if (enhetLik(p.enhet, lu)) return 1;
+  const mål = ENHET[lu]; if (!mål) return null;
+  for (const navn of [p.navn, v.navn]){
+    const m = mengdeI(navn);
+    if (m && m.dim === mål[0]){
+      const f = m.mengde / mål[1];
+      if (f > 0 && Math.abs(f - 1) > 1e-9) return Math.round(f * 1000) / 1000;
+    }
+  }
+  return null;
+}
+const tall = (x, d = 2) => Number(x).toLocaleString("nb-NO", { maximumFractionDigits: d });
+async function lagreKobling(p, id, faktor){
+  const { error } = await sb.from("vare_kobling").upsert({ leverandor: p.leverandor, varenr: p.varenr, kalkyle_vare_id: id, faktor });
+  if (error) alert("Feil: " + error.message); else tegnPriser();
+}
+async function fjernKobling(leverandor, varenr){
+  const { error } = await sb.from("vare_kobling").delete().eq("leverandor", leverandor).eq("varenr", varenr);
+  if (error) alert("Feil: " + error.message); else tegnPriser();
+}
+const fakInput = (attr, val) => `<input ${attr} type="number" step="any" min="0" value="${val}" style="width:70px;font:inherit;border:1px solid var(--line);border-radius:6px;padding:4px;text-align:right">`;
 async function lastPriser(){
   const [kv, kb, vp] = await Promise.all([
     sb.from("kalkyle_varer").select("id,navn,kategori,innkjopspris,innkjopsenhet").order("navn"),
@@ -688,36 +737,80 @@ async function tegnPriser(){
   const kobAv = Object.fromEntries(koblinger.map(k => [k.leverandor + "|" + k.varenr, k]));
   // Prisendringer
   const endringer = [];
+  const prisAv = Object.fromEntries(vPriser.map(p => [p.leverandor + "|" + p.varenr, p]));
   vPriser.forEach(p => {
     const k = kobAv[p.leverandor + "|" + p.varenr]; if (!k || k.kalkyle_vare_id === "-") return;
     const v = vareAv[k.kalkyle_vare_id]; if (!v) return;
-    const ny = Number(p.siste_pris) / Number(k.faktor || 1), gml = Number(v.innkjopspris || 0);
+    const f = Number(k.faktor || 1), ny = Number(p.siste_pris) / f, gml = Number(v.innkjopspris || 0);
     const d = gml ? (ny - gml) / gml : null;
-    if (d === null || Math.abs(d) > 0.005) endringer.push({ p, k, v, ny, gml, d });
+    const mistenkelig = d !== null && Math.abs(d) > 0.4;
+    const fs = forslagFaktor(p, v);
+    if (d === null || Math.abs(d) > 0.005) endringer.push({ p, k, v, f, ny, gml, d, mistenkelig, fs: fs && Math.abs(fs - f) > 1e-9 ? fs : null });
   });
   endringer.sort((a, b) => Math.abs(b.d ?? 1) - Math.abs(a.d ?? 1));
   const tid = (d) => d ? fmtDato(parse(String(d))) : "–";
   $("prTab").innerHTML = !endringer.length
     ? `<tr><td class="note">${koblinger.length ? "Ingen prisendringer – prislisten er oppdatert." : "Ingen varer er koblet ennå. Koble varer under «Prisvarer uten kobling»."}</td></tr>`
-    : `<tr><th>Vare i prislisten</th><th>Leverandør</th><th>Faktura</th><th>Pris nå</th><th>Fakturapris</th><th>Endring</th><th></th></tr>` +
-      endringer.map((e, i) => `<tr><td>${e.v.navn}</td><td>${e.p.leverandor}</td><td>${tid(e.p.siste_dato)}</td>
-        <td>${e.gml.toLocaleString("nb-NO",{maximumFractionDigits:2})} kr/${e.v.innkjopsenhet}</td>
-        <td><b>${e.ny.toLocaleString("nb-NO",{maximumFractionDigits:2})} kr/${e.v.innkjopsenhet}</b></td>
-        <td>${e.d == null ? "ny" : `<span class="${e.d<=0?"up":"down"}">${e.d>=0?"+":"−"}${pct(Math.abs(e.d))}</span>`}</td>
-        <td><button data-oppd="${i}" style="padding:3px 9px">Oppdater</button></td></tr>`).join("");
-  $("prAlle").classList.toggle("hidden", endringer.length < 2);
+    : `<tr><th>Vare i prislisten</th><th style="text-align:left">Fakturalinje</th><th>Faktura</th><th>Pris nå</th><th>Faktor</th><th>Fakturapris</th><th>Endring</th><th></th></tr>` +
+      endringer.map((e, i) => {
+        const nyF = e.fs ? Number(e.p.siste_pris) / e.fs : null;
+        return `<tr><td>${e.v.navn}</td>
+        <td style="max-width:240px;white-space:normal;text-align:left">${e.p.navn}<br><span class="note">${e.p.leverandor} · ${tall(e.p.siste_pris)} kr/${e.p.enhet || "?"}</span></td>
+        <td>${tid(e.p.siste_dato)}</td>
+        <td>${tall(e.gml)} kr/${e.v.innkjopsenhet}</td>
+        <td>${fakInput(`data-pfak="${i}"`, e.f)}${e.fs ? `<br><button data-pfs="${i}" style="padding:2px 7px;margin-top:3px" title="Gir ${tall(nyF)} kr/${e.v.innkjopsenhet}">Bruk ${tall(e.fs, 3)}</button>` : ""}</td>
+        <td><b>${tall(e.ny)} kr/${e.v.innkjopsenhet}</b></td>
+        <td>${e.d == null ? "ny" : `<span class="${e.d<=0?"up":"down"}">${e.mistenkelig ? "⚠ " : ""}${e.d>=0?"+":"−"}${pct(Math.abs(e.d))}</span>`}</td>
+        <td><button data-oppd="${i}" style="padding:3px 9px;margin:2px 0">Oppdater</button><br><button data-pfj="${i}" style="padding:3px 9px" title="Fjern koblingen og koble på nytt">Fjern kobling</button></td></tr>`;
+      }).join("");
+  const trygge = endringer.filter(e => !e.mistenkelig);
+  $("prAlle").classList.toggle("hidden", trygge.length < 2);
   const oppdater = async (e) => {
     const { error } = await sb.from("kalkyle_varer").update({ innkjopspris: Math.round(e.ny * 100) / 100 }).eq("id", e.v.id);
     if (error) throw new Error(error.message);
   };
   $("prTab").querySelectorAll("[data-oppd]").forEach(b => b.onclick = async () => {
-    try { await oppdater(endringer[Number(b.dataset.oppd)]); tegnPriser(); } catch(e){ alert("Feil: " + e.message); }
+    const e = endringer[Number(b.dataset.oppd)];
+    if (e.mistenkelig && !confirm(`${e.v.navn}: ${tall(e.gml)} → ${tall(e.ny)} kr/${e.v.innkjopsenhet} er over 40 % endring. Sjekk faktoren. Oppdatere likevel?`)) return;
+    try { await oppdater(e); tegnPriser(); } catch(err){ alert("Feil: " + err.message); }
+  });
+  $("prTab").querySelectorAll("[data-pfak]").forEach(inp => inp.onchange = () => {
+    const e = endringer[Number(inp.dataset.pfak)], f = Number(inp.value);
+    if (f > 0) lagreKobling(e.p, e.k.kalkyle_vare_id, f);
+  });
+  $("prTab").querySelectorAll("[data-pfs]").forEach(b => b.onclick = () => {
+    const e = endringer[Number(b.dataset.pfs)]; lagreKobling(e.p, e.k.kalkyle_vare_id, e.fs);
+  });
+  $("prTab").querySelectorAll("[data-pfj]").forEach(b => b.onclick = () => {
+    const e = endringer[Number(b.dataset.pfj)]; fjernKobling(e.p.leverandor, e.p.varenr);
   });
   $("prAlle").onclick = async () => {
-    if (!confirm(`Oppdatere ${endringer.length} priser i prislisten?`)) return;
-    try { for (const e of endringer) await oppdater(e); tegnPriser(); } catch(e){ alert("Feil: " + e.message); }
+    const utelatt = endringer.length - trygge.length;
+    if (!confirm(`Oppdatere ${trygge.length} priser i prislisten?` + (utelatt ? `\n${utelatt} med over 40 % avvik (⚠) tas ikke med.` : ""))) return;
+    try { for (const e of trygge) await oppdater(e); tegnPriser(); } catch(err){ alert("Feil: " + err.message); }
   };
-
+  // Koblede varer
+  const kbl = koblinger.slice().sort((a, b) => (a.kalkyle_vare_id === "-") - (b.kalkyle_vare_id === "-") ||
+    String(vareAv[a.kalkyle_vare_id]?.navn || "").localeCompare(String(vareAv[b.kalkyle_vare_id]?.navn || ""), "nb"));
+  $("kbTab").innerHTML = !kbl.length ? `<tr><td class="note">Ingen koblinger ennå.</td></tr>` :
+    `<tr><th>Vare i prislisten</th><th style="text-align:left">Fakturalinje</th><th>Fakturapris</th><th>Faktor</th><th></th></tr>` +
+    kbl.map((k, i) => {
+      const p = prisAv[k.leverandor + "|" + k.varenr] || { navn: k.varenr, enhet: "" };
+      const v = vareAv[k.kalkyle_vare_id];
+      const ign = k.kalkyle_vare_id === "-";
+      return `<tr><td>${ign ? `<span class="note">Ignorert</span>` : v ? v.navn : `<span class="note">(slettet vare)</span>`}</td>
+        <td style="max-width:280px;white-space:normal;text-align:left">${p.navn}<br><span class="note">${k.leverandor} · ${k.varenr}</span></td>
+        <td>${p.siste_pris != null ? `${tall(p.siste_pris)} kr/${p.enhet || "?"}` : "–"}</td>
+        <td>${ign ? "" : fakInput(`data-kfak="${i}"`, Number(k.faktor || 1))}</td>
+        <td><button data-kfj="${i}" style="padding:3px 9px">${ign ? "Angre" : "Fjern"}</button></td></tr>`;
+    }).join("");
+  $("kbTab").querySelectorAll("[data-kfak]").forEach(inp => inp.onchange = () => {
+    const k = kbl[Number(inp.dataset.kfak)], f = Number(inp.value);
+    if (f > 0) lagreKobling(k, k.kalkyle_vare_id, f);
+  });
+  $("kbTab").querySelectorAll("[data-kfj]").forEach(b => b.onclick = () => {
+    const k = kbl[Number(b.dataset.kfj)]; fjernKobling(k.leverandor, k.varenr);
+  });
   // Ukoblede varer
   const uk = vPriser.filter(p => !kobAv[p.leverandor + "|" + p.varenr]).sort((a, b) => Number(b.sum_belop) - Number(a.sum_belop)).slice(0, 60);
   const valg = kalkVarer.map(v => `<option value="${v.id}">${v.navn} (${v.innkjopspris} kr/${v.innkjopsenhet})</option>`).join("");
@@ -734,12 +827,11 @@ async function tegnPriser(){
     }).join("");
   uk.forEach((p, i) => {
     const sel = $("ukTab").querySelector(`[data-uk="${i}"]`); if (!sel) return;
+    const fak = $("ukTab").querySelector(`[data-fak="${i}"]`);
+    const settFaktor = () => { const f = forslagFaktor(p, vareAv[sel.value]); fak.value = f || 1; };
     const g = bestGjett(p.navn); if (g) sel.value = g.id;
+    settFaktor(); sel.onchange = settFaktor;
   });
-  const lagreKobling = async (p, id, faktor) => {
-    const { error } = await sb.from("vare_kobling").upsert({ leverandor: p.leverandor, varenr: p.varenr, kalkyle_vare_id: id, faktor });
-    if (error) alert("Feil: " + error.message); else tegnPriser();
-  };
   $("ukTab").querySelectorAll("[data-kob]").forEach(b => b.onclick = () => {
     const i = Number(b.dataset.kob), id = $("ukTab").querySelector(`[data-uk="${i}"]`).value;
     if (!id){ alert("Velg en vare i prislisten først."); return; }
@@ -885,7 +977,7 @@ const FANE_FOR = [
   [/^Per kategori|^Innkjøp per|^Matkost/, "varekost"],
   [/^Andre driftskostnader/, "adk"],
   [/^Budsjett/, "budsjett"],
-  [/^Pris/, "priser"],
+  [/^Pris|^Koblede/, "priser"],
 ];
 let aktivFane = "oversikt";
 try { aktivFane = localStorage.getItem("nokkeltall-fane") || "oversikt"; } catch {}
